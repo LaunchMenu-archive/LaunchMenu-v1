@@ -178,7 +178,7 @@ function File(n,p){
 function Directory(n,p){
     this.p = p; //parent directory
     this.n = n; //directory name
-    this.c = []; //directory children
+    this.c = [];//directory children
 }
 
 /*global dirs*/

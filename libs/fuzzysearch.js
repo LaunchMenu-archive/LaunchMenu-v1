@@ -66,7 +66,7 @@ function sortMatches(matches){
 }
 
 
-function searchFiles(tree,query){
+function searchTree(tree,query){
     var rQuery = "";
     var retArray = [];
     
@@ -79,9 +79,9 @@ function searchFiles(tree,query){
     //Prepare regex...
     var regex = new RegExp(rQuery,"i");
     
-    //Loop through names in dictionary
-    for(var nameIndex in names){
-        var name = names[nameIndex];
+    //Loop through files in tree
+    tree.each(function(file){
+        var name = file.n;
         var match;
         if((match = regex.exec(name)) != null){
             var firstMatch = match[1];
@@ -104,6 +104,7 @@ function searchFiles(tree,query){
             //These are characters in between the query characters I.E.
             //a(.*)p(.*)p(.*)l(.*)e
             for(i=2; i<match.length-1; i++){
+                console.log(match);
                 var length = match[i].length;
                 if(length>0)
                     nScore += 2+length;
@@ -116,8 +117,8 @@ function searchFiles(tree,query){
             //Default score of 1 for ease of multiplying score to
             // promote frequently matched names.
             retArray.push({name:name,score:score});
-        }
-    }
+        } 
+    });
     
     //Return fuzzy results
     return sortMatches(retArray);
