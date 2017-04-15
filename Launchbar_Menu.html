@@ -1,0 +1,114 @@
+<html>
+	<head>
+		<script type="text/javascript" src="libs/fuzzysearch.js"></script>
+		<script type="text/javascript" src="libs/dictionary.js"></script>
+		<script type="text/javascript" src="test files/tgm's programming folder array.js"></script>
+		<script type="text/javascript" src="test files/tgm's programming folder.js"></script>
+		<script type="text/javascript" src="test files/test dirs.js"></script>
+		<script type="text/javascript" src="dev/sizeof.js"></script>
+		<script type="text/javascript" src="libs/tree.js"></script>
+		<style>
+			/* Dropdown Content (Hidden by Default) */
+			.dropdown-content {
+				display: block;
+				position: absolute;
+				background-color: #f9f9f9;
+				min-width: 630px;
+				/*box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);*/
+				z-index: 1;
+			}
+			
+			/* Links inside the dropdown */
+			.fable{
+				color: black;
+				padding: 12px 16px;
+				text-decoration: none;
+				display: block;
+				outline: none;
+			}
+			
+			/* Change color of dropdown links on hover */
+			.fable.selected{
+				background-color: #f1f1f1;
+				outline: none;
+			}
+			
+			/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+			.show {display:block;}
+		</style>
+		<script>
+			// Init with focus first
+			var selected;
+			var elements;
+			window.onload = function(){
+				elements = [].slice.call(document.getElementsByClassName("fable")); //find nodelist with class fable, then convert to regular array
+				for(var i=0; i<elements.length; i++){
+					var element = elements[i];
+					element.select = function(){
+						if(selected!=this){
+							if(selected) selected.classList.remove("selected");
+							this.classList.add("selected");
+							selected = this;
+						}
+					}
+					element.addEventListener("mouseover", function(){
+						this.select();
+					});
+				}
+				elements[0].select();
+			}
+			
+			document.onkeydown = keyHandler;
+			//onkeypress; onkeydown; onkeyup
+			function keyHandler(){
+				//console.log(event)
+				if(event.key=="ArrowDown"){
+					focusNext()
+				}
+				if(event.key=="ArrowUp"){
+					focusPrevious()
+				}
+				
+			}
+			
+			function focusNext(){
+				var index = elements.indexOf(selected)+1;
+				if(index<0) index = 0;
+				if(index>=elements.length) index=elements.length-1
+				elements[index].select();
+			}
+			function focusPrevious(){
+				var index = elements.indexOf(selected)-1;
+				if(index<0) index = 0;
+				if(index>=elements.length) index=elements.length-1
+				elements[index].select();
+			}
+			function dictionarySearch(searchCriteria){
+				document.getElementsByClassName('dropdown-content')[0].children().map(function(e){
+					e.remove();
+				})
+				
+				//Convert dictionary to searchable array
+				var ret = fuzzySearch(window.gDict,searchCriteria)
+				for(var el in ret){
+						var node = document.createElement("a");
+						node.id = el
+						node.innerHTML = ret[el]
+						
+				}
+				
+			}
+			
+		</script>
+	</head>
+	<body>
+		<div class="dropdown">
+			<div id="myDropdown" class="dropdown-content">
+				<a id=1 tabindex=0 class="fable" href="#1">Link 1</a>
+				<a id=2 tabindex=0 class="fable" href="#2">Link 2</a>
+				<a id=3 tabindex=0 class="fable" href="#3">Link 3</a>
+			</div>
+		</div>
+		
+	</body>
+</html>
