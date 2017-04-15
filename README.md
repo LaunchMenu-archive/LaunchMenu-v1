@@ -1,3 +1,11 @@
+# LaunchMenu AHK
+
+## Description:
+
+LaunchMenu is an open source utility application similar to LaunchBar and SpotlightSearch for Mac.
+
+Features will be listed at a later date.
+
 ## Details:
 
 15 April 2017 18:15 Backup: 
@@ -8,7 +16,9 @@ New workspace PHP Apache workspace:
 
 https://ide.c9.io/sancarn/launchmenu_ahk#openfile-README.md
 
-Commit changes to Github: 
+## C9 Interactions with Github:
+
+### Commit changes to Github:
 
 ```
 git add . 
@@ -16,7 +26,7 @@ git commit -m "<Name of commit>"
 git push -u origin master
 ```
 
-Get changes from Github: 
+### Get changes from Github:
 ```
 git pull origin master
 ```
@@ -29,7 +39,7 @@ git pull origin master
 * [ ] Implement myFile.readme HTML crap
 * [ ] Implement exo.ahk into main
 * [ ] Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff
-* [ ] Sara is todo
+* [ ]
 * [ ] 
 * [ ] 
 * [ ] 
