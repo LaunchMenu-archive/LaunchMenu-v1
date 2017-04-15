@@ -34,7 +34,7 @@ To watch some training videos, visit http://www.youtube.com/user/c9ide
 * [ ] Implement myFile.readme HTML crap
 * [ ] Implement exo.ahk into main
 * [ ] Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff
-* [ ] 
+* [ ] Bob is todo
 * [ ] 
 * [ ] 
 * [ ] 
