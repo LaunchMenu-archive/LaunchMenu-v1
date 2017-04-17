@@ -41,8 +41,8 @@ git pull origin master
 * [X] Animated window expanding/contracting
 * [ ] {30%} File preview
 * [ ] {10%} Implement myFile.LMPreview HTML crap.
-* [ ] Preview non image formats and stuff - https://github.com/maxlabelle/filepreview
 * [ ] {25%} Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff.
+* [ ] Preview non image formats and stuff - https://github.com/maxlabelle/filepreview
 * [ ] Settings menu.
 * [ ] FileList includes zip folders.
 * [ ] File icons/symbols in list of matches
