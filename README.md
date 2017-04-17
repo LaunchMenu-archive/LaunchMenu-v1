@@ -38,15 +38,17 @@ git pull origin master
 * [X] Search highlighting.
 * [X] Scrolling beyond the current range.
 * [X] File navigation with arrows and mouse
+* [X] Animated window expanding/contracting
+* [ ] {30%} File preview
+* [ ] {10%} Implement myFile.LMPreview HTML crap.
+* [ ] Preview non image formats and stuff - https://github.com/maxlabelle/filepreview
+* [ ] {25%} Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff.
+* [ ] Settings menu.
 * [ ] FileList includes zip folders.
-* [ ] Implement myFile.LMPreview HTML crap.
+* [ ] File icons/symbols in list of matches
+* [ ] Custom themes
 * [ ] Implement myFile.LMMenu json files for custom menu actions.
-* [ ] Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff.
 * [ ] Javascript custom actions - Maybe use require('eval')(theJSCode).
 * [ ] Create a windows messages API for use by other developers in other programming languages. Some actions: LaunchTerm(someTerm), UnregisterKeybind() and RegisterKeybind() {devs may need use of cmd/win+space for other stuff}, getMatches(searchTerm)...
-* [ ] Settings menu.
-* [ ] File preview
-* [ ] File symbols in list
-* [ ] Custom themes
 * [ ] Explore Capability of making LaunchMenu a Mac - Scriptable App: https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptX/Concepts/scriptable_apps.html
 * [ ]

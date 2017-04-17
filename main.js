@@ -162,6 +162,8 @@ ipc.on('invokeAction', function(event, data){
         		return GetPreviewData(data.path, function(result){
         			event.sender.send(replyChannel, result);
         		});
+        	case "GetOS":
+        		return
 			case "ExecuteFile":
 				return 
 			case "WriteIni": //Writes some initialisation settings to the ini file
