@@ -3,9 +3,14 @@ FileList=
 Loop, %FilePath%\*,1,1
 {
     FileType:= FileExist(A_LoopFileFullPath)=="D" ? "\\" : ""
-    FileList = %FileList%%A_LoopFileFullPath%%FileType%`n
+    FilePath:= StrReplace(A_LoopFileFullPath,"\","\\")
+    FileList = %FileList%,"%FilePath%%FileType%"
 }
+Filelist := "var Files = [" . SubStr(FileList,2) . "]"
+FileDelete, %A_WorkingDir%\File.js
+FileAppend, 
 Msgbox, %FileList%
+
 
 /*
 D|C:\Users\sancarn\Desktop\LaunchBar AHK\Backups

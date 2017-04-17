@@ -33,21 +33,20 @@ git pull origin master
 
 ## To Do
 
-* [ ] FileList includes zip folders 
-* [ ] FuzzySearch to handle tree type
-* [ ] GUI IE controls
-* [ ] Implement myFile.readme HTML crap
-* [ ] Implement exo.ahk into main
-* [ ] Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff
-* [ ]
-* [ ] 
-* [ ] 
-* [ ] 
-* [ ] 
-* [ ] 
-* [ ] 
-* [ ] 
-* [ ] 
-* [ ] 
-* [ ] 
+* [X] FuzzySearch to handle tree type.
+* [X] File searching display
+* [X] Search highlighting.
+* [ ] FileList includes zip folders.
+* [ ] Implement myFile.LMPreview HTML crap.
+* [ ] Implement myFile.LMMenu json files for custom menu actions.
+* [ ] Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff.
+* [ ] Javascript custom actions - Maybe use require('eval')(theJSCode).
+* [ ] Create a windows messages API for use by other developers in other programming languages.
+* [ ] Settings menu.
+* [ ] Scrolling beyond the current range.
+* [ ] File navigation with arrows and mouse
+* [ ] File preview
+* [ ] File symbols in list
+* [ ] Custom themes
+* [ ] Explore Capability of making LaunchMenu a Mac - Scriptable App: https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptX/Concepts/scriptable_apps.html
 * [ ]
