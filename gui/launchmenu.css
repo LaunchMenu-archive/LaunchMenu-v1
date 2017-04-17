@@ -14,7 +14,12 @@ html, body{
         margin-top:18px;
         margin-left:30px;
         width:680px;
-        height:420px;
+        transition-duration: 0.5s;
+        height:60px;
+    }
+    .body.expanded{
+        transition-duration: 0.5s;
+        height: 420px;
     }
     .searchBar{
         width: 100%;
@@ -24,8 +29,9 @@ html, body{
         position: relative;
         width: 100%;
         border-top: 1px solid #CCC;
-        height: 360px;
-        overflow:none;
+        overflow: hidden;
+        height: 0px;
+        height: calc(100% - 60px);
     }
     .preview,
     .files{
@@ -91,6 +97,9 @@ html, body{
         min-height: 40px;
         border-bottom: 1px solid #CCC;
     }
+    .file.selected{
+        background-color: #EEE;
+    }
     .file .fileIcon{
         box-sizing: border-box;
         float: left;
@@ -140,3 +149,56 @@ html, body{
         line-height: 360px;
         color: #444;
     }
+    
+/*preview*/
+    .preview>div{
+        display: none;
+        height: 100%;
+        width: 100%;
+    }
+    .specificPreviewData>div{
+        display: none;
+        height: 100%;
+        width: 100%;
+    }
+    .specificPreviewData{
+        height: calc(100% - 90px);
+        width: 100%;
+    }
+    .generalPreviewData{
+        height: 90px;
+        width: 100%;
+        padding: 20px;
+        padding-top: 0px;
+    }
+    .generalDataInner{
+        font-size: 12px;
+        border-top: 1px solid #CCC;
+        width: calc(100% - 40px);
+        height: calc(100% - 20px);
+    }
+    /*general data*/
+    .generalDataInner .left{
+        float: left;
+        widtH: 50%;
+    }
+    .generalDataInner .left .path{
+        word-break: break-all;
+    }
+    .generalDataInner .right{
+        float: right;
+        widtH: 50%;
+    }
+    .generalDataInner .right div{
+        text-align: right;
+    }
+    .generalDataInner .right .dateCreated:before{
+        content: "Date Created:  ";
+    }
+    .generalDataInner .right .dateModified:before{
+        content: "Date Modified: ";
+    }
+    .generalDataInner .right .dateAccessed:before{
+        content: "Date Accessed: ";
+    }
+    /*txt previw*/

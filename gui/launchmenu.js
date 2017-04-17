@@ -14,15 +14,33 @@ $(function(){
                 lastQuery = queryText;
             }
          });
+         if(e.key=="ArrowDown" || e.key=="ArrowUp")
+            e.preventDefault();
     });
+    var keyPause = false;
     $(window).keydown(function(e){
         if(e.key=="Escape"){
             if($(".input").val()==""){
-				invokeAction("WindowHide")
+				invokeAction("WindowHide");
 			}else{
 				$(".input").val("");
 				$(".placeHolder").show();
 			}
+        }
+        var n;
+        if(e.key=="ArrowDown") n = $(".file.selected").next(".file")[0];
+        if(e.key=="ArrowUp") n = $(".file.selected").prev(".file")[0];
+        if(n && !keyPause){
+            keyPause = true;
+            setTimeout(function(){keyPause = false;},70);
+            
+            n.select();
+            $(".matches")[0].focus($(n), 200);
+            e.preventDefault();
+        }
+        if(e.key=="Enter"){
+            var n = $(".file.selected")[0];
+            n.launch();
         }
     });
     var matchesHeight = $(".matches").height();
@@ -32,10 +50,10 @@ $(function(){
         scrollListener: function(offset){
             var lc = settings.loadFileCount;
             var loadedFiles = $(".file");
-            if(prevOffset!=offset && loadedFiles.length>0){
+            if(prevOffset!=offset){
                 var phl = $(".filesPlaceholder.lower");
                 var phu = $(".filesPlaceholder.upper");
-                if(Math.abs(prevOffset-offset)<lc*fileHeight){
+                if(Math.abs(prevOffset-offset)<lc*fileHeight && loadedFiles.length>0){
                     var lastFile = loadedFiles.last();
                     var lastOffset = lastFile.position().top-offset-matchesHeight;
                     var firstFile = loadedFiles.first();
@@ -77,16 +95,14 @@ $(function(){
                         }
                     }
                 }else{
-                    phu.height(phu.height()+loadedFiles.length*fileHeight);
                     loadedFiles.remove();
-                    var index =Math.floor(offset/fileHeight)-1;
                     
+                    var index =Math.floor(offset/fileHeight)-1;
                     var newUpperHeight = index*fileHeight;
-                    var upperDelta = newUpperHeight-phu.height();
                     
                     phu.height(newUpperHeight);
-                    phl.height(phl.height()-upperDelta);
-                    //226402
+                    phl.height(totalFilesHeight-newUpperHeight);
+                    
                     for(var i=Math.max(0,index); i<Math.min(index+lc,matchedFiles.length); i++){
                         addMatchedFile(matchedFiles[i], i);
                         phl.height(phl.height()-fileHeight);
@@ -94,30 +110,23 @@ $(function(){
                 }
                 prevOffset = offset;
             }
+            disableMouseMove = true;
         }
     });
      
     initTemplates(".file");
 });
 
-function invokeAction(action, callback){
-    var ipc = require('electron').ipcRenderer;
-    if(callback) ipc.once('actionReply', callback);
-    ipc.send('invokeAction',action);
-}
-
-function windowSetSize(size){
-    var ipc = require('electron').ipcRenderer;
-    ipc.send('windowSetSize',size);
-}
-
 var fileHeight = 41;
 
+var disableMouseMove = false;
 var matchedFiles = [];
 var searchHighlightRegex;
+var totalFilesHeight = 0;
 function search(text){
+    if(!$(".body").is(".expanded")) $(".body").addClass("expanded");
+    
     $(".file").remove();
-    $(".filesPlaceholder").height(0);
     $(".matches").scrollbar("reset");
     
     {
@@ -150,8 +159,12 @@ function search(text){
     
     if(text.length>0){
         matchedFiles = query(tree, text);
-    }else
+        $(".filesPlaceholder").height(0);
+    }else{
         matchedFiles = [];
+        if($(".body").is(".expanded")) $(".body").removeClass("expanded");
+    }
+    totalFilesHeight = matchedFiles.length*fileHeight;
     
     if(matchedFiles.length>0){
         $(".noFileMessage").hide();
@@ -168,7 +181,7 @@ function search(text){
             }
             resultMap.push({path:path, result:result});
         }
-    
+        
         var startDir;
         outer: for(var n=0;n<300;n++){
             var dir = resultMap[0].path[n];
@@ -197,6 +210,8 @@ function search(text){
         var filesLeft = matchedFiles.length-settings.loadFileCount;
         $(".filesPlaceholder.lower").height(Math.max(0, fileHeight*filesLeft));
         
+        var n = $(".file")[0];
+        if(n) n.select();
     }else{ 
         if(text.length>0){
             $(".noFileMessage").show();
@@ -241,5 +256,22 @@ function addMatchedFile(matchedFile, index, before){
         }
     }
     fileEl.find(".filePath").text(path);
+    
+    fileEl[0].launch = function(){
+        console.log(name);
+    }
+    fileEl[0].select = function(){
+        if(!$(this).is(".selected")){
+            $(".file.selected").removeClass("selected");
+            $(this).addClass("selected");
+        }
+    };
+    fileEl.click(fileEl[0].launch);
+    fileEl.mousemove(function(){
+        if(!disableMouseMove)
+            fileEl[0].select();
+        disableMouseMove = false;
+    });
+    
     return fileEl;
 }

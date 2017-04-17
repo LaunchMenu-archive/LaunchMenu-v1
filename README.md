@@ -36,15 +36,15 @@ git pull origin master
 * [X] FuzzySearch to handle tree type.
 * [X] File searching display
 * [X] Search highlighting.
+* [X] Scrolling beyond the current range.
+* [X] File navigation with arrows and mouse
 * [ ] FileList includes zip folders.
 * [ ] Implement myFile.LMPreview HTML crap.
 * [ ] Implement myFile.LMMenu json files for custom menu actions.
 * [ ] Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff.
 * [ ] Javascript custom actions - Maybe use require('eval')(theJSCode).
-* [ ] Create a windows messages API for use by other developers in other programming languages.
+* [ ] Create a windows messages API for use by other developers in other programming languages. Some actions: LaunchTerm(someTerm), UnregisterKeybind() and RegisterKeybind() {devs may need use of cmd/win+space for other stuff}, getMatches(searchTerm)...
 * [ ] Settings menu.
-* [ ] Scrolling beyond the current range.
-* [ ] File navigation with arrows and mouse
 * [ ] File preview
 * [ ] File symbols in list
 * [ ] Custom themes

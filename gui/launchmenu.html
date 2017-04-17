@@ -21,6 +21,7 @@
 		<script type="text/javascript" src="../js/query.js"></script>
 		<script type="text/javascript" src="../js/tree.js"></script>
 		<script type="text/javascript" src="../js/templateBuilder.js"></script>
+		<script type="text/javascript" src="../js/serverCommunication.js"></script>
 		
 		<!--< END SCRIPT IMPORT >-->
 		<script>if (window.module) module = window.module;</script>
@@ -28,100 +29,6 @@
 		<script type="text/javascript" src="launchmenu.js"></script>
 		<link rel="stylesheet" href="launchmenu.css" type="text/css" />
 		<link rel="stylesheet" href="icons.css" type="text/css" />
-		<style>
-			/* Dropdown Content (Hidden by Default) */
-			.dropdown-content {
-				display: block;
-				position: absolute;
-				background-color: #f9f9f9;
-				min-width: 630px;
-				/*box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);*/
-				z-index: 1;
-			}
-			
-			/* Links inside the dropdown */
-			.fable{
-				color: black;
-				padding: 12px 16px;
-				text-decoration: none;
-				display: block;
-				outline: none;
-			}
-			
-			/* Change color of dropdown links on hover */
-			.fable.selected{
-				background-color: #f1f1f1;
-				outline: none;
-			}
-			
-			/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
-			.show {display:block;}
-		</style>
-		<script>
-			/*
-			// Init with focus first
-			var selected;
-			var elements;
-			window.onload = function(){
-				elements = [].slice.call(document.getElementsByClassName("fable")); //find nodelist with class fable, then convert to regular array
-				for(var i=0; i<elements.length; i++){
-					var element = elements[i];
-					element.select = function(){
-						if(selected!=this){
-							if(selected) selected.classList.remove("selected");
-							this.classList.add("selected");
-							selected = this;
-						}
-					}
-					element.addEventListener("mouseover", function(){
-						this.select();
-					});
-				}
-				elements[0].select();
-			}
-			
-			document.onkeydown = keyHandler;
-			//onkeypress; onkeydown; onkeyup
-			function keyHandler(){
-				//console.log(event)
-				if(event.key=="ArrowDown"){
-					focusNext()
-				}
-				if(event.key=="ArrowUp"){
-					focusPrevious()
-				}
-				
-			}
-			
-			function focusNext(){
-				var index = elements.indexOf(selected)+1;
-				if(index<0) index = 0;
-				if(index>=elements.length) index=elements.length-1
-				elements[index].select();
-			}
-			function focusPrevious(){
-				var index = elements.indexOf(selected)-1;
-				if(index<0) index = 0;
-				if(index>=elements.length) index=elements.length-1
-				elements[index].select();
-			}
-			function dictionarySearch(searchCriteria){
-				document.getElementsByClassName('dropdown-content')[0].children().map(function(e){
-					e.remove();
-				})
-				
-				//Convert dictionary to searchable array
-				var ret = fuzzySearch(window.gDict,searchCriteria)
-				for(var el in ret){
-					var node = document.createElement("a");
-					node.id = el
-					node.innerHTML = ret[el]
-						
-				}
-				
-			}
-			*/
-		</script>
 	</head>
 	<body>
 		<Div class=body>
@@ -156,16 +63,31 @@
 					</div>
 				</div>
 				<div class=preview>
-					
+					<div class=customPreview>
+					</div>
+					<div class=defaultPreview style=display:block>
+						<div class=specificPreviewData>
+							<div class=txt>
+							</div>
+							<div class=png>
+							</div>
+						</div>
+						<div class=generalPreviewData>
+							<Div class=generalDataInner>
+								<div class=left>
+									<div class=path>C:\Users\TheGunMaster\Documents\Projects\Programming\Antikythera Mechanism, LD 36\code\</div>
+									<div class=size>30mB</div>
+								</div>
+								<div class=right>
+									<div class=dateCreated>18-4-2017 0:38</div>
+									<div class=dateModified>18-4-2017 0:38</div>
+									<div class=dateAccessed>18-4-2017 0:38</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
-		<!--<div class="dropdown">-->
-		<!--	<div id="myDropdown" class="dropdown-content">-->
-		<!--		<a id=1 tabindex=0 class="fable" href="#1">Link 1</a>-->
-		<!--		<a id=2 tabindex=0 class="fable" href="#2">Link 2</a>-->
-		<!--		<a id=3 tabindex=0 class="fable" href="#3">Link 3</a>-->
-		<!--	</div>-->
-		<!--</div>-->
 	</body>
 </html>
