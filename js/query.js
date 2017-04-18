@@ -1,4 +1,4 @@
-/*global settings regexEscape tree quicksort*/
+/*global settings regexEscape tree Quicksort*/
 var alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
 function sortMatches(matches){
     var max = settings.maxResults;

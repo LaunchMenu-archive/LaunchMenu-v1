@@ -1,4 +1,4 @@
-# LaunchMenu AHK
+# LaunchMenu
 
 ## Description:
 
