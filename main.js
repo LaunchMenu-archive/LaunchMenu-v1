@@ -143,7 +143,7 @@ var ipc = require('electron').ipcMain;
  */
  
 ipc.on('invokeAction', function(event, data){
-	var replyChannel = 'actionReply'
+	var replyChannel = data.uid
     var result = (function(data){
 		switch(data.action) {
     		case "WindowHide":
@@ -166,8 +166,10 @@ ipc.on('invokeAction', function(event, data){
         		return
 			case "ExecuteFile":
 				return 
-			case "WriteIni": //Writes some initialisation settings to the ini file
-				return //WriteIni(IniObject)
+			case "ReadIniFile":
+				return //ReadIniFile()
+			case "WriteIniFile": //Writes some initialisation settings to the ini file
+				return //WriteIniFile(IniObject)
     		default:
     			return
 		}

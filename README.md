@@ -42,6 +42,7 @@ git pull origin master
 * [ ] {30%} File preview
 * [ ] {10%} Implement myFile.LMPreview HTML crap.
 * [ ] {25%} Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff.
+* [ ] Server client communication file.
 * [ ] Preview non image formats and stuff - https://github.com/maxlabelle/filepreview
 * [ ] Settings menu.
 * [ ] FileList includes zip folders.
@@ -51,4 +52,9 @@ git pull origin master
 * [ ] Javascript custom actions - Maybe use require('eval')(theJSCode).
 * [ ] Create a windows messages API for use by other developers in other programming languages. Some actions: LaunchTerm(someTerm), UnregisterKeybind() and RegisterKeybind() {devs may need use of cmd/win+space for other stuff}, getMatches(searchTerm)...
 * [ ] Explore Capability of making LaunchMenu a Mac - Scriptable App: https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptX/Concepts/scriptable_apps.html
-* [ ]
+* [ ] Ability to search for folders
+* [ ] Ability to search in selected folders (use '/' or '\' prefix '\myAmazingFolder' )
+* [ ] Ability to search in the contents of files.
+* [ ] Ability to search for files using regex.
+* [ ] Deprecate .LMP & .LMM files. Move to .LMF (Launch Menu Format). These files will store the preview and all assosciated files with that file.
+* [ ] 

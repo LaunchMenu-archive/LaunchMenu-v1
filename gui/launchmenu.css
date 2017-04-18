@@ -174,31 +174,34 @@ html, body{
     .generalDataInner{
         font-size: 12px;
         border-top: 1px solid #CCC;
+        padding-top:8px;
         width: calc(100% - 40px);
         height: calc(100% - 20px);
     }
     /*general data*/
+    .generalDataInner .dataLabel{
+        text-align:left;
+        display: inline-block;
+        width: 70px;
+    }
+    .generalDataInner .dataValue{
+        display: inline-block;
+    }
     .generalDataInner .left{
         float: left;
         widtH: 50%;
-    }
-    .generalDataInner .left .path{
-        word-break: break-all;
     }
     .generalDataInner .right{
         float: right;
         widtH: 50%;
     }
-    .generalDataInner .right div{
+    .generalDataInner .right{
         text-align: right;
     }
-    .generalDataInner .right .dateCreated:before{
-        content: "Date Created:  ";
+    .generalDataInner .right .dataValue{
+        width: 90px;
     }
-    .generalDataInner .right .dateModified:before{
-        content: "Date Modified: ";
-    }
-    .generalDataInner .right .dateAccessed:before{
-        content: "Date Accessed: ";
+    .generalDataInner .path{
+        padding-top: 8px;
     }
     /*txt previw*/

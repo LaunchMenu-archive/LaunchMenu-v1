@@ -1,9 +1,10 @@
-/*global settings regexEscape tree*/
+/*global settings regexEscape tree quicksort*/
 var alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
 function sortMatches(matches){
-    return matches.sort(function(a,b){
-        var dScore = b.score-a.score;
-        if(dScore!=0) return dScore;
+    var max = settings.maxResults;
+    return Quicksort.sort(matches, function(a,b){
+        var dScore = a.score-b.score;
+        if(dScore!=0) return dScore>0;
         
         //alphabetical order
         var nameA = tree.fullName(a.file);
@@ -13,16 +14,16 @@ function sortMatches(matches){
                 var aIndex = alphabet.indexOf(nameA[i]);
                 var bIndex = alphabet.indexOf(nameB[i]);
                 if(aIndex!=-1 && bIndex!=-1){
-                    return aIndex-bIndex;
+                    return aIndex<bIndex;
                 }else if(aIndex!=-1){
-                    return 1;
+                    return true;
                 }else if(bIndex!=-1){
-                    return -1;
+                    return false;
                 }
             }
         }
-        return 0;
-    });
+        return false;
+    }, max).slice(0, Math.min(matches.length,max));
 }
 
 

@@ -10,7 +10,9 @@ $(function(){
                 $(".placeHolder").show();
             }
             if(queryText!=lastQuery){
-                search(queryText);
+                setTimeout(function(){
+                    search(queryText);
+                });
                 lastQuery = queryText;
             }
          });
