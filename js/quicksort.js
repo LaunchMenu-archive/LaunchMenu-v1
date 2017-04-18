@@ -20,6 +20,8 @@ var Quicksort = (function(){
      * @param {int} pivot The index of the pivot
      * @param {int} left The index of the leftmost element
      * @param {int} left The index of the rightmost element
+     * (added by lm)
+     * @param {function} func The function to base the sorting on
      */
     function partition(array, pivot, left, right, func) {
         var storeIndex = left,
@@ -52,6 +54,10 @@ var Quicksort = (function(){
      * @param {Array} array The target array
      * @param {int} left The index of the leftmost element, defaults 0
      * @param {int} left The index of the rightmost element, defaults array.length-1
+     * 
+     * (added by lm)
+     * @param {int} number The amount of top items to search for
+     * @param {function} func The function to base the sorting on
      */
     function sort(array, left, right, number, func) {
 
@@ -77,9 +83,17 @@ var Quicksort = (function(){
     }
 
     return {
-        sort: function(data, func, number){
-            sort(data, 0, data.length-1, number||data.length, func||function(a,b){return a>b});
-            return data;
+        /**
+         * (modified by lm)
+         * Sorts the array 
+         *
+         * @param {Array} array The array to sort
+         * @param {function} func The function to base the sorting on
+         * @param {int} number The amount of top items to search for
+         */
+        sort: function(array, func, number){
+            sort(array, 0, array.length-1, number||array.length, func||function(a,b){return a>b});
+            return array;
         }
     };
 })();

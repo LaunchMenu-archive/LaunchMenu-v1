@@ -1,10 +1,23 @@
-function invokeAction(action,data,callback){
-    var ipc = require('electron').ipcRenderer;
-    if(callback) ipc.once('actionReply',callback)
-    ipc.send('windowSetSize',data);
-}
 
-function actions(){(function(){
+
+
+// function invokeAction(action,data,callback){
+//     var ipc = require('electron').ipcRenderer;
+//     if(callback) ipc.once('actionReply',callback)
+//     ipc.send('windowSetSize',data);
+// }
+
+/**
+ * Actions Object
+ * 
+ * This object is specifically designed for sending standard
+ * launchmenu commands to with the nodejs server.
+ * 
+ * This is NOT a general scripting API and is strictly for
+ * core implementations.
+ * 
+ */
+function Actions(){(function(){
     var _ipc = require('electron').ipcRenderer;
     
     //Generate GUID
@@ -62,3 +75,5 @@ function actions(){(function(){
     }
     return api
 })()}
+
+var Actions = new Actions()
