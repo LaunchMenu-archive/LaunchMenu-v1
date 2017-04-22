@@ -1,6 +1,6 @@
-/*global $ initTemplates loadTemplate tree query settings Directory regexEscape*/
+/*global $ initTemplates loadTemplate tree Querier Settings Directory regexEscape*/
+var lastQuery = "";
 $(function(){
-    var lastQuery = "";
     $(".input").keydown(function(e){
          setTimeout(function(){
             var queryText = $(".input").val();
@@ -50,7 +50,7 @@ $(function(){
     $(".matches").scrollbar({
         verticalMargin:{top:5,bottom:5},
         scrollListener: function(offset){
-            var lc = settings.loadFileCount;
+            var lc = Settings.loadFileCount;
             var loadedFiles = $(".file");
             if(prevOffset!=offset){
                 var phl = $(".filesPlaceholder.lower");
@@ -81,6 +81,7 @@ $(function(){
                         //load more files when reaching the end
                         if(lastOffset<20){
                             var lastIndex = Number(lastFile.attr("ID"))+1;
+                            Querier.prepare(Querier.extractRequirements(lastQuery));
                             for(var i=lastIndex; i<Math.min(lastIndex+lc,matchedFiles.length); i++){
                                 addMatchedFile(matchedFiles[i], i);
                                 phl.height(phl.height()-fileHeight);
@@ -105,6 +106,7 @@ $(function(){
                     phu.height(newUpperHeight);
                     phl.height(totalFilesHeight-newUpperHeight);
                     
+                    Querier.prepare(Querier.extractRequirements(lastQuery));
                     for(var i=Math.max(0,index); i<Math.min(index+lc,matchedFiles.length); i++){
                         addMatchedFile(matchedFiles[i], i);
                         phl.height(phl.height()-fileHeight);
@@ -123,44 +125,25 @@ var fileHeight = 41;
 
 var disableMouseMove = false;
 var matchedFiles = [];
-var searchHighlightRegex;
 var totalFilesHeight = 0;
 function search(text){
     if(!$(".body").is(".expanded")) $(".body").addClass("expanded");
     
-    $(".file").remove();
     $(".matches").scrollbar("reset");
+    $(".file").remove();
     
-    {
-        searchHighlightRegex = "^(()";
-        var lowerText = text.toLowerCase();
-        //setup a acronym match query
-        for(i=0;i<lowerText.length;i++){
-            var escChar = regexEscape(lowerText[i]);
-            searchHighlightRegex += "("+escChar.toUpperCase()+(i==0?"|"+escChar:"")+")(.*)";
+    var error;
+    if(text.length>Settings.minimalSearchLength){
+        if(/\/(.+)\/(\w*)/.test(text))
+            matchedFiles = Querier.regexQuery(text, tree);
+        else
+            matchedFiles = Querier.query(text, tree);
+        if(!(matchedFiles instanceof Array)){
+            error = matchedFiles;
+            matchedFiles = [];
+        }else{
+            matchedFiles = Querier.sortMatches(matchedFiles);
         }
-        searchHighlightRegex +="|";
-        //setup a literal match query
-        var queryWords = lowerText.split(" ");
-        for(var i=0;i<queryWords.length;i++){
-            var word = regexEscape(queryWords[i]);
-            var insensitiveWord = "";
-            for(var i2=0; i2<word.length; i2++)
-                insensitiveWord+="["+word[i2]+word[i2].toUpperCase()+"]";
-            searchHighlightRegex += "(.*?"+(i>0?" .*?":"")+")("+insensitiveWord+")";
-        }
-        searchHighlightRegex +="(.*)|";
-        //setup a similar match query
-        for(i=0;i<lowerText.length;i++){
-            var escChar = regexEscape(lowerText[i]);
-            searchHighlightRegex += (i==0?"(.*)":"([^"+escChar+"]*)")+"(["+escChar+escChar.toUpperCase()+"])";
-        }
-        searchHighlightRegex +="(.*))";
-        searchHighlightRegex = new RegExp(searchHighlightRegex);
-    }
-    
-    if(text.length>0){
-        matchedFiles = query(tree, text);
         $(".filesPlaceholder").height(0);
     }else{
         matchedFiles = [];
@@ -168,8 +151,8 @@ function search(text){
     }
     totalFilesHeight = matchedFiles.length*fileHeight;
     
+    $(".noFileMessage,.regexErrorMessage").hide();
     if(matchedFiles.length>0){
-        $(".noFileMessage").hide();
         
         var resultMap = [];
         for(var i=0; i<matchedFiles.length; i++){
@@ -206,17 +189,23 @@ function search(text){
         }
         
         //add files and such
-        for(var i=0; i<Math.min(settings.loadFileCount,matchedFiles.length); i++){
+        Querier.prepare(Querier.extractRequirements(lastQuery));
+        for(var i=0; i<Math.min(Settings.loadFileCount,matchedFiles.length); i++){
             addMatchedFile(matchedFiles[i], i);
         }
-        var filesLeft = matchedFiles.length-settings.loadFileCount;
+        var filesLeft = matchedFiles.length-Settings.loadFileCount;
         $(".filesPlaceholder.lower").height(Math.max(0, fileHeight*filesLeft));
         
         var n = $(".file")[0];
         if(n) n.select();
     }else{ 
         if(text.length>0){
-            $(".noFileMessage").show();
+            if(error){
+                $(".regexErrorMessage .regexError").text(error.message);
+                $(".regexErrorMessage").show();
+            }else{
+                $(".noFileMessage").show();
+            }
         }
         $(".rootPathText").text("");
     }
@@ -228,23 +217,9 @@ function addMatchedFile(matchedFile, index, before){
     var fileEl = loadTemplate(".file", null, before);
     fileEl.attr("ID",index);
     var file = matchedFile.file;
+    fileEl.data("file", file);
     
-    var name = file.e?file.n+"."+file.e:file.n;
-    var match = searchHighlightRegex.exec(name);
-    if(match){
-        var opened = true;
-        var index = 0;
-        for(var i=2; i<match.length; i++){
-            var m = match[i];
-            if(m!==undefined){
-                opened = !opened;
-                var tag = opened?"<span>":"</span>";
-                name = name.substring(0,index)+tag+name.substring(index);
-                index+=tag.length+m.length;
-            }
-        }
-    }
-    name = name.replace("</span>","");
+    var name = matchedFile.match.type.highlight(tree.fullName(file), "lm");
     
     
     fileEl.find(".fileName").html(name);

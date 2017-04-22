@@ -2,11 +2,11 @@ html, body{
     margin: 0px;
 }
 
-.template{
+.lm.template{
     display: none;
 }
 /*main three areas divider*/
-    .body{
+    .lm.body{
         background-color: white;
         border: 1px solid #CCC;
         box-shadow: 0px 12px 26px 4px black;
@@ -17,15 +17,15 @@ html, body{
         transition-duration: 0.5s;
         height:60px;
     }
-    .body.expanded{
+    .lm.body.expanded{
         transition-duration: 0.5s;
         height: 420px;
     }
-    .searchBar{
+    .lm.searchBar{
         width: 100%;
         height: 60px;
     }
-    .results{
+    .lm.results{
         position: relative;
         width: 100%;
         border-top: 1px solid #CCC;
@@ -33,14 +33,14 @@ html, body{
         height: 0px;
         height: calc(100% - 60px);
     }
-    .preview,
-    .files{
+    .lm.preview,
+    .lm.files{
         position:absolute;
         height: 360px;
         bottom:0px;
         width: 270px;
     }
-    .preview{
+    .lm.preview{
         right:0px;
         border-left: 1px solid #CCC;
         width: calc(100% - 270px);
@@ -48,26 +48,26 @@ html, body{
     }
 
 /*searchbar*/
-    .searchBar{
+    .lm.searchBar{
         color: #999;
     }
-    .icon:before{
+    .lm.icon:before{
         line-height: 60px;
     }
-    .icon{
+    .lm.icon{
         float: left;
         font-size: 40px;
         text-align: center;
         width: 60px;
         height: 60px;
     }
-    .searchInput{
+    .lm.searchInput{
         float: left;
         position:relative;
         width: calc(100% - 120px);
         height: 100%;
     }
-    .placeHolder{
+    .lm.placeHolder{
         padding-left:10px;
         font-size: 30px;
         position:absolute;
@@ -77,7 +77,7 @@ html, body{
         width:100%;
         height:100%;
     }
-    .input{
+    .lm.input{
         padding-left:10px;
         font-size: 30px;
         position:relative;
@@ -89,42 +89,42 @@ html, body{
     }
     
 /*files*/
-    .matches{
+    .lm.matches{
         height: 100%;
     }
     
-    .file{
+    .lm.file{
         min-height: 40px;
         border-bottom: 1px solid #CCC;
     }
-    .file.selected{
+    .lm.file.selected{
         background-color: #EEE;
     }
-    .file .fileIcon{
+    .file .lm.fileIcon{
         box-sizing: border-box;
         float: left;
         width: 40px;
         height: 40px;
         padding: 3px;
     }
-    .file .fileIcon img{
+    .file .lm.fileIcon img{
         width: 100%;
         height: 100%;
     }
-    .file .fileData{
+    .file .lm.fileData{
         float: left;
         width: calc(100% - 40px);
     }
-    .file .fileData .fileName{
+    .file .fileData .lm.fileName{
         word-wrap: break-word;
         padding: 5px;
         padding-bottom: 0px;
     }
-    .file .fileData .fileName span{
+    .file .fileData .fileName span.lm{
         background-color: #6be1ff;
         border-radius: 2px;
     }
-    .file .fileData .filePath{
+    .file .fileData .lm.filePath{
         word-break: break-word;
         padding-right: 5px;
         color: #AAA;
@@ -132,46 +132,56 @@ html, body{
         text-align: right;
     }
     
-    .rootPath{
+    .lm.rootPath{
         word-break: break-word;
         background-color: #F3F3F3;
         color: #AAA;
         font-size: 12px;
         border-bottom: 1px solid #CCC;
     }
-    .noFileMessage{
+    .lm.regexErrorMessage,
+    .lm.noFileMessage{
         position:absolute;
         left: 0px;
         top: 0px;
         width: 100%;
         height: 100%;
         text-align: center;
-        line-height: 360px;
+        vertical-align: center;
+        display: table;
         color: #444;
     }
-    
+    .regexErrorMessage span.lm,
+    .noFileMessage span.lm{
+        display: table-cell;
+        vertical-align: middle;
+    }
+    .lm.regexError{
+        color: red;
+    }
 /*preview*/
-    .preview>div{
+    .specificPreviewData>div.lm{
         display: none;
         height: 100%;
         width: 100%;
     }
-    .specificPreviewData>div{
-        display: none;
-        height: 100%;
-        width: 100%;
-    }
-    .specificPreviewData{
+    .lm.specificPreviewData{
         height: calc(100% - 90px);
         width: 100%;
     }
-    .generalPreviewData{
+    .lm.generalPreviewData{
         height: 90px;
         width: 100%;
         padding: 20px;
         padding-top: 0px;
     }
-    .generalDataInner{
+    .preview.full .lm.specificPreviewData{
+        height: 100%;
+    }
+    .preview.full .lm.generalPreviewData{
+        display: none;
+    }
+    .lm.generalDataInner{
         font-size: 12px;
         border-top: 1px solid #CCC;
         padding-top:8px;
@@ -179,29 +189,30 @@ html, body{
         height: calc(100% - 20px);
     }
     /*general data*/
-    .generalDataInner .dataLabel{
+    .generalDataInner .lm.dataLabel{
         text-align:left;
         display: inline-block;
         width: 70px;
     }
-    .generalDataInner .dataValue{
+    .generalDataInner .lm.dataValue{
         display: inline-block;
     }
-    .generalDataInner .left{
+    .generalDataInner .lm.left{
         float: left;
         widtH: 50%;
     }
-    .generalDataInner .right{
+    .generalDataInner .lm.right{
         float: right;
         widtH: 50%;
     }
-    .generalDataInner .right{
+    .generalDataInner .lm.right{
         text-align: right;
     }
-    .generalDataInner .right .dataValue{
+    .generalDataInner .right .lm.dataValue{
         width: 90px;
     }
-    .generalDataInner .path{
+    .generalDataInner .lm.path{
         padding-top: 8px;
+        text-align: center;
     }
     /*txt previw*/

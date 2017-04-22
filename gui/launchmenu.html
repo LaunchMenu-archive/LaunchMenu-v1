@@ -4,7 +4,7 @@
 		<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 		
 		<!--< Libraries >-->
-		<script type="text/javascript" src="../lib/Jquery.js"></script>
+		<script type="text/javascript" src="../lib/jQuery.js"></script>
 		<script type="text/javascript" src="../lib/scrollbar.js"></script>
 		
 		<!--< Dev Libraries >-->
@@ -22,6 +22,7 @@
 		<script type="text/javascript" src="../js/query.js"></script>
 		<script type="text/javascript" src="../js/tree.js"></script>
 		<script type="text/javascript" src="../js/templateBuilder.js"></script>
+		<script type="text/javascript" src="../js/preview.js"></script>
 		<script type="text/javascript" src="../js/serverCommunication.js"></script>
 		
 		<!--< END SCRIPT IMPORT >-->
@@ -32,72 +33,74 @@
 		<link rel="stylesheet" href="icons.css" type="text/css" />
 	</head>
 	<body>
-		<Div class=body>
-			<div class=searchBar>
-				<div class="icon icon-search"></div>
-				<div class=searchInput>
-					<div class=placeHolder>Search...</div>
-					<input type=field class=input>
+		<Div class='lm body'>
+			<div class='lm searchBar'>
+				<div class="lm icon icon-search"></div>
+				<div class='lm searchInput'>
+					<div class='lm placeHolder'>Search...</div>
+					<input type=field class='lm input'>
 				</div>
 			</div>
-			<div class=results>
-				<div class=files>
-					<div class=rootPath>
-						<div class=rootPathText></div>
+			<div class='lm results'>
+				<div class='lm files'>
+					<div class='lm rootPath'>
+						<div class='lm rootPathText'></div>
 					</div>
-					<div class=noFileMessage style=display:none>
-						No files could be found Mother Fucker.
+					<div class='lm noFileMessage' style=display:none>
+						<span class='lm'>
+							No files could be found Mother Fucker.
+						</span>
 					</div>
-					<div class=matches>
-						<div class='upper filesPlaceholder'></div>
-						<div class='file template'>
-							<div class=fileIcon>
-								<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT48NWIxlFg8U3dtHYji6Y_FKp2WeeNnptzHbQw0ljkeRcHaY0Gf18VBhXFpA">
+					<div class='lm regexErrorMessage' style=display:none>
+						<span class='lm'>
+							No files could be found Mother Fucker.
+							<div class='lm regexError'>
+								
 							</div>
-							<div class=fileData>
-								<div class=fileName></div>
-								<div class=filePath></div>
+						</span>
+					</div>
+					<div class='lm matches'>
+						<div class='lm upper filesPlaceholder'></div>
+						<div class='lm file template'>
+							<div class='lm fileIcon'>
+								<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT48NWIxlFg8U3dtHYji6Y_FKp2WeeNnptzHbQw0ljkeRcHaY0Gf18VBhXFpA" class='lm'>
+							</div>
+							<div class='lm fileData'>
+								<div class='lm fileName'></div>
+								<div class='lm filePath'></div>
 							</div>
 							<br style=clear:both>
 						</div>
-						<div class='lower filesPlaceholder'></div>
+						<div class='lm lower filesPlaceholder'></div>
 					</div>
 				</div>
-				<div class=preview>
-					<div class=customPreview>
+				<div class='lm preview'>
+					<div class='lm specificPreviewData'>
 					</div>
-					<div class=defaultPreview style=display:block>
-						<div class=specificPreviewData>
-							<div class=txt>
-							</div>
-							<div class=png>
-							</div>
-						</div>
-						<div class=generalPreviewData>
-							<Div class=generalDataInner>
-								<div class=left>
-									<div class=dateCreated>
-										<div class=dataLabel>Date created:</div>
-										<div class=dataValue>18-4-2017 0:38</div>
-									</div>
-									<div class=size>
-										<div class=dataLabel>File size:</div>
-										<div class=dataValue>30Mb</div>
-									</div>
+					<div class='lm generalPreviewData'>
+						<Div class='lm generalDataInner'>
+							<div class='lm left'>
+								<div class='lm dateCreated'>
+									<div class='lm dataLabel'>Date created:</div>
+									<div class='lm dataValue'>18-4-2017 0:38</div>
 								</div>
-								<div class=right>
-									<div class=dateModified>
-										<div class=dataLabel>Date modified:</div>
-										<div class=dataValue>18-4-2017 0:38</div>
-									</div>
-									<div class=dateAccessed>
-										<div class=dataLabel>Date accessed:</div>
-										<div class=dataValue>18-4-2017 0:38</div>
-									</div>
+								<div class='lm size'>
+									<div class='lm dataLabel'>File size:</div>
+									<div class='lm dataValue'>30Mb</div>
 								</div>
-								<br style=clear:both>
-								<div class=path>C:\<wbr>Users\<wbr>TheGunMaster\<wbr>Documents\<wbr>Projects\<wbr>Programming\<wbr>Antikythera Mechanism, LD 36\<wbr>code\</div>
 							</div>
+							<div class='lm right'>
+								<div class='lm dateModified'>
+									<div class='lm dataLabel'>Date modified:</div>
+									<div class='lm dataValue'>18-4-2017 0:38</div>
+								</div>
+								<div class='lm dateAccessed'>
+									<div class='lm dataLabel'>Date accessed:</div>
+									<div class='lm dataValue'>18-4-2017 0:38</div>
+								</div>
+							</div>
+							<br style=clear:both>
+							<div class='lm path'>C:\<wbr>Users\<wbr>TheGunMaster\<wbr>Documents\<wbr>Projects\<wbr>Programming\<wbr>Antikythera Mechanism, LD 36\<wbr>code\</div>
 						</div>
 					</div>
 				</div>

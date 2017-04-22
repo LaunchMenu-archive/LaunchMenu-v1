@@ -40,13 +40,13 @@ git pull origin master
 * [X] File navigation with arrows and mouse
 * [X] Animated window expanding/contracting
 * [ ] {30%} File preview
-* [ ] {10%} Implement myFile.LMPreview HTML crap.
+* [ ] {10%} Implement myFile.lmf HTML preview.
 * [ ] {25%} Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff.
+* [ ] {10%} File icons/symbols in list of matches
 * [ ] Server client communication file.
 * [ ] Preview non image formats and stuff - https://github.com/maxlabelle/filepreview
 * [ ] Settings menu.
 * [ ] FileList includes zip folders.
-* [ ] File icons/symbols in list of matches
 * [ ] Custom themes
 * [ ] Implement myFile.LMMenu json files for custom menu actions.
 * [ ] Javascript custom actions - Maybe use require('eval')(theJSCode).
@@ -57,4 +57,22 @@ git pull origin master
 * [ ] Ability to search in the contents of files.
 * [ ] Ability to search for files using regex.
 * [ ] Deprecate .LMP & .LMM files. Move to .LMF (Launch Menu Format). These files will store the preview and all assosciated files with that file.
-* [ ] 
+* [ ] Applets System: ColorPicker, Calculator, Dictionary, Web Search
+* [ ] Add some method to call applets given search term / pattern (js callback)
+* [ ] Add methods to call global applets etc.
+* [ ] Launch Menu Events. Example: Whenever LaunchMenu is activated, run "activated.event.js"
+* [ ] Event system with pre and postevent listeners; for instance for start event
+
+
+Sancarn's todo:
+
+* Test general scrollbar stuff.
+* Test scrollmenu expand/collapse animation - is setSize() called at the moment?
+* Test server communication functions.
+* Test GetActiveWindow Mac functions with npm jxa        [needs fully implementing]
+* Test GetActiveWindow Windows functions with npm ffi    [needs fully implementing]
+* Test Edge-VB.JS (possibly better than keeping an external application) 
+* Write node-js file list generator 
+* Make get icons multi-os compatible - also get larger icons on windows option!
+* General ini-file management.
+* 

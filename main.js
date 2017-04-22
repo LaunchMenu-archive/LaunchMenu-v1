@@ -14,10 +14,7 @@ const {Menu,Tray} = require('electron')
 const {globalShortcut} = require('electron')
 
 //npm install --save electron-localshortcut
-const localShortcut = require('electron-localshortcut');
-
-//Add Jquery
-let $ = require('jquery');
+//const localShortcut = require('electron-localshortcut');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -57,9 +54,6 @@ function createWindow () {
 		// when you should delete the corresponding element.
 		mainWindow = null
 	})
-
-	// Implement JQuery
-	mainWindow.$ = $;
 
 }
 
@@ -141,7 +135,7 @@ var ipc = require('electron').ipcMain;
  * The most important property of the data object is the action property
  * which drives the switch statement.
  */
- 
+
 ipc.on('invokeAction', function(event, data){
 	var replyChannel = data.uid
     var result = (function(data){
@@ -163,10 +157,12 @@ ipc.on('invokeAction', function(event, data){
         			event.sender.send(replyChannel, result);
         		});
         	case "GetOS":
-        		return
+        		return require('os').platform()
 			case "ExecuteFile":
-				return 
+				console.log(data.file)
+				return
 			case "ReadIniFile":
+				console.log('ReadIniFile')
 				return //ReadIniFile()
 			case "WriteIniFile": //Writes some initialisation settings to the ini file
 				return //WriteIniFile(IniObject)
@@ -179,15 +175,15 @@ ipc.on('invokeAction', function(event, data){
 });
 
 function GetPreviewData(filepath, callback){
-	//let data be the filePath 
+	//let data be the filePath
 	var fs = require('fs');
 	var stats = undefined;
 	var content = undefined;
-	var previewPath = filepath + ".lmp"; //launchmenu preview file extension
-	
+	var previewPath = filepath + ".lmf"; //launchmenu preview file extension
+
 	//Get stats of file
-	fs.stat(filepath,function(err,rStats){
-		stats = err ? null : {
+	fs.stat(filepath,function(error,rStats){
+		rStats = "" ? null : {
 			DateCreated: rStats.birthtime,
 			DateModified: rStats.mtime,
 			DateAccessed: rStats.atime,
@@ -195,13 +191,14 @@ function GetPreviewData(filepath, callback){
 		};
 		trySendCallback();
 	});
-	
+
 	//Get contents of .lmp file if it exists
 	fs.readFile(previewPath, 'utf8', function (err,rContent) {
-		content = err ? null : rContent;
+		content = err ? "" : rContent;
+		// if content == "" use some default Template TODO
 		trySendCallback();
 	});
-	
+
 	//If all information gathered, return it.
 	var trySendCallback = function(){
 		if(stats!=undefined && content!=undefined){
@@ -212,10 +209,12 @@ function GetPreviewData(filepath, callback){
 	};
 }
 
+// Usage: Actions.getIconAsync("data\\1.png","data\\1icon.png", function(e){console.log(e)})
+//        Actions.getIconAsync("C:\\Users\\sancarn\\Desktop\\Client.zip","data\\1icon.png", function(e){console.log(e)})
 function GetFileIcon(FileIn, FileOut, callback){
 	//Sends message back to gotIcon.
 	var exec = require('child_process').exec;
-	var cmd = `VB/ExtractIcon.exe "${FileIn}" "${FileOut}"`;
+	var cmd = `"VB\\ExtractIcon.exe" "${FileIn}" "${FileOut}"`;
 	exec(cmd,function(error,stdout,stderr){
 		if(error){
 			console.log("Error in GetFileIcon(): " + error);
@@ -256,8 +255,8 @@ function getCaption(){
 		if(Application('Terminal').frontmost()){
 			return ['Terminal',Application('Terminal').windows[0].name()]
 		}
-		
-	
+
+
 		var otherApps = [];
 		var system = Application('System Events')
 		for (i in system.processes()){
@@ -278,7 +277,7 @@ function getCaption(){
 		//If no process is found to be frontmost, return those processes which don't have attributes
 		return otherApps
 	}
-	
+
 	function getActiveWindowTitle2(){ //This is a bit slower but perhaps more consistent...?
 		const currentApplication = Application('System Events').applicationProcesses.where({
 			frontmost: true

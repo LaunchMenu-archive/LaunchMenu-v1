@@ -1,0 +1,25 @@
+{
+  "name": "electron-quick-start",
+  "version": "1.0.0",
+  "description": "A tool akin to spotlight for Mac. The tool is being designed in NodeJS so it is supported by multiple operating systems. We are also trying to build the tool as general as possible, making it simple enough for ordinary users, yet flexible enough for programmers to customise infinitely.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/sancarn/LaunchMenu-ahk",
+  "keywords": [
+    "Electron",
+    "Launch",
+    "Menu",
+    "start",
+    "spotlight"
+  ],
+  "author": "Sancarn and TheGunMaster",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "~1.6.2"
+  },
+  "dependencies": {
+    "electron-localshortcut": "^1.1.1"
+  }
+}
