@@ -1,0 +1,25 @@
+<body>
+	<script type="text/javascript" src="../lib/jQuery.js"></script>
+    <iframe height=440 width=440 sandbox="allow-same-origin allow-scripts">
+        
+    </iframe>
+    <script>
+        var i= 10;
+        var $iframe = $('iframe');
+        $iframe.ready(function() {
+            $iframe.contents().find("body").append('Test');
+            addIframe($iframe.contents().find("body"));
+        });
+        function addIframe(frame){
+            $iframe = $("<iframe height="+(i*40)+" width="+(i*40)+" sandbox='allow-same-origin allow-scripts'></iframe>");
+            frame.append($iframe);
+            console.log($iframe);
+            $iframe.ready(function(){
+                $iframe.contents().find("body").append('Test');
+                if(i-->0){
+                    addIframe($iframe.contents().find("body"));
+                }
+            });
+        }
+    </script>
+</body>

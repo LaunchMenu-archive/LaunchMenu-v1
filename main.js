@@ -140,32 +140,62 @@ ipc.on('invokeAction', function(event, data){
 	var replyChannel = data.uid
     var result = (function(data){
 		switch(data.action) {
-    		case "WindowHide":
+			// window class
+			case "window.show":
+				return mainWindow.show()
+    		case "window.hide":
 				return mainWindow.hide()
-    		case "SettingsShow":
-        		return
-			case "GetWindowSize":
+			case "window.getSize":
 				return mainWindow.getSize()
-			case "SetWindowSize":
+			case "window.setSize":
 				return mainWindow.setSize(data.width,data.height)
-			case "GetIconAsync":
-				return GetFileIcon(data.FileIn, data.FileOut, function(result){
-					event.sender.send(replyChannel, result);
-				})
-			case "GetPreviewDataAsync":
-        		return GetPreviewData(data.path, function(result){
+				
+			
+			// lm class
+    		case "lm.settingsShow":
+        		return 
+			case "lm.readIniFile":
+				// Instead of using an ini file we will use a JSON file.
+				return readIni(replyChannel)
+			case "lm.writeIniFile":
+				return writeIni(data.ini)
+			
+			
+			// file class
+			case "file.getData":
+				return GetPreviewData(data.path, function(result){
         			event.sender.send(replyChannel, result);
         		});
-        	case "GetOS":
-        		return require('os').platform()
-			case "ExecuteFile":
-				console.log(data.file)
+			case "file.getDates":
 				return
-			case "ReadIniFile":
-				console.log('ReadIniFile')
-				return //ReadIniFile()
-			case "WriteIniFile": //Writes some initialisation settings to the ini file
-				return //WriteIniFile(IniObject)
+	        case 'file.getSize':
+	        	return
+	        case 'file.getPreviewImage':
+	        	return
+	        case 'file.getIcon32':
+	        	return GetFileIcon(data.FileIn, data.FileOut, function(result){
+					event.sender.send(replyChannel, result);
+				})
+	        case 'file.execute':
+	        	console.log(data.file)
+	        	return
+			
+			
+			//fileSystem class
+			case 'fileSystem.getFullFileLists':
+				return
+	        case 'fileSystem.registerFileHook':
+	        	return
+	       	case 'fileSystem.unregisterFileHook': 
+	       		return
+	   		case 'fileSystem.fileExists':
+	   			return
+
+
+		    //system class
+            case 'GetOS':
+            	return require('os').platform()
+			
     		default:
     			return
 		}
@@ -173,6 +203,77 @@ ipc.on('invokeAction', function(event, data){
 	if(result)
     	event.sender.send(replyChannel, result);
 });
+
+var api = {};
+var uid;
+
+	api.window = {
+		show: function(id=1){
+			if(id!=1) return  //Future implementation
+			mainWindow.show();
+		},
+		hide: function(id=1){
+			if(id!=1) return  //Future implementation
+			mainWindow.hide();
+		},
+		getSize: function(){
+			return mainWindow.getSize();
+		},
+		setSize: function(width,height){
+			mainWindow.setSize(width,height);	
+			return [width,height];
+		},
+	};
+
+	api.lm = {
+		settingsShow: function() {
+			
+		},
+		readIni: function(replyChannel){ // returns javascript object
+		var fs = require('fs');
+		var path = require('path');
+		fs.readFile(path.resolve(__dirname, 'ini.json'), 'UTF-8', function (err,content) {
+			event.sender.send(replyChannel, err ? {}: JSON.parse(content));
+		})},
+		
+		writeIni: function(obj,replyChannel){ // returns javascript object
+			var fs = require('fs');
+			var path = require('path');
+			fs.writeFile(path.resolve(__dirname, 'ini.json'), JSON.stringify(obj,null,4), 'UTF-8', function (err,content) {
+				if (replyChannel) event.sender.send(replyChannel, err ? false : true);
+			});
+		}
+	}
+	
+	api.file = {
+		getData: function(path,callback){
+			
+			// returns data (as ascii string)
+        },
+        getData64: function(path,callback){
+			
+			// returns data (as base64 string)
+        },
+        getDates: function(path,callback){
+        	
+            // returns dates = {DateCreated: rStats.birthtime, DateModified: rStats.mtime, DateAccessed: rStats.atime}
+        },
+        getSize: function(path,callback){
+            
+            // returns size (as integer)
+        },
+        getFilePreview: function(path, callback){
+        	
+        	// returns pictureData (as base64 string)
+        },
+    	getIcon32: function (fileIn,callback){
+    		
+            // returns pictureData (as base64 string) [32x32]
+        },
+        execute: function(file,args){
+            
+        },
+	}
 
 function GetPreviewData(filepath, callback){
 	//let data be the filePath

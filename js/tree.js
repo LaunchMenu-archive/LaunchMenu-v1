@@ -5,7 +5,7 @@ function Tree(fileArray){
     //find directory or file based on filepath
     //if create is set to tue, and the file or path doesn't exist, it will be created
     //root defines where to search from, so you can pass a directory if it is a relative path from that directory
-    this.find = function(path, root, create){
+    this.find = function(path, create, root){
         //get sub parts of the path
         var pathParts = path.split("\\");
         
@@ -86,7 +86,7 @@ function Tree(fileArray){
     };
     
     //get full name of directory or file, to be used in a file path for instance
-    this.fullName = function(directory){
+    this.getFullName = function(directory){
         if(directory instanceof File){
             return directory.n+(directory.e?"."+directory.e:"");
         }else if(directory instanceof Directory){
@@ -95,12 +95,12 @@ function Tree(fileArray){
     };
     
     //retrieve the file path of a give directory or file
-    this.toPath = function(directory, startDir){
+    this.getPath = function(directory, startDir){
         var path = "";
         //loop through all directory parents
         while(!(directory instanceof Tree) && directory!=startDir){
             //add the directory name to the file path
-            path = this.fullName(directory)+path;
+            path = this.getFullName(directory)+path;
             //set the directory to be the parent of the current directory
             directory = directory.p;
         }
@@ -126,7 +126,7 @@ function Tree(fileArray){
         for(var i=0; i<fileArray.length; i++){
             var file = fileArray[i];
             //find the file within the tree, and set the create opion to be true
-            this.find(file, null, true);
+            this.find(file, true);
         }
         return this;
     };
@@ -172,28 +172,96 @@ function Tree(fileArray){
         for(var i=0; i<roots.length; i++){
             var root = roots[i];
             //find directory of root, and add to roots
-            this.roots.push(this.find(root, null, true));
+            this.roots.push(this.find(root, true));
         }  
     };
     
     //add the passed files to the tree
     this.convert(fileArray);
 }
-function File(n,p){
-    this.p = p; //parent directory
-    var m = /(.+)[.](.+)/.exec(n); 
-    if(m){
-        this.n = m[1]; //file name
-        this.e = m[2]; //file extension
-    }else{
-        this.n = n;    //file name
-        this.e = "";   //file extension
+
+//File class
+{
+    function File(n,p){
+        this.p = p; //parent directory
+        var m = /(.+)[.](.+)/.exec(n); 
+        if(m){
+            this.n = m[1]; //file name
+            this.e = m[2]; //file extension
+        }else{
+            this.n = n;    //file name
+            this.e = "";   //file extension
+        }
     }
+    File.prototype.__defineGetter__("name", function(){
+        return this.n;
+    });
+    File.prototype.__defineSetter__("name", function(n){
+        this.n = n;
+    });
+    File.prototype.__defineGetter__("parent", function(){
+        return this.p;
+    });
+    File.prototype.__defineSetter__("parent", function(p){
+        this.p = p;
+    });
+    File.prototype.__defineGetter__("extension", function(){
+        return this.e;
+    });
+    File.prototype.__defineSetter__("extension", function(e){
+        this.e = e;
+    });
+    File.prototype.getPath = function(startDir){
+        return tree.getPath(this, startDir);
+    };
+    File.prototype.delete = function(){
+        return tree.delete(this);
+    };
+    File.prototype.getFullName = function(){
+        return this.n+(this.e.length>0?"."+this.e:"");
+    };
 }
-function Directory(n,p){
-    this.p = p; //parent directory
-    this.n = n; //directory name
-    this.c = [];//directory children
+
+//Directory class
+{
+    function Directory(n,p){
+        this.p = p; //parent directory
+        this.n = n; //directory name
+        this.c = [];//directory children
+    }
+    Directory.prototype.__defineGetter__("name", function(){
+        return this.n;
+    });
+    Directory.prototype.__defineSetter__("name", function(n){
+        this.n = n;
+    });
+    Directory.prototype.__defineGetter__("parent", function(){
+        return this.p;
+    });
+    Directory.prototype.__defineSetter__("parent", function(p){
+        this.p = p;
+    });
+    Directory.prototype.__defineGetter__("children", function(){
+        return this.c;
+    });
+    Directory.prototype.__defineSetter__("children", function(c){
+        this.c = c;
+    });
+    Directory.prototype.getPath = function(startDir){
+        return tree.getPath(this, startDir);
+    };
+    Directory.prototype.find = function(path, create){
+        return tree.find(path, create, this);
+    };
+    Directory.prototype.each = function(fileFunc, dirFunc, maxDepth){
+        return tree.each(fileFunc, dirFunc, maxDepth);
+    };
+    Directory.prototype.delete = function(){
+        return tree.delete(this);
+    };
+    Directory.prototype.getFullName = function(){
+        return this.n+"\\";
+    };
 }
 
 /*global dirs files*/

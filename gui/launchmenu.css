@@ -1,12 +1,12 @@
-html, body{
+html, body._LM_{
     margin: 0px;
 }
 
-.lm.template{
+.template._LM_{
     display: none;
 }
 /*main three areas divider*/
-    .lm.body{
+    .body._LM_{
         background-color: white;
         border: 1px solid #CCC;
         box-shadow: 0px 12px 26px 4px black;
@@ -17,15 +17,15 @@ html, body{
         transition-duration: 0.5s;
         height:60px;
     }
-    .lm.body.expanded{
+    .body.expanded._LM_{
         transition-duration: 0.5s;
         height: 420px;
     }
-    .lm.searchBar{
+    .searchBar._LM_{
         width: 100%;
         height: 60px;
     }
-    .lm.results{
+    .results._LM_{
         position: relative;
         width: 100%;
         border-top: 1px solid #CCC;
@@ -33,41 +33,54 @@ html, body{
         height: 0px;
         height: calc(100% - 60px);
     }
-    .lm.preview,
-    .lm.files{
+    
+    
+    .preview._LM_,
+    .menu._LM_{
         position:absolute;
         height: 360px;
         bottom:0px;
         width: 270px;
+        transition: width 0.5s;
+        overflow: hidden;
     }
-    .lm.preview{
+    .preview._LM_{
         right:0px;
         border-left: 1px solid #CCC;
         width: calc(100% - 270px);
         box-sizing: border-box;
     }
+    /*when the menu hides*/
+        .menu.hidden._LM_{
+            width: 0px;
+            transition: width 0.5s;
+        }
+        .menu.hidden+.preview._LM_{
+            width: 100%;
+            transition: width 0.5s;
+        }
 
 /*searchbar*/
-    .lm.searchBar{
+    .searchBar._LM_{
         color: #999;
     }
-    .lm.icon:before{
+    .icon._LM_:before{
         line-height: 60px;
     }
-    .lm.icon{
+    .icon._LM_{
         float: left;
         font-size: 40px;
         text-align: center;
         width: 60px;
         height: 60px;
     }
-    .lm.searchInput{
+    .searchInput._LM_{
         float: left;
         position:relative;
         width: calc(100% - 120px);
         height: 100%;
     }
-    .lm.placeHolder{
+    .placeHolder._LM_{
         padding-left:10px;
         font-size: 30px;
         position:absolute;
@@ -77,7 +90,7 @@ html, body{
         width:100%;
         height:100%;
     }
-    .lm.input{
+    .input._LM_{
         padding-left:10px;
         font-size: 30px;
         position:relative;
@@ -89,42 +102,48 @@ html, body{
     }
     
 /*files*/
-    .lm.matches{
+    .files._LM_{
+        position: absolute;
+        right: 0px;
+        width: 270px;
+        height: 100%;
+    }
+    .matches._LM_{
         height: 100%;
     }
     
-    .lm.file{
+    .file._LM_{
         min-height: 40px;
         border-bottom: 1px solid #CCC;
     }
-    .lm.file.selected{
+    .file.selected._LM_{
         background-color: #EEE;
     }
-    .file .lm.fileIcon{
+    .file .fileIcon._LM_{
         box-sizing: border-box;
         float: left;
         width: 40px;
         height: 40px;
         padding: 3px;
     }
-    .file .lm.fileIcon img{
+    .file .fileIcon img._LM_{
         width: 100%;
         height: 100%;
     }
-    .file .lm.fileData{
+    .file .fileData._LM_{
         float: left;
         width: calc(100% - 40px);
     }
-    .file .fileData .lm.fileName{
+    .file .fileData .fileName._LM_{
         word-wrap: break-word;
         padding: 5px;
         padding-bottom: 0px;
     }
-    .file .fileData .fileName span.lm{
+    .file .fileData .fileName span._LM_{
         background-color: #6be1ff;
         border-radius: 2px;
     }
-    .file .fileData .lm.filePath{
+    .file .fileData .filePath._LM_{
         word-break: break-word;
         padding-right: 5px;
         color: #AAA;
@@ -132,15 +151,15 @@ html, body{
         text-align: right;
     }
     
-    .lm.rootPath{
+    .rootPath._LM_{
         word-break: break-word;
         background-color: #F3F3F3;
         color: #AAA;
         font-size: 12px;
         border-bottom: 1px solid #CCC;
     }
-    .lm.regexErrorMessage,
-    .lm.noFileMessage{
+    .regexErrorMessage._LM_,
+    .noFileMessage._LM_{
         position:absolute;
         left: 0px;
         top: 0px;
@@ -151,37 +170,37 @@ html, body{
         display: table;
         color: #444;
     }
-    .regexErrorMessage span.lm,
-    .noFileMessage span.lm{
+    .regexErrorMessage span._LM_,
+    .noFileMessage span._LM_{
         display: table-cell;
         vertical-align: middle;
     }
-    .lm.regexError{
+    .regexError._LM_{
         color: red;
     }
 /*preview*/
-    .specificPreviewData>div.lm{
+    .specificPreviewData>div._LM_{
         display: none;
         height: 100%;
         width: 100%;
     }
-    .lm.specificPreviewData{
+    .specificPreviewData._LM_{
         height: calc(100% - 90px);
         width: 100%;
     }
-    .lm.generalPreviewData{
+    .generalPreviewData._LM_{
         height: 90px;
         width: 100%;
         padding: 20px;
         padding-top: 0px;
     }
-    .preview.full .lm.specificPreviewData{
+    .preview.full .specificPreviewData._LM_{
         height: 100%;
     }
-    .preview.full .lm.generalPreviewData{
+    .preview.full .generalPreviewData._LM_{
         display: none;
     }
-    .lm.generalDataInner{
+    .generalDataInner._LM_{
         font-size: 12px;
         border-top: 1px solid #CCC;
         padding-top:8px;
@@ -189,29 +208,29 @@ html, body{
         height: calc(100% - 20px);
     }
     /*general data*/
-    .generalDataInner .lm.dataLabel{
+    .generalDataInner .dataLabel._LM_{
         text-align:left;
         display: inline-block;
         width: 70px;
     }
-    .generalDataInner .lm.dataValue{
+    .generalDataInner .dataValue._LM_{
         display: inline-block;
     }
-    .generalDataInner .lm.left{
+    .generalDataInner .left._LM_{
         float: left;
         widtH: 50%;
     }
-    .generalDataInner .lm.right{
+    .generalDataInner .right._LM_{
         float: right;
         widtH: 50%;
     }
-    .generalDataInner .lm.right{
+    .generalDataInner .right._LM_{
         text-align: right;
     }
-    .generalDataInner .right .lm.dataValue{
+    .generalDataInner .right .dataValue._LM_{
         width: 90px;
     }
-    .generalDataInner .lm.path{
+    .generalDataInner .path._LM_{
         padding-top: 8px;
         text-align: center;
     }

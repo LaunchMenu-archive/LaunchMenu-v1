@@ -1,4 +1,4 @@
-/*global $ initTemplates loadTemplate tree Querier Settings Directory regexEscape*/
+/*global $ initTemplates loadTemplate tree Querier Settings Directory regexEscape Preview*/
 var lastQuery = "";
 $(function(){
     $(".input").keydown(function(e){
@@ -179,13 +179,13 @@ function search(text){
             startDir = dir;
         }
         
-        $(".rootPathText").html(tree.toPath(startDir).replace(/\\/g, "\\<wbr>"));
+        $(".rootPathText").html(tree.getPath(startDir).replace(/\\/g, "\\<wbr>"));
         
         $(".matches").css("height","calc(100% - "+($(".rootPathText").height()+2)+"px)");
         
         for(var i=0; i<matchedFiles.length; i++){
             var result = matchedFiles[i];
-            result.path = tree.toPath(result.file.p, startDir);
+            result.path = tree.getPath(result.file.p, startDir);
         }
         
         //add files and such
@@ -219,7 +219,7 @@ function addMatchedFile(matchedFile, index, before){
     var file = matchedFile.file;
     fileEl.data("file", file);
     
-    var name = matchedFile.match.type.highlight(tree.fullName(file), "lm");
+    var name = matchedFile.match.type.highlight(tree.getFullName(file), "_LM_");
     
     
     fileEl.find(".fileName").html(name);
@@ -241,6 +241,8 @@ function addMatchedFile(matchedFile, index, before){
         if(!$(this).is(".selected")){
             $(".file.selected").removeClass("selected");
             $(this).addClass("selected");
+            
+            PreviewHandler.openFile(file);
         }
     };
     fileEl.click(fileEl[0].launch);

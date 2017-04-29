@@ -455,11 +455,11 @@ var Querier = (function(){
         var matches = [];
         
         tree.each(function(file){
-                var text = tree.fullName(file);
+                var text = tree.getFullName(file);
                 var match = Querier.test(text, minScore);
                 if(match!==null) matches.push({match:match, file:file});
             }, function(dir){
-                var text = tree.fullName(dir);
+                var text = tree.getFullName(dir);
                 var match = Querier.test(text, minScore);
                 if(match!==null) matches.push({match:match, file:dir});
             }, list, searchDepth);
@@ -481,11 +481,11 @@ var Querier = (function(){
         
         var matches = [];
         tree.each(function(file){
-                var text = tree.fullName(file);
+                var text = tree.getFullName(file);
                 var match = Querier.regexTest(text, query);
                 if(match!==null) matches.push({match:match, file:file});
             }, function(dir){
-                var text = tree.fullName(dir);
+                var text = tree.getFullName(dir);
                 var match = Querier.regexTest(text, query);
                 if(match!==null) matches.push({match:match, file:dir});
             }, list, searchDepth);
@@ -498,8 +498,8 @@ var Querier = (function(){
             var dScore = a.match.score-b.match.score;
             if(dScore!=0) return dScore>0;
             
-            var nameA = tree.fullName(a.file);
-            var nameB = tree.fullName(b.file);
+            var nameA = tree.getFullName(a.file);
+            var nameB = tree.getFullName(b.file);
             var minLength = Math.min(nameA.length, nameB.length);
             return nameA.substring(0,minLength)<nameB.substring(0,minLength);
             
