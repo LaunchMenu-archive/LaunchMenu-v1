@@ -1,9 +1,7 @@
-/*global Class lm*/
+/*global variables Class lm*/
 var PreviewHandler = (function(){
-    var ph = {};
-    
     var openedPreview = null;
-    ph.previewByExtension = {
+    var ph = {
         get openedPreview(){
             return openedPreview;
         },
@@ -11,6 +9,8 @@ var PreviewHandler = (function(){
             preview.open();
         }
     };
+    
+    ph.previewByExtension = {};
     ph.previewList = [];
     ph.registerPreviewType = function(preview){
         var name = preview.className;
@@ -49,7 +49,9 @@ var PreviewHandler = (function(){
                 openedPreview.close();
             }
             openedPreview = preview;
+            return true;
         }
+        return false;
     };
     
     ph.openFile = function(file){
