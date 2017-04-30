@@ -1,4 +1,4 @@
-/*global variables Class lm*/
+/*global variables Class lm createTemplateElement*/
 var PreviewHandler = (function(){
     var openedPreview = null;
     var ph = {
@@ -55,8 +55,13 @@ var PreviewHandler = (function(){
     };
     
     ph.openFile = function(file){
-        ph.getPreviewFromExtension(file.extension).loadFile(file);
-    }
+        var n = ph.getPreviewFromExtension(file.extension);
+        if(n) n.loadFile(file);
+        else if(openedPreview){
+                openedPreview.close();
+                openedPreview = null;
+        }
+    };
     
     
     var generalData = {

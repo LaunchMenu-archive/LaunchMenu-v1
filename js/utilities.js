@@ -56,12 +56,9 @@ function createQueryNode(name, element){
 }
 function createTemplateElement(name, template){
     var c = "_"+name+"_";
-    var el = $("<div class='"+c+" _QUERYNODE_'></div>");
+    var el = $("<div class='"+c+" _QUERYNODE_'>"+template.html+"</div>");
+    el.find("*").addBack().addClass(c);
     
-    var htmlTemplate = $(template.html);
-    htmlTemplate.find("*").addBack().addClass(c);
-    
-    el.append(htmlTemplate);
     var selector = /([^,+~{}:]+)((:[^,+~{}:]+)*)([,+~]|\{([^\{\}]+)\})/g;
     var styling = template.style.replace(selector, `$1.${c}$2$4`);
     el.append("<style>"+styling+"</style>");

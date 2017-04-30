@@ -18,7 +18,7 @@ var PreviewImage = Inherit("PreviewImage",{
         img.width("100%").height("100%");
     },
     loadFile: function(file){
-        this.parent.loadFile(file);
+        this.super.loadFile(file);
         
         var t = this;
         var resetImg = resetCall(function(){t.resetImg();}, 20);
@@ -33,6 +33,11 @@ var PreviewImage = Inherit("PreviewImage",{
                 resetImg.cancel();
             }
         });
+    },
+    close: function(){
+        this.super.close();
+        this.resetImg();
+        this.file = null;
     }
 },Preview);
 PreviewHandler.registerPreviewType(PreviewImage);

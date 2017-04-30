@@ -1,56 +1,64 @@
-/*global variables Class lm $ createTemplateElement*/
+/*global variables Class lm $ createTemplateElement jQuery*/
 var SelectorHandler = (function(){
-    var openedSelector = null;
-    var sh = {};
+    var openedStack = [];
+    var sh = {
+        get openedStack(){
+            return jQuery.extend([], openedStack);
+        },
+        set openedStack(value){
+            
+        }
+    };
     
-    sh.setOpenedSelector = function(selector, animated){
-        if($("._"+selector.className+"_").length==0) 
-            lm(".selector").append(selector.element);
-        if(openedSelector!=selector){
-            if(openedSelector){
-                openedSelector.close(animated);
+    var topSelector = function(){
+        return openedStack[openedStack.length-1];
+    };
+    sh.setOpenedSelector = function(selector, animationDuration){
+        var top = topSelector();
+        if(top!=selector){
+            lm(".selector").append(selector.element); //add element to selectorstack (moves to the front if already on page)
+            if(top){
+                top.onHide();
+                setTimeout(function(){
+                    top.onHide(true);
+                }, animationDuration);
             }
-            openedSelector = selector;
+                
+            var index = openedStack.indexOf(selector);
+            if(index>-1) openedStack.splice(index, 1);
+            
+            openedStack.push(selector);
+            
             return true;
         }
         return false;
-    }
+    };
+    sh.closeSelector = function(selector){
+        var index = openedStack.indexOf(selector);
+        if(index>-1) openedStack.splice(index, 1);
+        return index>-1;
+    };
+    
+    sh.selectUp = function(){
+        var top = topSelector();
+        if(top)
+            return top.selectUp();
+    };
+    sh.selectDown = function(){
+        var top = topSelector();
+        if(top)
+            return top.selectDown();
+    };
+    sh.execute = function(){
+        var top = topSelector();
+        if(top)
+            return top.execute();
+    };
+    sh.keyboardEvent = function(event){
+        var top = topSelector();
+        if(top)
+            return top.keyboardEvent(event);
+    };
     
     return sh;
 })();
-
-var Selector = Class("Selector",{
-    const:function(){
-        this.template = "<div>"+this.template+"</div>";
-        var n = createTemplateElement(this.name, this.template);
-        
-        this.element = n.element;
-        this.element.css({width:"100%",height:"100%",display:"none"});
-        this.$ = n.querier;
-    },
-    template:{
-        html:``,
-        style:``
-    },
-    destroyOnclose: true,
-    animatedOpening: true,
-    open: function(animated){
-        animated = this.animatedOpening||animated;
-        if(SelectorHandler.setOpenedSelector(this, animated)){
-            if(animated){
-                
-            }else
-                this.element.show();
-        }
-    },
-    close: function(animated){
-        if(animated){
-            
-        }else
-            this.element.hide();
-            
-        if(this.destroyOnclose){
-            this.element.remove();
-        }
-    }
-});

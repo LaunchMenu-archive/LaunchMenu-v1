@@ -36,7 +36,7 @@ html, body._LM_{
     
     
     .preview._LM_,
-    .menu._LM_{
+    .selector._LM_{
         position:absolute;
         height: 360px;
         bottom:0px;
