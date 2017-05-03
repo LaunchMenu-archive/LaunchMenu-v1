@@ -62,6 +62,10 @@ git pull origin master
 * [ ] Add methods to call global applets etc.
 * [ ] Launch Menu Events. Example: Whenever LaunchMenu is activated, run "activated.event.js"
 * [ ] Event system with pre and postevent listeners; for instance for start event
+* [ ] Server communication wrapper requires error messages.
+* [ ] Auto-documentation generation.
+* [ ] Server communication support for more than 1 callback
+* [ ] _ipc.on support?
 
 
 Sancarn's todo:

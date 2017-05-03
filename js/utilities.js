@@ -48,23 +48,31 @@ function createQueryNode(name, element){
         var q = $(selector);
         if(q.selector){
             return root.find(selector).filter(function(){
-                return $(this).closest("._QUERYNODE_")[0]==root[0];
+                return $(this).parents("._QUERYNODE_")[0]==root[0];
             });
         }else
             return q;
     };
 }
-function createTemplateElement(name, template){
-    var c = "_"+name+"_";
+function createTemplateElement(name, template, UID){
+    var c = "_"+name+"_"+(UID?" _"+UID+"_":"");
     var el = $("<div class='"+c+" _QUERYNODE_'>"+template.html+"</div>");
     el.find("*").addBack().addClass(c);
     
     var selector = /([^,+~{}:]+)((:[^,+~{}:]+)*)([,+~]|\{([^\{\}]+)\})/g;
-    var styling = template.style.replace(selector, `$1.${c}$2$4`);
-    el.append("<style>"+styling+"</style>");
+    if(UID){
+        var styling = template.style.replace(selector, `$1.${c.replace(/ /g,".")}$2$4`);
+        el.append("<style>"+styling+"</style>");
+    }else{
+        if($("body").children("style."+c).length==0){
+            var styling = template.style.replace(selector, `$1.${c}$2$4`);
+            $("body").append("<style class="+c+">"+styling+"</style>");
+        }
+    }
+    el.addClass("root");
     
     var query = createQueryNode(name, el);
-    return {element:el, querier:query};
+    return {element:el, querier:query, htmlClassName:c};
 }
 
 function resetCall(resetFunc, delay){
@@ -73,6 +81,14 @@ function resetCall(resetFunc, delay){
         resetFunc();
     }, delay);
     return {cancel:function(){clearTimeout(id)}};
+}
+
+function copy(object){
+    if(object instanceof Array){
+        return jQuery.extend([], object);
+    }else{
+        return jQuery.extend({}, object);
+    }
 }
 // function logableFunc(func, name, help){
 // 	var match = /^[^\(]*\(([^\{\}]*)\)\{/.exec(func+"");
@@ -185,3 +201,14 @@ function resetCall(resetFunc, delay){
 //     }
 // 	log.apply(window, args);
 // }})(console.log);
+
+function dedent(input){
+	var lines = input.split("\n");
+	var min = Infinity;
+	for(var i=1; i<lines.length; i++)
+		min = Math.min(min, lines[i].match(/\s+/)[0].length);
+	for(var i=1; i<lines.length; i++)
+		lines[i] = lines[i].substring(min);
+	return lines.join("\n");
+}
+

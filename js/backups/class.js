@@ -1,4 +1,5 @@
 /*global $*/
+var lo = 10;
 var Inherit = (function(){
     var classes = [];
     
@@ -9,7 +10,6 @@ var Inherit = (function(){
     var instanceofName = "instanceof";
     var classofName = "classof";
     function Class(name, c1, c2){
-        /*shift all arguments if no class name was provided*/
         if(typeof name != "string"){
             throw new Error("A name must be provided");
         }
@@ -19,8 +19,8 @@ var Inherit = (function(){
         classes.push(name);
         
         /*retrieve the constructor,
-            copy parent's constructor if class doesn't contain a constructor,
-            create empty constructor if no parent is defined*/
+        copy parent's constructor if class doesn't contain a constructor,
+        create empty constructor if no parent is defined*/
         var constructor = c1[constructorName];
         var orConstructor = constructor;
         if(!constructor)
@@ -44,19 +44,30 @@ var Inherit = (function(){
             }while(n[parentName] && (n = n[parentName][parentClassName]));
             constructorString = parentStr+constructorString;
         }
-            
         
+        /*the parent object that will be added to the class and the object */
+        var parent = {};
+            
         /*the object of which was last ran a function,
         this is used to determine what Class.parent.someFunction should do,
         as it then knows what object is running the parent function*/
         var currentObject; 
         
         /*transfer the class name to the constructor (unfortunately through a function eval)*/
-        constructor = new Function(["constr","setCurrentObject"],
+        var oldConstructor = constructor;
+        // console.log(name, constructor);
+        constructor = new Function(["constr","f"],
             "return function "+name+`(){
-                setCurrentObject(this);
-                return constr.call(this,arguments);
-            }`)(constructor, function(obj){currentObject = obj});
+                var prevParent = this.parent;
+                f(this);
+                var value = constr.apply(this,arguments);
+                this.parent = prevParent;
+                return value;
+            }`)(oldConstructor, function(obj){
+                currentObject = obj;
+                // console.log(obj, parent.className);
+                obj.parent = parent;
+            });
         constructor.toString = function(){return "Class "+constructorString};
         c1[className] = name;
         
@@ -93,8 +104,14 @@ var Inherit = (function(){
                 and run the original defined function*/
                 fieldVal = (function(fieldVal){
                     var func = function(){
-                        currentObject = this;            
-                        return fieldVal.apply(this, arguments);
+                        currentObject = this;     
+                        var prevParent = this.parent;
+                        this.parent = parent;
+                            console.log(this, this.parent.className)
+                        if(lo--<0) throw Error("stop");
+                        var value =  fieldVal.apply(this, arguments);
+                        this.parent = prevParent;
+                        return value;
                     };
                     func.toString = function(){return fieldVal.toString()}; //fix the tostring function
                     return func;
@@ -113,7 +130,6 @@ var Inherit = (function(){
         
         /*inherit parent fields*/
         if(c2){
-            var parent = {};
             parent[parentClassName] = c2;
             /*loop through parent fields*/
             for(var i=0; i<parentClassFields.length; i++){
@@ -123,6 +139,7 @@ var Inherit = (function(){
                     make it execute the function with currentObject as this*/
                     if(c2.prototype[field] instanceof Function){
                         parent[field] = function(){
+                            console.log(parent.className, currentObject.parent.className);
                             return c2.prototype[field].apply(currentObject, arguments);
                         };
                         parent[field].toString = function(){

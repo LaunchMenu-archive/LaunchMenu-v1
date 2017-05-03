@@ -1,13 +1,17 @@
 function Tree(fileArray){
     this.t = "root";
     this.c = [];
+    this.__defineGetter__("children", function(){
+        return this.c;
+    });
+    this.seperator = "\\";
     this.roots = [];
     //find directory or file based on filepath
     //if create is set to tue, and the file or path doesn't exist, it will be created
     //root defines where to search from, so you can pass a directory if it is a relative path from that directory
     this.find = function(path, create, root){
         //get sub parts of the path
-        var pathParts = path.split("\\");
+        var pathParts = path.split(this.seperator);
         
         //the current dir that is being searched through
         var selectedDir = root||this;
@@ -90,7 +94,7 @@ function Tree(fileArray){
         if(directory instanceof File){
             return directory.n+(directory.e?"."+directory.e:"");
         }else if(directory instanceof Directory){
-            return directory.n+"\\";
+            return directory.n+this.seperator;
         }
     };
     
@@ -158,7 +162,7 @@ function Tree(fileArray){
                         indexArray.push(0);
                     }
                 }else{ //exit directory if there are no children left
-                    if(dirFunc && curDir instanceof Directory)
+                    if(dirFunc && curDir instanceof Directory && indexArray.length>1)
                         dirFunc.call(curDir, curDir);
                     exitDir();
                 }
@@ -254,7 +258,7 @@ function Tree(fileArray){
         return tree.find(path, create, this);
     };
     Directory.prototype.each = function(fileFunc, dirFunc, maxDepth){
-        return tree.each(fileFunc, dirFunc, maxDepth);
+        return tree.each(fileFunc, dirFunc, this, maxDepth);
     };
     Directory.prototype.delete = function(){
         return tree.delete(this);

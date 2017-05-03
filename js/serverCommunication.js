@@ -186,10 +186,16 @@ var Actions = (function(){
         },
     }
     
-    
-    
-    function createFunction(func, argNames, path){
-    }
+    /**
+     * 
+     * This function converts calls like this:
+     * Actions.file.getData = function(path, callback){};
+     * 
+     * Into client-server calls like this:
+     * if (callback) registerCallback(uid = generateUUID(),callback)
+     * _ipc.send('invokeAction',{action: 'file.getData', path: path, uid: uid});
+     * 
+     */
     function createSection(name){
     	return new Proxy({
     	    type:"section",
@@ -365,9 +371,6 @@ var Actions = (function(){
     Actions.lm.readIniFile.inspect  = {text:"Actions.lm.readIniFile  = function(callback as function){} returns ini as object;\nObtain the initialisation object. This allows you to read and modify initialisation properties."}
     Actions.lm.writeIniFile.inspect = {text:"Actions.lm.writeIniFile = function(ini as object){} returns null;\n Write an initialisation object to the initialisation JSON file."}
     
-    
-    
-    
     /**
      * object: Actions
      * def: This function returns the binary data of a file as a string. 
@@ -434,16 +437,224 @@ var Actions = (function(){
     
     Actions.system.getOS = function(callback){};
     
-    // getIcon32: function (fileIn,callback)
+    // Windows OS
     
-    // getIcon32.help()
-    // fileIn as string, callback as function      returns blabla as string
-    // "string{kadkalsd} function --> string"
+    /**
+     * object: Actions
+     * name: automation.dllcall
+     * def: This function calls a Win32 DLL function. See https://autohotkey.com/docs/commands/DllCall.htm for details.
+     *      Example - ["MessageBox", "Int", "0", "Str", "Press Yes or No", "Str", "Title of box", "Int", "4"] //Will probably change
+     *      Result  - {out: "6", in: { function: "MessageBox", args : [{arg: "0", type: "Int"}, {arg: "Press Yes or No", type: "Str"},{arg: "Title of box", type: "Str"},{arg: "4", type: "Int"}]}}
+     * params: args as array, callback as function
+     * callback: function(results as object)
+     * os: windows
+     */
+    Actions.automation.dllcall = function(args,callback){};
     
-    // getIcon32(fileIn as string, callback as function) returns blablaba as string
-    // Description of what the function does
+    /**
+     * object: Actions
+     * name: automation.edge
+     * params: csCode as string, args as *, callback as function
+     * callback: function(errorFromCS as string, resultsFromCS as *)
+     * os: windows
+     * def: This function executes C# code given as a string using edge-js.
+     * 
+     */
+    Actions.automation.edge = function(csCode,args,callback){};
+    
+    /**
+     * object: Actions
+     * name: automation.dos
+     * def: This function executes dos commands given as a string.
+     * params: dosCode as string, args as array, callback as function
+     * callback: function(stderr as string, stdout as string)
+     * os: windows
+     */
+    Actions.automation.dos = function(dosCode,args,callback){};
+    /** DOS does not have functions in the conventional sense that other languages do.
+     *  however you can print to stdin and stderr. However DOS does have labels. You can also
+     *  pass text to the stdin of other functions. E.G. `DIR /S | MORE` where DIR
+     *  is passed as STDIN to function MORE.
+     *  To access command line arguments you use %1, %2, %3, etc. To access params beyond
+     *  %9 you have to use the shift command. Invoke is still used as the entry point.
+     * 
+     * General syntax:
+     * 
+     * :Invoke
+     * @ECHO OFF
+     * ECHO This text goes to Standard Output
+     * ECHO This text goes to Standard Error 1>&2
+     * ECHO This text goes to the Console>CON
+     * EXIT /b
+    */
+    
+    //ALIAS FOR Actions.automation.dos
+    Actions.automation.batch = function(dosCode,args,callback){};
+    
+    /**
+     * object: Actions
+     * name: automation.vbs
+     * def: This function executes vbs code given as a string.
+     * params: vbsCode as string, args as array, callback as function
+     * callback: function(stderr as string, stdout as string)
+     * os: windows
+     */
+    Actions.automation.vbs = function(vbsCode,args,callback){};
+    /*
+    VBS syntax is odd:
+        set cArgs = WScript.Arguments
+        'cArgs(0) is arg1
+        'cArgs(1) is arg2
+        'to print data to console use WScript.StdOut.Write
+        'write errors using WScript.StdErr.Write
+        'can also read from StdIn, however this is not often used (vbs is single threaded)
+        'execute vbs using cscript.exe myScript.vbs arg1 arg2 ...
+        
+        #if function
+        WScript.StdOut.Write Invoke(arg1,arg2,arg3,...)
+        #if sub
+        Invoke arg1,arg2,arg3,...
+        
+        or
+        
+        #if function
+        WScript.StdOut.Write Invoke(args)
+        #if sub
+        Invoke args
+    */
+    
+    /**
+     * object: Actions
+     * name: automation.powershell
+     * def: This function executes powershell code given as a string.
+     * params: pscode as string, args as ?, callback as function
+     * callback: function(stderr as string, stdout as string)
+     * os: windows
+     */
+    Actions.automation.powershell = function(psCode,args,callback){};
+    /*
+    Standard edge syntax: [untested]
+        function Invoke($arg1) \{ 
+            # do stuff
+            $arg1 + " is awesome!"
+        \}
+    */
+    
+    // MAC OS X
+    
+    /**
+     * object: Actions
+     * name: automation.powershell
+     * params: cscode as string, args as *, callback as function
+     * callback: function(stderr as string, stdout as string)
+     * os: mac
+     * def: This function executes AppleScript code given as a string.
+     * Applescript needs to be in the following format\:
+     * ```applescript
+     * on Invoke {var1,var2}
+     *     #Prepare return variable:
+     *     set output to ("Var1 is: " & var1 & " and Var2 is: " & var2)
+	 *     return output
+	 * end Invoke
+	 * ```
+	 * I.E. They have to have an `on run` method, this is the method that will be invoked.
+	 * If the applescript is desired to return results, make sure to return them before
+	 * the `end run` statement.
+     */
+    Actions.automation.applescript = function(ascode,args,callback){};
+    Actions._ApplescriptWrapper = function(ascode){
+        if(/on Invoke\(.*\)/.exec(ascode)){ 
+            var args = /on Invoke\((.*?)\)/.exec(ascode)[1].split(",")
+            
+            /*global dedent*/
+            return dedent(`on run {${args.join(",")}}
+                               return Invoke(${args.join(",")})
+                           end run
+                           
+                           {//ascode//}`).replace("{//ascode//}",ascode)
+        } else {
+            throw new Error('No valid Invoke() function defined.');
+        }
+    }
+    
+    
+    /**
+     * object: Actions
+     * name: automation.jxa
+     * params: jxaCode as string, args as *, callback as function
+     * callback: function(stderr as string, stdout as string)
+     * os: mac
+     * def: This function executes JXA (JavaScript for Automation) code given as a string.
+     * JXA needs to be in the following format\:
+     * function invoke(var1,var2){
+     *    console.log('You can also log to stdout via the console')
+     *    return 'Var1 is: ' + var1 + ' and Var2 is: ' + var2
+     * }
+     */
+    Actions.automation.jxa = function(jxaCode,args,callback){};
+    Actions._JXAWrapper = function(jxaCode){
+        /*
+        // Try to catch when __args should be passed as an object rather than as a set of arguments.
+        function run(__args){
+            var __count = /\((.*?)\)/.exec(Invoke.toString())[1].split(",").length
+            if ((__count == 1) & __args.length > 1){
+                return Invoke(__args)
+            } else {
+    	        return Invoke.apply(this,__args)
+            }
+        }
+        */
+        
+        return `
+            // Try to catch when __args should be passed as an object rather than as a set of arguments.
+            function run(__args){
+                var __count = /\\((.*?)\\)/.exec(Invoke.toString())[1].split(",").length
+                if ((__count == 1) & __args.length > 1){
+                    return Invoke(__args);
+                } else {
+                    return Invoke.apply(this,__args);
+                }
+            }\n\n${jxaCode}`;
+    }
+    
+    /**
+     * object: Actions
+     * name: automation.python
+     * params: jxaCode as string, args as *, callback as function
+     * callback: function(stderr as string, stdout as string)
+     * os: mac
+     * def: This function executes python code given as a string.
+     */
+    Actions.automation.python = function(pyCode, args, callback){};
+    
+    
+    // MAX OS X  |  Linux OS [untested]
+    
+    /**
+     * object: Actions
+     * name: automation.unix
+     * params: jxaCode as string, args as *, callback as function
+     * callback: function(stderr as string, stdout as string)
+     * os: mac, linux
+     * def: This function allows Mac and Linux systems the capability of running unix code given as a string.
+     * 
+     */
+    Actions.automation.unix = function(uxCode,args,callback){};
+    // RUN WRAPPER ...? - Not experienced here...
+    // sh path/to/shell/file.sh
+    
+    /**
+     * object: Actions
+     * name: automation.fromFile
+     * def: Execute any of the above automation libraries, from file with this function.
+     *      Example - Actions.automation.fromFile("edge","path/to/my/code.cs", {aPropertyName: "bob", otherPropertyName: "peanuts"}, function(error,results){ console.log(error,results) });
+     * params: action as string, codeFile as string, args as *, callback as function
+     * callback: function(*)
+     */
+    Actions.automation.fromFile = function(action,codeFile,args,callback){};
     
     
     return Actions;
 })();
+
 

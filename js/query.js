@@ -45,7 +45,7 @@ var Querier = (function(){
                 for(var i=1; i<match.length; i++){
                     if(i%2==1){
                         if(match[i].length>1) //includes a space
-                            text += match[i][0]+"<span>"+match[i][1]+"</span>";    
+                            text += match[i][0]+`<span class="${clas}">`+match[i][1]+`</span>`;    
                         else 
                             text += `<span class="${clas}">`+match[i]+`</span>`;
                     }else 
@@ -239,10 +239,10 @@ var Querier = (function(){
     Querier.regexTest = function(text, query){
         if(!this.testRequirements(text)) return null;
         
-        return query.test(text)?{score:1/(1+text.length/200), type:{highlight:function(text){
+        return query.test(text)?{score:1/(1+text.length/200), type:{highlight:function(text, clas){
             query.lastIndex = 0;
             var m = query.exec(text);
-            return text.substring(0,m.index)+"<span>"+text.substr(m.index,m[0].length)+"</span>"+text.substring(m.index+m[0].length);
+            return text.substring(0,m.index)+"<span class="+clas+">"+text.substr(m.index,m[0].length)+"</span>"+text.substring(m.index+m[0].length);
         }}}:null;
     };
     
@@ -384,11 +384,9 @@ var Querier = (function(){
                 arg.init();
             }    
         }
-        
     }
     Querier.extractRequirements = function(query){
         query = query.split("?");
-            
         if(query.length>1){
             var requirementsString = query[1];
             this.parseRequirements(requirementsString);
@@ -446,7 +444,7 @@ var Querier = (function(){
         
         return matches;
     }
-    Querier.query = function(query, list, searchDepth, minScore){
+    Querier.query = function(query, directory, searchDepth, minScore){
         minScore = minScore || Settings.minimalMatchScore;
         searchDepth = searchDepth || Settings.searchDepth;
         
@@ -462,16 +460,16 @@ var Querier = (function(){
                 var text = tree.getFullName(dir);
                 var match = Querier.test(text, minScore);
                 if(match!==null) matches.push({match:match, file:dir});
-            }, list, searchDepth);
+            }, directory, searchDepth);
             
         for(var i=0; i<this.matchTypes.length; i++) 
             this.matchTypes[i].regex = null;
         return matches;
     };
-    Querier.regexQuery = function(query, list, searchDepth){
+    Querier.regexQuery = function(query, directory, searchDepth){
         searchDepth = searchDepth || Settings.searchDepth;
         
-        var m = /\/(.+)\/(\w*)/.exec(query);
+        var m = /\/(.+)\/(.*)/.exec(query);
         m[2] = this.extractRequirements(m[2]);
         try{
             query = new RegExp(m[1], m[2]);
@@ -488,7 +486,7 @@ var Querier = (function(){
                 var text = tree.getFullName(dir);
                 var match = Querier.regexTest(text, query);
                 if(match!==null) matches.push({match:match, file:dir});
-            }, list, searchDepth);
+            }, directory, searchDepth);
             
         return matches;
     };
@@ -498,8 +496,8 @@ var Querier = (function(){
             var dScore = a.match.score-b.match.score;
             if(dScore!=0) return dScore>0;
             
-            var nameA = tree.getFullName(a.file);
-            var nameB = tree.getFullName(b.file);
+            var nameA = a.file.getFullName();
+            var nameB = b.file.getFullName();
             var minLength = Math.min(nameA.length, nameB.length);
             return nameA.substring(0,minLength)<nameB.substring(0,minLength);
             
@@ -525,9 +523,6 @@ var Querier = (function(){
     
     return Querier;
 })();
-
-
-
 
 
 

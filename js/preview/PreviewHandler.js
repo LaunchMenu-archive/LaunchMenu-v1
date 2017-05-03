@@ -30,12 +30,7 @@ var PreviewHandler = (function(){
                 }
             }
             
-            var n = createTemplateElement(name, preview.template);
-            var element = n.element;
-            element.css({width:"100%",height:"100%",display:"none"});
-            lm(".specificPreviewData").append(element);
-            preview.$ = n.querier;
-            preview.element = element;
+            lm(".specificPreviewData").append(preview.element);
         }
     };
     

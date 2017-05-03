@@ -1,5 +1,12 @@
-/*global variables Class, PreviewHandler, Actions*/
+/*global variables Class, PreviewHandler, Actions, createTemplateElement*/
 var Preview = Class("Preview", {
+    const: function(){
+        var n = createTemplateElement(this.className, this.template);
+        this.element = n.element;
+        this.element.css({width:"100%",height:"100%",display:"none"});
+        this.$ = n.querier;
+        this.htmlClassName = n.htmlClassName;
+    },
     extensions: [],
     template: {
         html:"",

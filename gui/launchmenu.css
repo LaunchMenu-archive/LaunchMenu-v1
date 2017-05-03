@@ -2,6 +2,13 @@ html, body._LM_{
     margin: 0px;
 }
 
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
 .template._LM_{
     display: none;
 }
@@ -32,14 +39,15 @@ html, body._LM_{
         overflow: hidden;
         height: 0px;
         height: calc(100% - 60px);
+        box-sizing: content-box;
     }
     
     
     .preview._LM_,
     .selector._LM_{
         position:absolute;
-        height: 360px;
-        bottom:0px;
+        bottom: 1px;
+        height: 357px;
         width: 270px;
         transition: width 0.5s;
         overflow: hidden;
@@ -204,7 +212,7 @@ html, body._LM_{
         font-size: 12px;
         border-top: 1px solid #CCC;
         padding-top:8px;
-        width: calc(100% - 40px);
+        width: 100%;
         height: calc(100% - 20px);
     }
     /*general data*/

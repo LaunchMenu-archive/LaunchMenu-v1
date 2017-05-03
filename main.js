@@ -386,3 +386,38 @@ function getCaption(){
 		return currentApplication.title()
 	}
 */
+
+
+
+
+/**
+ * #####  ####   #####  #####
+ * #      #   #  #      #    
+ * #####  #   #  #  ##  #####
+ * #      #   #  #   #  #    
+ * #####  ####   #####  #####
+ */
+ 
+ 
+ var pvwSupportedFormats =[]
+ var xlToHTML = edge.func("C#\\Excel-HTML.cs");
+ 
+ 
+ 
+ edge.func("C#\\Excel-HTML.cs")("C:\\Users\\sancarn\\Documents\\helloExcel.xlsx", function(a,b){console.log(a,b)})
+ 
+ /* global edge */
+ function _edgeWrapper(replyChannel,cscode,obj){
+ 	edge.func(cscode)(obj,function(error,results){
+ 		event.sender.send(replyChannel, {err: error, res: results});
+ 	});
+ }
+ 
+ ```cs
+ Class 
+ ```
+ 
+ 
+ 
+ 
+ 

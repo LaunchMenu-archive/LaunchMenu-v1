@@ -20,6 +20,7 @@
     "electron": "~1.6.2"
   },
   "dependencies": {
-    "electron-localshortcut": "^1.1.1"
+    "electron-localshortcut": "^1.1.1",
+    "edge":"^6.5.1"
   }
 }

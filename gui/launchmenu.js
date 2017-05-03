@@ -29,21 +29,39 @@ $(function(){
 				$(".placeHolder").show();
 			}
         }
-        var n;
-        if(e.key=="ArrowDown") n = $(".file.selected").next(".file")[0];
-        if(e.key=="ArrowUp") n = $(".file.selected").prev(".file")[0];
-        if(n && !keyPause){
+        var arrowFunc = null;
+        if(e.key=="ArrowUp"){
+            arrowFunc = SelectorHandler.selectUp;
+        }
+        if(e.key=="ArrowDown"){
+            arrowFunc = SelectorHandler.selectDown;
+        }
+        if(arrowFunc && !keyPause){
             keyPause = true;
             setTimeout(function(){keyPause = false;},70);
-            
-            n.select();
-            $(".matches")[0].focus($(n), 200);
             e.preventDefault();
+            
+            arrowFunc();
         }
+        
         if(e.key=="Enter"){
-            var n = $(".file.selected")[0];
-            n.launch();
+            SelectorHandler.executeItem();
         }
+        // var n;
+        // if(e.key=="ArrowDown") n = $(".file.selected").next(".file")[0];
+        // if(e.key=="ArrowUp") n = $(".file.selected").prev(".file")[0];
+        // if(n && !keyPause){
+        //     keyPause = true;
+        //     setTimeout(function(){keyPause = false;},70);
+            
+        //     n.select();
+        //     $(".matches")[0].focus($(n), 200);
+        //     e.preventDefault();
+        // }
+        // if(e.key=="Enter"){
+        //     var n = $(".file.selected")[0];
+        //     n.launch();
+        // }
     });
     var matchesHeight = $(".matches").height();
     var prevOffset = 0;
