@@ -73,20 +73,20 @@ launch-menu-search syntax:
     the above would search for any file containing a which is between 2 and 4 characters long.
     _note: the first argument is always interprated as the minimum and the 2nd argument is interprated as the maximum_
 
-shorcuts:
+Keyboard shorcuts:
 
-    |Keys                                   | Description                                   |
-    |---------------------------------------|-----------------------------------------------|
-    |<kbd>Alt</kbd>+<kbd>Space</kbd>        | open launch menu                              |
-    |<kbd>Enter</kbd>                       | execute item (for instance open directory)    |
-    |<kbd>Shift</kbd>+<kbd>Enter</kbd>      | goback to previous directory                  |
-    |<kbd>Ctrl</kbd>+<kbd>Enter</kbd>       | goto parent directory                         |
-    |<kbd>Tab</kbd>                         | open action menu of selected file             |
-    |<kbd>Shift</kbd>+<kbd>Tab</kbd>        | close action menu                             |
-    |<kbd>Up</kbd>                          | go up in selector                             |
-    |<kbd>Down</kbd>                        | go down in selector                           |
-    |<kbd>Esc</kbd>                         | go back to root, if in root close program     |
-    
+| Keys                                  | Description                                   |
+|---------------------------------------|-----------------------------------------------|
+|<kbd>Alt</kbd>+<kbd>Space</kbd>        | Open LaunchMenu                              |
+|<kbd>Enter</kbd>                       | Execute item (for instance open directory)    |
+|<kbd>Shift</kbd>+<kbd>Enter</kbd>      | Goback to previous directory                  |
+|<kbd>Ctrl</kbd>+<kbd>Enter</kbd>       | Goto parent directory                         |
+|<kbd>Tab</kbd>                         | Open action menu of selected file             |
+|<kbd>Shift</kbd>+<kbd>Tab</kbd>        | Close action menu                             |
+|<kbd>Up</kbd>                          | Go up in selector                             |
+|<kbd>Down</kbd>                        | Go down in selector                           |
+|<kbd>Esc</kbd>                         | Go back to root, if in root close program     |
+
 ## To Do
 
 * [X] FuzzySearch to handle tree type.
