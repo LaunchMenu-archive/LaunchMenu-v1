@@ -74,7 +74,6 @@ launch-menu-search syntax:
     _note: the first argument is always interprated as the minimum and the 2nd argument is interprated as the maximum_
 
 shorcuts:
-
     |Keys                                   | Description                                   |
     |---------------------------------------|-----------------------------------------------|
     |<kbd>Alt</kbd>+<kbd>Space</kbd>        | open launch menu                              |
