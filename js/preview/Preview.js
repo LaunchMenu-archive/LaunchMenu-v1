@@ -13,6 +13,7 @@ var Preview = Class("Preview", {
         style: ""        
     },
     showGeneralData: true,
+    htmlInitialisation: function(){},
     loadFile: function(file){
         this.file = file;
         this.resetFile();
@@ -55,9 +56,7 @@ var Preview = Class("Preview", {
             }
         });
     },
-    resetFile: function(){
-        
-    },
+    resetFile: function(){},
     open: function(){
         PreviewHandler.setOpenedPreview(this);
         this.element.show();

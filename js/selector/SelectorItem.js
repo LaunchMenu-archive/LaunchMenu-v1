@@ -9,6 +9,7 @@ var SelectorItem = Class("SelectorItem", {
         
         this.element = n.element;
         this.element.css({width:"100%","min-height":"40px"});
+        this.element.addClass("bd3");
         this.htmlClassName = n.htmlClassName;
         this.$ = n.querier;
         
@@ -31,11 +32,13 @@ var SelectorItem = Class("SelectorItem", {
         this.selector = selector;
     },
     select: function(){
+        this.element.addClass("bg3");
         this.element.addClass("selected");
-        this.selector.selectItem(this);
+        this.selector.selectItem(this, true);
         this.selected = true;
     },
     deselect: function(){
+        this.element.removeClass("bg3");
         this.element.removeClass("selected");
         this.selected = false;
     },
@@ -49,7 +52,7 @@ var SelectorItem = Class("SelectorItem", {
         //remove the element from the page
         this.element.remove();  
     },
-    selectedStyle: `background-color: purple;`,
+    selectedStyle: ``,
     template:{
         html:   ``,
         style:  ``

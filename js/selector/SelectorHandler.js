@@ -1,31 +1,36 @@
 /*global variables Class lm $ createTemplateElement jQuery*/
 var SelectorHandler = (function(){
     var openedStack = [];
+    var topSelector = function(){
+        return openedStack[openedStack.length-1];
+    };
     var sh = {
         get openedStack(){
             return jQuery.extend([], openedStack);
         },
         set openedStack(value){
             
+        },
+        get topSelector(){
+            return topSelector();
         }
     };
     
-    var topSelector = function(){
-        return openedStack[openedStack.length-1];
-    };
     sh.registerSelector = function(selector){ //add the Selector's element to the page
         lm(".selector").append(selector.element);
     };
     sh.setOpenedSelector = function(selector, animationDuration){ //register that a selector has opened
         var top = topSelector();
         if(top!=selector){
-            lm(".selector").append(selector.element); //add element to to the page (moves to the front if already on page)
+            selector.element.css("z-index",2); //set element on top
             
             //call the events on the Selector that is currently opened
             if(top){
+                top.element.css("z-index", 1); //set old top element just below the top one
                 top.onHide();
                 setTimeout(function(){
                     top.onHide(true);
+                    top.element.css("z-index", 0); //reset the old top element to be on bottom
                 }, animationDuration);
             }
                 
@@ -48,16 +53,29 @@ var SelectorHandler = (function(){
         return index>-1; //return if the Selector was even opened
     };
     
+    var disableSelect = false;
     //pass events to the top selector
     sh.selectUp = function(){
-        var top = topSelector();
-        if(top)
-            return top.selectUp();
+        if(!disableSelect){
+            disableSelect = true;
+            setTimeout(function(){disableSelect = false}, 100);
+            
+            var top = topSelector();
+            if(top)
+                return top.selectUp();
+        }else
+            return true;
     };
     sh.selectDown = function(){
-        var top = topSelector();
-        if(top)
-            return top.selectDown();
+        if(!disableSelect){
+            disableSelect = true;
+            setTimeout(function(){disableSelect = false}, 100);
+            
+            var top = topSelector();
+            if(top)
+                return top.selectDown();
+        }else
+            return true;
     };
     sh.executeItem = function(){
         var top = topSelector();
@@ -68,6 +86,11 @@ var SelectorHandler = (function(){
         var top = topSelector();
         if(top)
             return top.keyboardEvent(event);
+    };
+    sh.searchbarChange = function(value){
+        var top = topSelector();
+        if(top)
+            return top.searchbarChange(value);
     };
     
     return sh;

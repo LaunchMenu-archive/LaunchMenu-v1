@@ -1,11 +1,14 @@
-/*global variables Class, LargeSetSelector, SelectorItem, tree, Querier, regexEscape*/
+/*global variables Class, LargeSetSelector, SelectorItem, tree, Querier, regexEscape, PreviewHandler, Directory, Searchbar, ActionMenuHandler*/
 var FileSelector = Class("FileSelector",{
     const: function(){
         this.super.const();
         this.directory = tree;  
+        this.search();
+        this.searchTerm = "";
+        this.history = [];
     },
     template:{ //template for the main structure of the selector
-        html:  `<div class=wrapper>
+        html:  `<div class='bg0 wrapper'>
                     <div class=header>_HEADER_</div>
                     <div class=list>_LIST_</div>
                     <div class=footer>_FOOTER_</div>
@@ -16,7 +19,7 @@ var FileSelector = Class("FileSelector",{
     						</span>
     						<span class='regexErrorMessage' style=display:none>
     							No files could be found Mother Fucker.
-								<span class='regexError'>
+								<span class='fontError regexError'>
 									
 								</span>
     						</span>
@@ -31,7 +34,6 @@ var FileSelector = Class("FileSelector",{
                 .wrapper{
                     float: right;
                     position: relative;
-                    background-color:white;
                 }
                 .messageOuter{
                     position: absolute;
@@ -46,27 +48,23 @@ var FileSelector = Class("FileSelector",{
                     top: 50%;
                     left: 50%;
                     transform: translate(-50%, -50%);
-                }
-                .regexError{
-                    color: red;
                 }`
     },
     headerTemplate:{
-        html:`  <div class=folder style=display:none>
+        html:`  <div class='bd3 bg1 folder' style=display:none>
                     <div class=folderIcon>
                         <img class=folderImage src='../resources/images/icons/folder icon.png'>
                     </div>
                     <div class='folderData'>
-    					<div class='fileName'></div>
-    					<div class='filePath'></div>
+    					<div class='f0 fileName'></div>
+    					<div class='f6 filePath'></div>
     				</div>
     				<br style=clear:both>
                 </div>`,
         style:  `.folder{
                     min-height:60px;
                     width: 100%;
-                    background-color: #F7F7F7;
-                    border-bottom: 1px solid #CCC;
+                    border-bottom-width:1px;
                 }
                 .folderIcon{
                     float: left;
@@ -91,13 +89,19 @@ var FileSelector = Class("FileSelector",{
                     width: 100%;
                     word-break: break-word;
                     padding-right: 5px;
-                    color: #AAA;
                     font-size: 9px;
                     padding-bottom: 5px;
                 }
                 `
     },
-    setDirectory: function(directory){
+    setDirectory: function(directory, dontAddHistory){
+        if(!dontAddHistory)
+            this.history.push({
+                directory:  this.directory,
+                search:     this.searchTerm,
+                index:      this.selectedIndex
+            });
+        
         this.directory = directory;
         if(directory.parent){
             this.$(".folder").show();
@@ -109,12 +113,40 @@ var FileSelector = Class("FileSelector",{
         this.search();
         this.refreshListSize();
     },
+    gotoParentDirectory: function(){
+        if(this.directory.parent){
+           this.setDirectory(this.directory.parent);
+           this.search(this.searchTerm);
+           return true;
+        }
+    },
+    gotoLastDirectory: function(){ //goto last item in the history
+        var h = this.history.pop();  
+        if(h){
+            this.setDirectory(h.directory, true);
+            if(h.search && h.search.length>0){
+                this.search(h.search);  
+                Searchbar.setText(h.search, false);
+            }else{
+                Searchbar.clear();
+            }
+            
+            var list = this.$(".list");
+            list[0].focusVertical((h.index-1)*this.selectorItemHeight-list.height()/2,0);
+            this.$("#"+h.index)[0].selectorItem.select();
+            return true;
+        }
+    },
+    clearHistory: function(){
+        this.history = [];
+    },
     search: function(text){
+        this.searchTerm = text;
         if(text==null || text.length==0){
             this.setDataSet(this.directory.children);
             this.$(".messageOuter").hide();
         }else{
-            console.time("total");
+            console.time("load time");
             var matches;
             var regexSearch = false;
             if(/\/(.+)\/(\w*)/.test(text)){
@@ -136,11 +168,11 @@ var FileSelector = Class("FileSelector",{
                     this.$(".regexErrorMessage").hide();
                 }
             }else{
-                var sortedMatches = Querier.sortMatches(matches);
+                var sortedMatches = Querier.sortMatches(matches, 1000);
                 this.$(".messageOuter").hide();
                 this.setDataSet(sortedMatches, !regexSearch?text:null);
             }
-            console.timeEnd("total");
+            console.timeEnd("load time");
         }
     },
     setDataSet: function(list, query){
@@ -150,9 +182,26 @@ var FileSelector = Class("FileSelector",{
     },
     onHide: function(){}, //don't close on hide
     onClose: function(){}, //don't destroy when closed
+    onOpen: function(){
+        Searchbar.setText(this.searchTerm, true);
+    },
     createSelectorItem: function(file){ 
         return new FileSelectorItem(file);
     },
+    
+    keyboardEvent: function(event){
+        if(event.key=="Enter"){
+            if(event.shiftKey){
+                return this.gotoLastDirectory();
+            }else if(event.ctrlKey){
+                return this.gotoParentDirectory();
+            }
+        }
+        return this.super.keyboardEvent(event);
+    },
+    searchbarChange: function(value){
+        this.search(value);
+    }
 },LargeSetSelector);
 
 var FileSelectorItem = Class("FileSelectorItem",{
@@ -162,10 +211,14 @@ var FileSelectorItem = Class("FileSelectorItem",{
         if(match.file){
             this.file = match.file;
             this.match = match.match;
-            name = match.match.type.highlight(this.file.getFullName(), this.htmlClassName);
+            name = match.match.type.highlight(this.file.getFullName(), this.htmlClassName+" backgroundHighlight0");
         }else{
             this.file = match;
             name = this.file.getFullName();
+        }
+        
+        if((this.file) instanceof Directory){
+            this.$("img").attr("src", "../resources/images/icons/folder icon.png");
         }
         
         this.$(".fileName").html(name);
@@ -174,10 +227,11 @@ var FileSelectorItem = Class("FileSelectorItem",{
         this.super.setSelector(selector);
         
         if(this.file.parent){
+            var s = regexEscape(tree.seperator);
             var path = this.file.parent.getPath(selector.directory);
             while(path.length>35){
                 var oldPath = path;
-                path = path.replace(/(\.\.\.\\)?([^\\]*)\\/,"...\\");
+                path = path.replace(new RegExp("(\\.\\.\\."+s+")?([^"+s+"]*)"+s),"..."+tree.seperator);
                 if(oldPath==path){
                     break;   
                 }
@@ -185,19 +239,31 @@ var FileSelectorItem = Class("FileSelectorItem",{
             this.$(".filePath").text(path);
         }
     },
-    selectedStyle: `background-color: #EEE;`,
+    select: function(){
+        this.super.select();
+        PreviewHandler.openFile(this.file);
+    },
+    keyboardEvent: function(event){
+        if(event.key=="Tab"){
+            ActionMenuHandler.openFileMenu(this.file);    
+            return true;
+        }
+    },
+    execute: function(){
+        ActionMenuHandler.executeFile(this.file);
+    },
     template:{
         html:   `<div class='fileIcon'>
 					<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT48NWIxlFg8U3dtHYji6Y_FKp2WeeNnptzHbQw0ljkeRcHaY0Gf18VBhXFpA">
 				</div>
 				<div class='fileData'>
-					<div class='fileName'></div>
-					<div class='filePath'></div>
+					<div class='f0 fileName'></div>
+					<div class='f6 filePath'></div>
 				</div>
 				<br style=clear:both>`,
 		style:  `.root{
                     min-height: 40px;
-                    border-bottom: 1px solid #CCC;
+                    border-bottom-width: 1px;
 		        }
 		        .fileIcon{
                     box-sizing: border-box;
@@ -220,13 +286,11 @@ var FileSelectorItem = Class("FileSelectorItem",{
                     padding-bottom: 0px;
                 }
                 .fileData .fileName span{
-                    background-color: #6be1ff;
                     border-radius: 2px;
                 }
                 .fileData .filePath{
                     word-break: break-word;
                     padding-right: 5px;
-                    color: #AAA;
                     font-size: 12px;
                     text-align: right;
                 }`

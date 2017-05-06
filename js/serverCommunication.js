@@ -605,7 +605,7 @@ var Actions = (function(){
         }
         */
         
-        return `
+        return dedent(`
             // Try to catch when __args should be passed as an object rather than as a set of arguments.
             function run(__args){
                 var __count = /\\((.*?)\\)/.exec(Invoke.toString())[1].split(",").length
@@ -614,7 +614,7 @@ var Actions = (function(){
                 } else {
                     return Invoke.apply(this,__args);
                 }
-            }\n\n${jxaCode}`;
+            }\n\n{//jxaCode//}`).replace('{//jxaCode//',jxaCode);
     }
     
     /**
@@ -632,16 +632,29 @@ var Actions = (function(){
     
     /**
      * object: Actions
-     * name: automation.unix
-     * params: jxaCode as string, args as *, callback as function
+     * name: automation.bash
+     * params: uxCode as string, args as *, callback as function
      * callback: function(stderr as string, stdout as string)
      * os: mac, linux
-     * def: This function allows Mac and Linux systems the capability of running unix code given as a string.
+     * def: This function allows Mac and Linux systems the capability of running bash code given as a string.
      * 
      */
-    Actions.automation.unix = function(uxCode,args,callback){};
+    Actions.automation.bash = function(uxCode,args,callback){};
     // RUN WRAPPER ...? - Not experienced here...
     // sh path/to/shell/file.sh
+    
+    /**
+     * object: Actions
+     * name: automation.webjs
+     * params: jsCode as string, args as *, callback as function
+     * callback: function(stderr as string, stdout as string)
+     * os: windows, mac, linux
+     * def: This function allows users to automate websites using javascript. Think of it as a temporary custom browser. This is available on all operating systems.
+     * 
+     */
+    Actions.automation.webJS = function(jsCode,args,callback){};
+    
+    
     
     /**
      * object: Actions
@@ -658,3 +671,140 @@ var Actions = (function(){
 })();
 
 
+
+
+var Language = function(lang){
+    this.language=lang;
+    this.code="";
+};
+Language.prototype.fillArgs= function(args,ascode,bracket = "[]",blank="undefined"){   
+    var ascodeArgs = ascode.match(/Invoke\((.*)\)/)[1].split(",");
+    var argsLengthDelta = args.length-ascodeArgs.length;
+    var output = "";
+    var argsIndex = 0;
+    for(var ascodeArgsIndex=0; ascodeArgsIndex<ascodeArgs.length; ascodeArgsIndex++){
+        if(!/\*/.exec(ascodeArgs[ascodeArgsIndex])){
+            output += ","+JSON.stringify(args[argsIndex++]);
+        }else{
+            output += "," + bracket[0];
+            for(var i=0; i<argsLengthDelta+1; i++){
+                output += JSON.stringify(args[argsIndex++])+",";
+            }
+            output = output.substring(0,output.length-1)+bracket[1];
+        }
+    }
+    output = output.replace(/".*?[\[\]].*?"|([\[\]])/g, function(match, m1){
+        if(!m1) return match;
+        else    return bracket["[]".indexOf(m1)];
+    });
+    return output.substring(1).replace(/undefined/g,blank);
+}
+Language.prototype.call = function(){
+    switch(this.language){
+        case "cs":
+	        break;
+        case "dos":
+        	break;
+        case "batch":
+        	break;
+        case "vbs":
+        	break;
+        case "powershell":
+        	break;
+        case "applescript":
+        	return dedent(`on run
+        	                   return Invoke(${this.fillArgs(arguments,this.code,"{}","missing value")})
+        	               end run
+        	               
+        	               {//code//}`).replace("{//code//}",this.code.replace(/(Invoke\(.*)\*/,"$1"))
+        case "jxa":
+            return dedent(`function run(){
+        	                   return Invoke(${this.fillArgs(arguments,this.code)})
+                           }
+        	               
+        	               {//code//}`).replace("{//code//}",this.code.replace(/(Invoke\(.*)\*/,"$1"))
+        case "python":
+            return dedent(`{//code//}
+                           
+                           import sys
+                           sys.stdout.write(Invoke(${this.fillArgs(arguments,this.code,"{}","None")}))
+                           `).replace("{//code//}",this.code.replace(/(Invoke\(.*)\*/,"$1"))
+        case "bash":
+        	var bash = function(){
+                var args = [];
+                for(var i in arguments){
+                    var arg = arguments[i]
+                    if(typeof arg == "object"){
+                        args.push(JSON.stringify(JSON.stringify(arg)));
+                    } else {
+                        args.push(JSON.stringify(arg));
+                    }
+                }
+                return args.join(" ")
+            }
+            return dedent(`{//code//}
+                           
+                           Invoke {//args//}
+                           `).replace("{//code//}",this.code).replace("{//args//}",bash.apply(this,arguments))
+        default:
+            throw new Error(this.language + " is not a known language.")
+    }
+}
+
+/* Applescript example:
+***********************************
+var as = new Language("applescript")
+as.code = `
+on Invoke(bob,a)
+    return bob
+end Invoke`
+as.call([1,2,3])
+# ==> {1,2,3}, missing value
+*/
+
+/* JXA example:
+***********************************
+var as = new Language("jxa")
+as.code = `
+Invoke(a,b){
+    return a + "," + b
+}`
+as.call([1,2,3])
+// ==> 1,2
+*/
+
+/* Python example
+***********************************
+var lang = new Language("python")
+lang.code = `
+def Invoke(a,b,c):
+    return ",".join(map(str,[a,b,c]))`
+lang.call("a",1,{a:1,b:{a:"A",b:"B"}})
+*/
+
+/* Bash example
+***********************************
+var lang = new Language("bash")
+lang.code = `Invoke(){
+    echo $1","$2","$3
+}`
+lang.call("a",1,{a:1,b:{a:"A",b:"B"}})
+# ==> a,1,{"a":1,"b":{"a":"A","b":"B"}}
+*/
+
+
+
+
+
+var bash = function(){
+   var args = [];
+   for(var i in arguments){
+       var arg = arguments[i]
+       if(typeof arg == "object"){
+           args.push(JSON.stringify(JSON.stringify(arg)));
+       } else {
+           args.push(JSON.stringify(arg));
+       }
+   }
+   return args.join(" ")
+}

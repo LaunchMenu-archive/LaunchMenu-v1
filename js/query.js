@@ -80,7 +80,7 @@ var Querier = (function(){
                     regex += "(.* .*)("+m+")";
                 }
             }
-            regex += "(.*)";
+            regex += "(.*)$";
             return new RegExp(regex);
         },
         getScore: function(text, regex){
@@ -98,8 +98,8 @@ var Querier = (function(){
                 if(firstMatch.length>0) nScore+=0.1;
                 if(lastMatch.length>0) nScore+=0.1;
                 
-                if(firstMatch.length>0 && /\w/.exec(firstMatch[firstMatch.length-1])) nScore+=0.1;
-                if(lastMatch.length>0 && /\w/.exec(lastMatch[0])) nScore+=0.1;
+                if(firstMatch.length>0 && !/\s/.exec(firstMatch[firstMatch.length-1])) nScore+=0.1;
+                if(lastMatch.length>0 && !/\s/.exec(lastMatch[0])) nScore+=0.1;
                 
                 for(var i=1; i<match.length-2; i++){
                     var length = match.length; 
@@ -150,7 +150,7 @@ var Querier = (function(){
                     m = regexEscape(query[i]);
                 regex += (i==0?"(.*)":"([^"+m+"]*)")+"(["+m+"])";
             }
-            regex +="(.*)";
+            regex +="(.*)$";
             return new RegExp(regex);
         },
         getScore: function(text, regex){
@@ -168,8 +168,8 @@ var Querier = (function(){
                 if(firstMatch.length>0) nScore+=0.1;
                 if(lastMatch.length>0) nScore+=0.1;
                 
-                if(firstMatch.length>0 && /\w/.exec(firstMatch[firstMatch.length-1])) nScore+=0.1;
-                if(lastMatch.length>0 && /\w/.exec(lastMatch[0])) nScore+=0.1;
+                if(firstMatch.length>0 && !/\s/.exec(firstMatch[firstMatch.length-1])) nScore+=0.1;
+                if(lastMatch.length>0 && !/\s/.exec(lastMatch[0])) nScore+=0.1;
                 
                 for(var i=1; i<match.length-1; i++){
                     var length = match.length; 
@@ -195,7 +195,7 @@ var Querier = (function(){
                     else 
                         text += match[i];
                 }
-                return text;
+                return text.replace(/<\/span><span[^>]*>/g,"");
             }else{
                 throw new Error("prepareRegex(query, caseSensitive) must be called first");
             }
@@ -227,9 +227,10 @@ var Querier = (function(){
             addScore--;
             for(var i=0; i<mt.matchTypes.length; i++){
                 var type = mt.matchTypes[i];
-                var score = type.getScore(text);
+                var score = type.getScore(text)
+                if(score) score+=addScore;
                 if(score!==null && score>minScore && (best==null || best.score<score)){
-                    best = {score:score+addScore, type:type};
+                    best = {score:score, type:type};
                 }
             }
             mt = mt.descendants;
@@ -242,7 +243,7 @@ var Querier = (function(){
         return query.test(text)?{score:1/(1+text.length/200), type:{highlight:function(text, clas){
             query.lastIndex = 0;
             var m = query.exec(text);
-            return text.substring(0,m.index)+"<span class="+clas+">"+text.substr(m.index,m[0].length)+"</span>"+text.substring(m.index+m[0].length);
+            return text.substring(0,m.index)+"<span class='"+clas+"'>"+text.substr(m.index,m[0].length)+"</span>"+text.substring(m.index+m[0].length);
         }}}:null;
     };
     
@@ -306,7 +307,7 @@ var Querier = (function(){
         var arg;
         for(var i=0; i<requirements.length; i++) 
             (arg = this.additionalRequirements[requirements[i]]).value = 
-                ((arg.def) instanceof Array)?jQuery.extend(true,[],arg.def):arg.def; //deep copy default
+                ((arg.def) instanceof Array)?arg.def.slice():arg.def; //deep copy default
     };
     Querier.parseRequirements = function(requirementsString){
         this.resetRequirements();
@@ -414,7 +415,7 @@ var Querier = (function(){
         var matches = [];
         for(var i=0; i<list.length; i++){
             var text = null;
-            if(getTextFunc) text = getTextFunc(list[i]);
+            if(getTextFunc) text = getTextFunc.call(list[i],list[i]);
             else            text = list[i];
             var match = this.test(text, minScore);
             if(match!==null) matches.push({match:match, item:list[i]});
@@ -436,7 +437,7 @@ var Querier = (function(){
         var matches = [];
         for(var i=0; i<list.length; i++){
             var text = null;
-            if(getTextFunc) text = getTextFunc(list[i]);
+            if(getTextFunc) text = getTextFunc.call(list[i],list[i]);
             else            text = list[i];
             var match = this.regexTest(text, query);
             if(match!==null) matches.push({match:match, item:list[i]});
@@ -490,14 +491,21 @@ var Querier = (function(){
             
         return matches;
     };
-    Querier.sortMatches = function(matches, maxResults){
+    Querier.sortMatches = function(matches, maxResults, func){
         var maxResults = maxResults||Settings.maxResults;
         return Quicksort.sort(matches, function(a,b){
             var dScore = a.match.score-b.match.score;
             if(dScore!=0) return dScore>0;
             
-            var nameA = a.file.getFullName();
-            var nameB = b.file.getFullName();
+            var nameA;
+            var nameB;
+            if(func){
+                nameA = func.call(a.item,a.item);
+                nameB = func.call(b.item,b.item);
+            }else{
+                nameA = a.file.getFullName();
+                nameB = b.file.getFullName();
+            }
             var minLength = Math.min(nameA.length, nameB.length);
             return nameA.substring(0,minLength)<nameB.substring(0,minLength);
             
@@ -524,6 +532,10 @@ var Querier = (function(){
     return Querier;
 })();
 
+
+function regexEscape(str){ //is included in utilities, but needs to be here for worker to work
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
 
 
 var alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"

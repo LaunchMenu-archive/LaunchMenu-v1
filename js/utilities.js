@@ -3,6 +3,7 @@ function regexEscape(str){
     return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
 var lmRoot = $("._lm_._QUERYNODE_");
+// var lmRoot = $("._lm_._QUERYNODE_");
 function lm(selector){
     var q = $(selector);
     if(q.selector){

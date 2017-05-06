@@ -28,8 +28,8 @@ var LargeSetSelector = Class("LargeSetSelector", {
     listTemplate:{
         html:   `<div class=content></div>`,
         style:  `.content{
-                    position: absolute;
                     width: 100%;
+                    display: inline-block;
                 }`
     },
     
@@ -64,10 +64,9 @@ var LargeSetSelector = Class("LargeSetSelector", {
         //but this will be accounted for when loading those items
         this.$(".content").height(this.selectorItemHeight*this.dataSet.length);
         
-        // load elements from the dataset, and select the first one
+        // load elements from the dataset, this will also select the selectedIndex;
+        this.selectedIndex = 0;
         this.loadElements();
-        var m = this.$(".content").children()[0];
-        if(m) m.selectorItem.select();
         
         this.$(".list").first().scrollbar("reset");
     },
@@ -84,9 +83,9 @@ var LargeSetSelector = Class("LargeSetSelector", {
             var item = $(items[i]);
             var itemTop = item.offset().top;
             var remove = false;
-            if(itemTop<scrollTop-height) //item is below loading region
+            if(itemTop<scrollTop-0.5*height) //item is below loading region
                 remove = true;
-            if(itemTop>scrollTop+2*height) //item is above loading region
+            if(itemTop>scrollTop+1.5*height) //item is above loading region
                 remove = true;
             if(remove){
                 removeItems.push(items[i].selectorItem);
@@ -105,12 +104,12 @@ var LargeSetSelector = Class("LargeSetSelector", {
             var itemIndex;
             if(items.length==0){
                 //get index based on position
-                itemIndex = Math.max(0,Math.floor((verticalOffset-0.5*height)/this.selectorItemHeight));
+                itemIndex = Math.max(0,Math.floor((verticalOffset-0.3*height)/this.selectorItemHeight));
             }else{
                 //get index based on last item in list
                 var lastItem = items.last();
                 itemIndex = Number(lastItem.attr("ID"))+1;
-                if(lastItem.length!=0 && lastItem.offset().top+lastItem.height()>scrollTop+1.5*height) break insertEnd; //don't attempt to load stuff if enough items are loaded already
+                if(lastItem.length!=0 && lastItem.offset().top+lastItem.height()>scrollTop+1.2*height) break insertEnd; //don't attempt to load stuff if enough items are loaded already
             }
             
             //insert the necessairy items at the end of the set
@@ -119,7 +118,7 @@ var LargeSetSelector = Class("LargeSetSelector", {
                     var selectorItem = this.createSelectorItem(this.dataSet[itemIndex]);
                     var el = selectorItem.element;
                     this.insertSelectorItem(selectorItem, itemIndex++);
-                    if(el.offset().top>scrollTop+1.5*height) break; //stop loading items when enough are loaded
+                    if(el.offset().top>scrollTop+1.2*height) break; //stop loading items when enough are loaded
                 }else
                     itemIndex++;
             }
@@ -131,12 +130,12 @@ var LargeSetSelector = Class("LargeSetSelector", {
             var itemIndex;
             if(items.length==0){
                 //get index based on position
-                itemIndex = Math.min(this.dataSet.length-1,Math.floor((verticalOffset+1.5*height)/this.selectorItemHeight));
+                itemIndex = Math.min(this.dataSet.length-1,Math.floor((verticalOffset+1.2*height)/this.selectorItemHeight));
             }else{
                 //get index based on first item in list
                 var firstItem = items.first();
                 itemIndex = Number(firstItem.attr("ID"))-1;
-                if(firstItem.length!=0 && firstItem.offset().top+firstItem.height()<scrollTop-0.5*height) break insertStart; //don't attempt to load stuff if enough items are loaded already
+                if(firstItem.length!=0 && firstItem.offset().top+firstItem.height()<scrollTop-0.3*height) break insertStart; //don't attempt to load stuff if enough items are loaded already
             }
             
             //insert the necessairy items at the start of the set
@@ -145,7 +144,7 @@ var LargeSetSelector = Class("LargeSetSelector", {
                     var selectorItem = this.createSelectorItem(this.dataSet[itemIndex]);
                     var el = selectorItem.element;
                     this.insertSelectorItem(selectorItem, itemIndex--);
-                    if(el.offset().top<scrollTop-0.5*height) break;//stop loading items when enough are loaded
+                    if(el.offset().top<scrollTop-0.3*height) break;//stop loading items when enough are loaded
                 }else
                     itemIndex--;
             }
@@ -253,28 +252,32 @@ var LargeSetSelector = Class("LargeSetSelector", {
         }});
     },
     
-    selectItem: function(selectorItem){
+    selectItem: function(selectorItem, firedBySelectorItem){
         //set the selected index when selecting an item, so it can be reselected after being unloaded because it fell outside the visible item range
-        if(this.super.selectItem(selectorItem)){
+        if(this.super.selectItem(selectorItem, firedBySelectorItem)){
             this.selectedIndex = Number(selectorItem.element.attr("ID"));
+            return true;
         }
+        return false;
     }, 
     selectUp: function(){
         if(this.selectedItem){ //select up as per usual
-            this.super.selectUp();
+            return this.super.selectUp();
         }else{
             //scroll to the position of the selected item, because it has been unloaded
             var list = this.$(".list");
             list[0].focusVertical((this.selectedIndex-1)*this.selectorItemHeight-list.height()/2,200);
+            return true;
         }
     },
     selectDown: function(){
         if(this.selectedItem){ //select up as per usual
-            this.super.selectDown();
+            return this.super.selectDown();
         }else{
             //scroll to the position of the selected item, because it has been unloaded
             var list = this.$(".list");
             list[0].focusVertical((this.selectedIndex-1)*this.selectorItemHeight-list.height()/2,200);
+            return true;
         }
     },
 }, Selector);

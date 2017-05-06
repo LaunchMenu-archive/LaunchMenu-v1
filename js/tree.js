@@ -71,7 +71,7 @@ function Tree(fileArray){
                             //create a directory if filepath is directory
                             var directory = new Directory(pathPart, selectedDir);
                             //add the directory to the current directory
-                            selectedDir.c.push(directory); 
+                            selectedDir.c.unshift(directory); 
                             selectedDir = directory; //set the next selected directory to be the new directory
                         }
                     //if create is not disabled, and it found an case insensitive match, use that match
