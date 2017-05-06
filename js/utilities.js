@@ -84,6 +84,24 @@ function resetCall(resetFunc, delay){
     return {cancel:function(){clearTimeout(id)}};
 }
 
+function testShorcut(keyEvent, shortcut){
+    var specialKeys = {ctrlKey:"ctrl", shiftKey:"shift", altKey:"alt"};
+    var keyNames = Object.keys(specialKeys);
+    
+    //search if all the special keys are pressed
+    for(var i=0; i<keyNames.length; i++){
+        var name = keyNames[i];
+        var index = shortcut.indexOf(specialKeys[name]);
+        if(keyEvent[name] != (index!=-1)) 
+            return false;
+    }
+    var parts = shortcut.toLowerCase().split("+");
+    for(var i=0; i<parts.length; i++){
+        var part = parts[i];
+        
+    }
+}
+
 function copy(object){
     if(object instanceof Array){
         return jQuery.extend([], object);

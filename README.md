@@ -137,4 +137,3 @@ Sancarn's todo:
 * Write node-js file list generator 
 * Make get icons multi-os compatible - also get larger icons on windows option!
 * General ini-file management.
-* 
