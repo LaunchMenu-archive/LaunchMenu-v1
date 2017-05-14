@@ -1,4 +1,4 @@
-/*global variables Inherit, Preview, PreviewHandler, Actions, createTemplateElement, Directory*/
+/*global variables Utils, Inherit, Preview, PreviewHandler, Actions, Directory*/
 PreviewHandler.registerPreviewType(
     Inherit("PreviewDirectory",{
         directory: true,
@@ -126,7 +126,7 @@ PreviewHandler.registerPreviewType(
                     }`
         },
         addChild: function(file){
-            var n = createTemplateElement("PreviewDirectoryChild", this.childTemplate);
+            var n = Utils.createTemplateElement("PreviewDirectoryChild", this.childTemplate);
             
             this.$(".children").append(n.element);
             if(file instanceof Directory){

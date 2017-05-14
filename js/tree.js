@@ -1,3 +1,4 @@
+/*global variables Main*/
 function Tree(fileArray){
     this.t = "root";
     this.c = [];
@@ -224,6 +225,18 @@ function Tree(fileArray){
     File.prototype.getFullName = function(){
         return this.n+(this.e.length>0?"."+this.e:"");
     };
+    File.prototype.setCut = function(state){
+        var wasCut = this.cut;
+        if(state){
+            this.cut = true;
+            if(!wasCut)
+                Main.setCutFile(this);
+        }else{
+            delete this.cut;
+            if(wasCut)
+                Main.resetCutFile();
+        }
+    };
 }
 
 //Directory class
@@ -265,6 +278,18 @@ function Tree(fileArray){
     };
     Directory.prototype.getFullName = function(){
         return this.n+"\\";
+    };
+    Directory.prototype.setCut = function(state){
+        var wasCut = this.cut;
+        if(state){
+            this.cut = true;
+            if(!wasCut)
+                Main.setCutFile(this);
+        }else{
+            delete this.cut;
+            if(wasCut)
+                Main.resetCutFile();
+        }
     };
 }
 

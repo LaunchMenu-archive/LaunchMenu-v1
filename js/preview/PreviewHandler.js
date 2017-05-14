@@ -1,4 +1,4 @@
-/*global variables Class lm createTemplateElement, File, Directory*/
+/*global variables Class, Utils, File, Directory*/
 var PreviewHandler = (function(){
     var previewList = [];
     var openedPreview = null;
@@ -43,7 +43,7 @@ var PreviewHandler = (function(){
                 }
             }
             
-            lm(".specificPreviewData").append(preview.element);
+            Utils.lm(".specificPreviewData").append(preview.element);
             preview.element.show();
             preview.htmlInitialisation();
             preview.element.hide();
@@ -92,7 +92,7 @@ var PreviewHandler = (function(){
             function(val){
                 this.val=val; 
                 this.reset=false; 
-                var n = lm(".dateCreated");
+                var n = Utils.lm(".dateCreated");
                 if(val.toLowerCase()=="none")   n.hide();
                 else                            n.show();
                 n.children(".dataValue").text(val);}
@@ -100,7 +100,7 @@ var PreviewHandler = (function(){
             function(val){
                 this.val=val; 
                 this.reset=false; 
-                var n = lm(".dateModified");
+                var n = Utils.lm(".dateModified");
                 if(val.toLowerCase()=="none")   n.hide();
                 else                            n.show();
                 n.children(".dataValue").text(val);}
@@ -108,7 +108,7 @@ var PreviewHandler = (function(){
             function(val){
                 this.val=val; 
                 this.reset=false; 
-                var n = lm(".dateAccessed");
+                var n = Utils.lm(".dateAccessed");
                 if(val.toLowerCase()=="none")   n.hide();
                 else                            n.show();
                 n.children(".dataValue").text(val);}
@@ -116,7 +116,7 @@ var PreviewHandler = (function(){
             function(val){
                 this.val=val; 
                 this.reset=false; 
-                var n = lm(".size");
+                var n = Utils.lm(".size");
                 if(val.toLowerCase()=="none")   n.hide();
                 else                            n.show();
                 n.children(".dataValue").text(val);}
@@ -124,7 +124,7 @@ var PreviewHandler = (function(){
             function(val){
                 this.val=val; 
                 this.reset=false; 
-                var n = lm(".path");
+                var n = Utils.lm(".path");
                 if(val.toLowerCase()=="none")   n.hide();
                 else                            n.show();
                 n.html(val);} 
@@ -162,7 +162,7 @@ var PreviewHandler = (function(){
         lm(".preview").addClass("full");
     };
     ph.showGeneralData = function(){
-        lm(".preview").removeClass("full");
+        Utils.lm(".preview").removeClass("full");
     };
     
     return ph;

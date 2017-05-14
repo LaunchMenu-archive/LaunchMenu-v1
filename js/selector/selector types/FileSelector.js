@@ -1,4 +1,4 @@
-/*global variables Class, LargeSetSelector, SelectorItem, tree, Querier, regexEscape, PreviewHandler, Directory, Searchbar, ActionMenuHandler*/
+/*global variables Class, LargeSetSelector, SelectorItem, tree, Querier, regexEscape, PreviewHandler, Directory, Searchbar, ActionMenuHandler, WorkerCommunication, ContextMenuHandler*/
 var FileSelector = Class("FileSelector",{
     const: function(){
         this.super.const();
@@ -124,55 +124,61 @@ var FileSelector = Class("FileSelector",{
         var h = this.history.pop();  
         if(h){
             this.setDirectory(h.directory, true);
+            var t = this;
+            var loadFunc = function(){
+                var list = t.$(".list");
+                list[0].setVerticalOffset((h.index-1)*t.selectorItemHeight-list.height()/2);
+                var element = t.$("#"+h.index)[0];
+                if(element)
+                    element.selectorItem.select();
+            };
             if(h.search && h.search.length>0){
-                this.search(h.search);  
+                this.search(h.search, loadFunc);  
                 Searchbar.setText(h.search, false);
             }else{
+                this.search("", loadFunc);
                 Searchbar.clear();
             }
-            
-            var list = this.$(".list");
-            list[0].focusVertical((h.index-1)*this.selectorItemHeight-list.height()/2,0);
-            this.$("#"+h.index)[0].selectorItem.select();
             return true;
         }
     },
     clearHistory: function(){
         this.history = [];
     },
-    search: function(text){
+    search: function(text, loadEvent){
         this.searchTerm = text;
         if(text==null || text.length==0){
             this.setDataSet(this.directory.children);
             this.$(".messageOuter").hide();
+            if(loadEvent) loadEvent();
         }else{
             console.time("load time");
-            var matches;
-            var regexSearch = false;
-            if(/\/(.+)\/(\w*)/.test(text)){
-                matches = Querier.regexQuery(text, this.directory);
-                regexSearch = true;
-            }else{
-                matches = Querier.query(text, this.directory);
-            }
-            
-            if(!(matches instanceof Array) || matches.length==0){
-                this.setDataSet([]);    
-                this.$(".messageOuter").show();
-                if(!(matches instanceof Array)){
-                    this.$(".noFileMessage").hide();
-                    this.$(".regexErrorMessage").show();
-                    this.$(".regexError").text(matches.message);
-                }else{
-                    this.$(".noFileMessage").show();
-                    this.$(".regexErrorMessage").hide();
+            var regexSearch = /\/(.+)\/(\w*)/.test(text);
+            var t = this;
+            WorkerCommunication.getMatches(text, function(matches){
+                if(t.searchTerm.length>0){ //only load the data if the last search was not empty
+                    console.time("lag time");
+                    if(!(matches instanceof Array) || matches.length==0){
+                        t.setDataSet([]);    
+                        t.$(".messageOuter").show();
+                        if(!(matches instanceof Array)){
+                            t.$(".noFileMessage").hide();
+                            t.$(".regexErrorMessage").show();
+                            t.$(".regexError").text(matches.message);
+                        }else{
+                            t.$(".noFileMessage").show();
+                            t.$(".regexErrorMessage").hide();
+                        }
+                    }else{
+                        t.$(".messageOuter").hide();
+                        t.setDataSet(matches, !regexSearch?text:null);
+                    }
+                    console.log(" ");
+                    console.timeEnd("lag time");
+                    console.timeEnd("load time");
                 }
-            }else{
-                var sortedMatches = Querier.sortMatches(matches, 1000);
-                this.$(".messageOuter").hide();
-                this.setDataSet(sortedMatches, !regexSearch?text:null);
-            }
-            console.timeEnd("load time");
+                if(loadEvent) loadEvent();
+            });
         }
     },
     setDataSet: function(list, query){
@@ -220,6 +226,8 @@ var FileSelectorItem = Class("FileSelectorItem",{
         if((this.file) instanceof Directory){
             this.$("img").attr("src", "../resources/images/icons/folder icon.png");
         }
+        if(this.file.cut)
+            this.setCut(true, true);
         
         this.$(".fileName").html(name);
     },
@@ -242,15 +250,47 @@ var FileSelectorItem = Class("FileSelectorItem",{
     select: function(){
         this.super.select();
         PreviewHandler.openFile(this.file);
+        
+        var actionMenu = ActionMenuHandler.getActionMenuFromFile(this.file);
+        var contextMenu = actionMenu.contextMenu;
+        if(contextMenu){
+            ContextMenuHandler.setSelectedContextMenu(contextMenu, this);
+        }
     },
     keyboardEvent: function(event){
         if(event.key=="Tab"){
-            ActionMenuHandler.openFileMenu(this.file);    
+            this.openActionsMenu();
             return true;
         }
     },
+    openActionsMenu: function(){
+        ActionMenuHandler.openFileItemMenu(this);  
+    },
+    eventSetup: function(){
+        this.super.eventSetup();
+        var t = this;
+        this.element.mouseup(function(event){
+            if(event.button==2){
+                t.openContextMenu({left:event.pageX, top:event.pageY});
+                event.stopImmediatePropagation();
+            }
+        });
+    },
+    openContextMenu: function(offset){
+        ActionMenuHandler.openFileItemContextMenu(this, offset);
+    },
     execute: function(){
         ActionMenuHandler.executeFile(this.file);
+    },
+    setCut: function(state, dontUpdateFile){
+        if(!dontUpdateFile)
+            this.file.setCut(state);
+            
+        if(state){
+            this.element.addClass("cut");
+        }else{
+            this.element.removeClass("cut");
+        }
     },
     template:{
         html:   `<div class='fileIcon'>
@@ -264,6 +304,9 @@ var FileSelectorItem = Class("FileSelectorItem",{
 		style:  `.root{
                     min-height: 40px;
                     border-bottom-width: 1px;
+		        }
+		        .cut{
+		            opacity: 0.5;
 		        }
 		        .fileIcon{
                     box-sizing: border-box;

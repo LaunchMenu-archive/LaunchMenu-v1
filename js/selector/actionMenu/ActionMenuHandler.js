@@ -1,4 +1,4 @@
-/*global variables File, Directory*/
+/*global variables File, Directory, FileSelectorItem*/
 var ActionMenuHandler = (function(){
     var actionMenuList = [];
     var actionMenuByExtension = {};
@@ -43,34 +43,35 @@ var ActionMenuHandler = (function(){
         }
     };
     
-    amh.getActionMenuFromExtension = function(extension){
-        var n = actionMenuByExtension[extension];
-        if(!n) return defaultActionMenu;
-        return (n instanceof Array)?n[0]:n;
-    };
-    amh.openFileMenu = function(file){
-        var n;
+    amh.getActionMenuFromFile = function(file){
         if(file instanceof File){
-            n = amh.getActionMenuFromExtension(file.extension);
+            var n = actionMenuByExtension[file.extension];
+            if(!n) n = defaultActionMenu;
+            return (n instanceof Array)?n[0]:n;
         }else if(file instanceof Directory){
-            n = directoryActionMenu;
+            return  directoryActionMenu;
         }else{
             throw new Error("first argument must be either a file or a directory");
         }
-        
-        n.openFile(file);
     };
     amh.executeFile = function(file){
-        var n;
-        if(file instanceof File){
-            n = amh.getActionMenuFromExtension(file.extension);
-        }else if(file instanceof Directory){
-            n = directoryActionMenu;
+        amh.getActionMenuFromFile(file).executeFile(file);
+    };
+    amh.openFileItemMenu = function(fileItem){
+        if(FileSelectorItem.classof(fileItem)){
+            var am = amh.getActionMenuFromFile(fileItem.file);
+            am.openFileItem(fileItem);
         }else{
-            throw new Error("first argument must be either a file or a directory");
+            throw Error("argument must be an instance of FileSelectorItem");
         }
-        
-        n.executeFile(file);
+    };
+    amh.openFileItemContextMenu = function(fileItem, offset){
+        if(FileSelectorItem.classof(fileItem)){
+            var am = amh.getActionMenuFromFile(fileItem.file);
+            am.openContextMenu(fileItem, offset);
+        }else{
+            throw Error("argument must be an instance of FileSelectorItem");
+        }
     };
     
     return amh;

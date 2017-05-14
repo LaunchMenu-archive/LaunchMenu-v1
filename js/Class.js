@@ -128,14 +128,16 @@ var Inherit = (function(){
                 /*copy non function fields to both the prototype and the original object,
                 meaning that this.field aswell as Class.field can be used to retrieve constants
                 but 'this.field = value' will create a local copy, where 'Class.field = value' will alter the constant*/
-                constructor.prototype[field] = fieldVal;
-                constructor.__defineGetter__(field, function(){
-                    return  constructor.prototype[field];
-                });
-                if(field!=classNameN)
-                    constructor.__defineSetter__(field, function(value){
-                        constructor.prototype[field] = value;
+                (function(field){ //store field in scope
+                    constructor.prototype[field] = fieldVal;
+                    constructor.__defineGetter__(field, function(){
+                        return  constructor.prototype[field];
                     });
+                    if(field!=classNameN)
+                        constructor.__defineSetter__(field, function(value){
+                            constructor.prototype[field] = value;
+                        });
+                })(field);
             }
         }
         

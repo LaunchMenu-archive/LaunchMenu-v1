@@ -1,9 +1,10 @@
-/*global variables Class, ActionMenu, ActionMenuHandler, fileSelector, Searchbar*/
+/*global variables Class, ActionMenu, ActionMenuHandler, fileSelector, Searchbar, ActionMenuStandard*/
 var ActionMenuDefault = Class("ActionMenuDefault",{
     actions: [],
     default: true,
     executeFile: function(file){
         console.log("execute",file);
+        return true;
     }
-}, ActionMenu);
+}, ActionMenuStandard);
 ActionMenuHandler.registerActionMenuType(new ActionMenuDefault());

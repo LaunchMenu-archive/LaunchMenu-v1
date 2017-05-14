@@ -77,28 +77,28 @@ Keyboard shorcuts:
 
 | Keys                                  | Description                                   |
 |---------------------------------------|-----------------------------------------------|
-|<kbd>Alt</kbd>+<kbd>Space</kbd>        | Open LaunchMenu                              |
-|<kbd>Enter</kbd>                       | Execute item (for instance open directory)    |
-|<kbd>Shift</kbd>+<kbd>Enter</kbd>      | Goback to previous directory                  |
-|<kbd>Ctrl</kbd>+<kbd>Enter</kbd>       | Goto parent directory                         |
-|<kbd>Tab</kbd>                         | Open action menu of selected file             |
-|<kbd>Shift</kbd>+<kbd>Tab</kbd>        | Close action menu                             |
+|<kbd>Alt</kbd>+<kbd>Space</kbd>        | Open LaunchMenu                               |
 |<kbd>Up</kbd>                          | Go up in selector                             |
 |<kbd>Down</kbd>                        | Go down in selector                           |
+|<kbd>Enter</kbd>                       | Execute item (for instance open directory)    |
+|<kbd>Shift</kbd>+<kbd>Enter</kbd>      | Goto previous view                            |
+|<kbd>Ctrl</kbd>+<kbd>Enter</kbd>       | Goto the parent of the current directory      |
+|<kbd>Tab</kbd>                         | Open action menu of selected file             |
+|<kbd>Shift</kbd>+<kbd>Tab</kbd>        | Close action menu                             |
 |<kbd>Esc</kbd>                         | Go back to root, if in root close program     |
 
 ## To Do
 
-* [X] FuzzySearch to handle tree type.
-* [X] File searching display
-* [X] Search highlighting.
-* [X] Scrolling beyond the current range.
-* [X] File navigation with arrows and mouse
-* [X] Animated window expanding/contracting
-* [X] Custom themes
-* [X] Ability to search for folders
-* [X] Ability to search for files using regex.
-* [X] Ability to search in selected folders (use '/' or '\' prefix '\myAmazingFolder' ), skipped because we can now navigate and to folders and search through them 
+* [x] FuzzySearch to handle tree type.
+* [x] File searching display
+* [x] Search highlighting.
+* [x] Scrolling beyond the current range.
+* [x] File navigation with arrows and mouse
+* [x] Animated window expanding/contracting
+* [x] Custom themes
+* [x] Ability to search for folders
+* [x] Ability to search for files using regex.
+* [x] Ability to search in selected folders (use '/' or '\' prefix '\myAmazingFolder' ), skipped because we can now navigate and to folders and search through them 
 * [ ] {50%} File preview
 * [ ] {10%} Implement myFile.lmf HTML preview.
 * [ ] {25%} Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff.
@@ -112,7 +112,7 @@ Keyboard shorcuts:
 * [ ] Explore Capability of making LaunchMenu a Mac - Scriptable App: https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptX/Concepts/scriptable_apps.html
 * [ ] Ability to search in the contents of files.
 * [ ] Deprecate .LMP & .LMM files. Move to .LMF (Launch Menu Format). These files will store the preview and all assosciated files with that file.
-* [ ] Applets System: ColorPicker, Calculator, Dictionary, Web Search, Translate, Notes, Regexr
+* [ ] Applets System: ColorPicker, Calculator, Dictionary, Web Search, Translate, Notes, Regexr, Music player, log maker
 * [ ] Add some method to call applets given search term / pattern (js callback)
 * [ ] Add methods to call global applets etc.
 * [ ] Launch Menu Events. Example: Whenever LaunchMenu is activated, run "activated.event.js"
@@ -125,14 +125,22 @@ Keyboard shorcuts:
 * [ ] shortcut dictonary popup dick
 * [ ] tab menu when hovering over an item <-- include in this, go to parent directory
 
+tgm's todo:
+* [x] Make worker for finding matches
+* [x] make a cut system
+* [x] create rightclick menu
+* [x] turn utilities into util object to get rid of floating variables
+* systemEvents:
+*   
+* [ ] create event system
+* [ ] create settings system and menu, with on change events etc
+* [ ] setup custom preview and actions system with the .lmf file
+* [ ] create applet system
+
 
 Sancarn's todo:
 
-* Test general scrollbar stuff.
-* Test scrollmenu expand/collapse animation - is setSize() called at the moment?
-* Test server communication functions.
-* Test GetActiveWindow Mac functions with npm jxa        [needs fully implementing]
-* Test GetActiveWindow Windows functions with npm ffi    [needs fully implementing]
+* Test GetActiveWindow functions Mac and Windows
 * Test Edge-VB.JS (possibly better than keeping an external application) 
 * Write node-js file list generator 
 * Make get icons multi-os compatible - also get larger icons on windows option!

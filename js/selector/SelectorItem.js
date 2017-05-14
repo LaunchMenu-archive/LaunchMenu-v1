@@ -1,11 +1,11 @@
-/*global Class createTemplateElement*/
+/*global Class, Utils*/
 var SelectorItem = Class("SelectorItem", {
     const: function(){
         //create element out of template
-        this.template = copy(this.template); //make a local copy of the class' template
+        this.template = Utils.copy(this.template); //make a local copy of the class' template
         this.template.style += ".selected{"+this.selectedStyle+"}"; //add styling for if the item is selected
         var UID = Math.floor(Math.random()*Math.pow(10,7)); //add UID to element because there will be many instances of this class
-        var n = createTemplateElement(this.className, this.template);
+        var n = Utils.createTemplateElement(this.className, this.template);
         
         this.element = n.element;
         this.element.css({width:"100%","min-height":"40px"});

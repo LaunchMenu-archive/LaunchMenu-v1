@@ -1,4 +1,4 @@
-/*global variables createTemplateElement, lm,*/
+/*global variables Utils,*/
 var Searchbar = (function(){
     var sb = {};
     
@@ -15,7 +15,7 @@ var Searchbar = (function(){
     var valueListeners = [];
     var eventListeners = [];
     var lastInput = null;
-    // setup:
+    // init:
     {
         var gui ={
             html:  `<div class="f6 icon icon-search"></div>
@@ -60,10 +60,10 @@ var Searchbar = (function(){
                         height:100%;
                     }`
         };
-        var n = createTemplateElement("Searchbar", gui);
+        var n = Utils.createTemplateElement("Searchbar", gui);
         var element = n.element;
         sb.$ = n.querier;
-        lm(".searchbar").append(element);
+        Utils.lm(".searchbar").append(element);
         
         //input listener
         sb.$(".input").keydown(function(e){
@@ -96,26 +96,24 @@ var Searchbar = (function(){
              });
         });
         
-        sb.$(window).click(function(){
-            var focus = function(){
-                if(!window.$(":focus").length && !getSelectionText())
-                    sb.$(".input").focus();
-            };
-            setTimeout(focus, 0);
-        });
+        //select searchbar when something has been clicked, unless it is an input
+        document.body.addEventListener('mouseup', function(event){
+            if(!window.$(":focus").length && !getSelectionText())
+                sb.$(".input").focus();
+        }, true); 
     }
     
-    sb.addEventListener = function(listener, end){
-        if(!end)
-            eventListeners.unshift(listener);
-        else
+    sb.addEventListener = function(listener, start){
+        if(!start)
             eventListeners.push(listener);
-    };
-    sb.addValueListener = function(listener, end){
-        if(!end)
-            valueListeners.unshift(listener);
         else
+            eventListeners.unshift(listener);
+    };
+    sb.addValueListener = function(listener, start){
+        if(!start)
             valueListeners.push(listener);
+        else
+            valueListeners.unshift(listener);
     };
     
     sb.clear = function(dontCompute){

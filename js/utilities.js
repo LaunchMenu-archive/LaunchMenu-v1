@@ -1,114 +1,257 @@
 /*global $*/
-function regexEscape(str){
-    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-}
-var lmRoot = $("._lm_._QUERYNODE_");
-// var lmRoot = $("._lm_._QUERYNODE_");
-function lm(selector){
-    var q = $(selector);
-    if(q.selector){
-        return $(selector).filter(function(){
-            return $(this).closest("._QUERYNODE_")[0]==lmRoot[0];
-        });
-    }else
-        return q;
-}
-function fitImageInDiv(imgEl, imageData, padding){
-    var oldWidth = imgEl.width();
-    var oldHeight = imgEl.height();
+var Utils = (function(){
+    var u = {};
     
-    imgEl.width("100%").height("100%");
-    var maxWidth = imgEl.width()-padding*2;
-    var maxHeight = imgEl.height()-padding*2;
-    var maxRatio = maxHeight/maxWidth;
-    imgEl.width(oldWidth).height(oldHeight);
-    
-    var img = new Image();
-    img.src = imageData;
-    img.onload = function(){
-        var width = img.width;
-        var height = img.height;
-        
-    	imgEl.attr("src", imageData);
-        var ratio = height/width;
-        
-        if(ratio>maxRatio){
-            height = maxHeight;
-            width = height/ratio;
-        }else{
-            width = maxWidth;
-            height = width*ratio;
-        }
-        imgEl.width(width).height(height);	
+    u.regexEscape = function(str){
+        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
     };
-}
-
-function createQueryNode(name, element){
-    var root = element;
-    return function(selector){
+    var lmRoot = $("._lm_._QUERYNODE_");
+    u.lm = function(selector){
         var q = $(selector);
         if(q.selector){
-            return root.find(selector).filter(function(){
-                return $(this).parents("._QUERYNODE_")[0]==root[0];
+            return $(selector).filter(function(){
+                return $(this).closest("._QUERYNODE_")[0]==lmRoot[0];
             });
         }else
-            return q;
+            return q;    
     };
-}
-function createTemplateElement(name, template, UID){
-    var c = "_"+name+"_"+(UID?" _"+UID+"_":"");
-    var el = $("<div class='"+c+" _QUERYNODE_'>"+template.html+"</div>");
-    el.find("*").addBack().addClass(c);
     
-    var selector = /([^,+~{}:]+)((:[^,+~{}:]+)*)([,+~]|\{([^\{\}]+)\})/g;
-    if(UID){
-        var styling = template.style.replace(selector, `$1.${c.replace(/ /g,".")}$2$4`);
-        el.append("<style>"+styling+"</style>");
-    }else{
-        if($("body").children("style."+c).length==0){
-            var styling = template.style.replace(selector, `$1.${c}$2$4`);
-            $("body").append("<style class="+c+">"+styling+"</style>");
+    u.fitImageInDiv = function(imgEl, imageData, padding){
+        var oldWidth = imgEl.width();
+        var oldHeight = imgEl.height();
+        
+        imgEl.width("100%").height("100%");
+        var maxWidth = imgEl.width()-padding*2;
+        var maxHeight = imgEl.height()-padding*2;
+        var maxRatio = maxHeight/maxWidth;
+        imgEl.width(oldWidth).height(oldHeight);
+        
+        var img = new Image();
+        img.src = imageData;
+        img.onload = function(){
+            var width = img.width;
+            var height = img.height;
+            
+        	imgEl.attr("src", imageData);
+            var ratio = height/width;
+            
+            if(ratio>maxRatio){
+                height = maxHeight;
+                width = height/ratio;
+            }else{
+                width = maxWidth;
+                height = width*ratio;
+            }
+            imgEl.width(width).height(height);	
+        };
+    }
+    
+    u.createQueryNode = function(name, element){
+        var root = element;
+        return function(selector){
+            var q = $(selector);
+            if(q.selector){
+                return root.find(selector).filter(function(){
+                    return $(this).parents("._QUERYNODE_")[0]==root[0];
+                });
+            }else
+                return q;
+        };
+    };
+    u.createTemplateElement= function(name, template, UID){
+        var c = "_"+name+"_"+(UID?" _"+UID+"_":"");
+        var el = $("<div class='"+c+" _QUERYNODE_'>"+template.html+"</div>");
+        el.find("*").addBack().addClass(c);
+        
+        var selector = /([^,+~{}:]+)((:[^,+~{}:]+)*)([,+~]|\{([^\{\}]+)\})/g;
+        if(UID){
+            var styling = template.style.replace(selector, `$1.${c.replace(/ /g,".")}$2$4`);
+            el.append("<style>"+styling+"</style>");
+        }else{
+            if($("body").children("style."+c).length==0){
+                var styling = template.style.replace(selector, `$1.${c}$2$4`);
+                $("body").append("<style class="+c+">"+styling+"</style>");
+            }
+        }
+        el.addClass("root");
+        
+        var query = u.createQueryNode(name, el);
+        return {element:el, querier:query, htmlClassName:c};
+    };
+    
+    u.keyboardEventToShortcut = function(keyEvent){
+        var specialKeys = {ctrlKey:"ctrl", shiftKey:"shift", altKey:"alt"};
+        var keyNames = Object.keys(specialKeys);
+        
+        var output = "";
+        for(var i=0; i<keyNames.length; i++){
+            var name = keyNames[i];
+            if(keyEvent[name]) 
+                output+=specialKeys[name]+"+";
+        }
+        
+        output+=keyEvent.key.toLowerCase();
+        return output;
+    };
+    u.testShorcut = function(keyEvent, shortcut){
+        shortcut = shortcut.toLowerCase();
+        var specialKeys = {ctrlKey:"ctrl", shiftKey:"shift", altKey:"alt"};
+        var keyNames = Object.keys(specialKeys);
+        
+        //search if all the special keys are pressed
+        for(var i=0; i<keyNames.length; i++){
+            var name = keyNames[i];
+            var index = shortcut.indexOf(specialKeys[name]);
+            if(!!keyEvent[name] != (index!=-1)) 
+                return false;
+        }
+        
+        //check if the right key is pressed
+        var parts = shortcut.split("+");
+        if(parts.indexOf(keyEvent.key)==-1) return false;
+        
+        return true;
+    };
+
+
+    u.copy = function(object){
+        if(object instanceof Array){
+            return jQuery.extend([], object);
+        }else{
+            return jQuery.extend({}, object);
         }
     }
-    el.addClass("root");
-    
-    var query = createQueryNode(name, el);
-    return {element:el, querier:query, htmlClassName:c};
-}
+    return u;
+})();
 
-function resetCall(resetFunc, delay){
-    var id = setTimeout(function(){
-        id = null;
-        resetFunc();
-    }, delay);
-    return {cancel:function(){clearTimeout(id)}};
-}
 
-function testShorcut(keyEvent, shortcut){
-    var specialKeys = {ctrlKey:"ctrl", shiftKey:"shift", altKey:"alt"};
-    var keyNames = Object.keys(specialKeys);
+// function regexEscape(str){
+//     return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+// }
+// var lmRoot = $("._lm_._QUERYNODE_");
+// // var lmRoot = $("._lm_._QUERYNODE_");
+// function lm(selector){
+//     var q = $(selector);
+//     if(q.selector){
+//         return $(selector).filter(function(){
+//             return $(this).closest("._QUERYNODE_")[0]==lmRoot[0];
+//         });
+//     }else
+//         return q;
+// }
+// function fitImageInDiv(imgEl, imageData, padding){
+//     var oldWidth = imgEl.width();
+//     var oldHeight = imgEl.height();
     
-    //search if all the special keys are pressed
-    for(var i=0; i<keyNames.length; i++){
-        var name = keyNames[i];
-        var index = shortcut.indexOf(specialKeys[name]);
-        if(keyEvent[name] != (index!=-1)) 
-            return false;
-    }
-    var parts = shortcut.toLowerCase().split("+");
-    for(var i=0; i<parts.length; i++){
-        var part = parts[i];
+//     imgEl.width("100%").height("100%");
+//     var maxWidth = imgEl.width()-padding*2;
+//     var maxHeight = imgEl.height()-padding*2;
+//     var maxRatio = maxHeight/maxWidth;
+//     imgEl.width(oldWidth).height(oldHeight);
+    
+//     var img = new Image();
+//     img.src = imageData;
+//     img.onload = function(){
+//         var width = img.width;
+//         var height = img.height;
         
-    }
-}
+//     	imgEl.attr("src", imageData);
+//         var ratio = height/width;
+        
+//         if(ratio>maxRatio){
+//             height = maxHeight;
+//             width = height/ratio;
+//         }else{
+//             width = maxWidth;
+//             height = width*ratio;
+//         }
+//         imgEl.width(width).height(height);	
+//     };
+// }
 
-function copy(object){
-    if(object instanceof Array){
-        return jQuery.extend([], object);
-    }else{
-        return jQuery.extend({}, object);
-    }
-}
+// function createQueryNode(name, element){
+//     var root = element;
+//     return function(selector){
+//         var q = $(selector);
+//         if(q.selector){
+//             return root.find(selector).filter(function(){
+//                 return $(this).parents("._QUERYNODE_")[0]==root[0];
+//             });
+//         }else
+//             return q;
+//     };
+// }
+// function createTemplateElement(name, template, UID){
+//     var c = "_"+name+"_"+(UID?" _"+UID+"_":"");
+//     var el = $("<div class='"+c+" _QUERYNODE_'>"+template.html+"</div>");
+//     el.find("*").addBack().addClass(c);
+    
+//     var selector = /([^,+~{}:]+)((:[^,+~{}:]+)*)([,+~]|\{([^\{\}]+)\})/g;
+//     if(UID){
+//         var styling = template.style.replace(selector, `$1.${c.replace(/ /g,".")}$2$4`);
+//         el.append("<style>"+styling+"</style>");
+//     }else{
+//         if($("body").children("style."+c).length==0){
+//             var styling = template.style.replace(selector, `$1.${c}$2$4`);
+//             $("body").append("<style class="+c+">"+styling+"</style>");
+//         }
+//     }
+//     el.addClass("root");
+    
+//     var query = createQueryNode(name, el);
+//     return {element:el, querier:query, htmlClassName:c};
+// }
+
+// function resetCall(resetFunc, delay){
+//     var id = setTimeout(function(){
+//         id = null;
+//         resetFunc();
+//     }, delay);
+//     return {cancel:function(){clearTimeout(id)}};
+// }
+
+// function keyboardEventToShortcut(keyEvent){
+//     var specialKeys = {ctrlKey:"ctrl", shiftKey:"shift", altKey:"alt"};
+//     var keyNames = Object.keys(specialKeys);
+    
+//     var output = "";
+//     for(var i=0; i<keyNames.length; i++){
+//         var name = keyNames[i];
+//         if(keyEvent[name]) 
+//             output+=specialKeys[name]+"+";
+//     }
+    
+//     output+=keyEvent.key.toLowerCase();
+//     return output;
+// }
+
+// function testShorcut(keyEvent, shortcut){
+//     shortcut = shortcut.toLowerCase();
+//     var specialKeys = {ctrlKey:"ctrl", shiftKey:"shift", altKey:"alt"};
+//     var keyNames = Object.keys(specialKeys);
+    
+//     //search if all the special keys are pressed
+//     for(var i=0; i<keyNames.length; i++){
+//         var name = keyNames[i];
+//         var index = shortcut.indexOf(specialKeys[name]);
+//         if(!!keyEvent[name] != (index!=-1)) 
+//             return false;
+//     }
+    
+//     //check if the right key is pressed
+//     var parts = shortcut.split("+");
+//     if(parts.indexOf(keyEvent.key)==-1) return false;
+    
+//     return true;
+// }
+
+// function copy(object){
+//     if(object instanceof Array){
+//         return jQuery.extend([], object);
+//     }else{
+//         return jQuery.extend({}, object);
+//     }
+// }
 // function logableFunc(func, name, help){
 // 	var match = /^[^\(]*\(([^\{\}]*)\)\{/.exec(func+"");
 // 	var argNames = match[1].split(/,\s*/);

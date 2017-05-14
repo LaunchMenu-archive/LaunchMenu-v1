@@ -1,9 +1,9 @@
-/*global variables Class, createTemplateElement, SelectorHandler, SelectorItem, copy*/
+/*global variables Class, Utils, SelectorHandler, SelectorItem*/
 var Selector = Class("Selector",{
     //template initialisation code
     const:function(){
         //insert all seperate templates into the main template
-        this.template = copy(this.template); //make a local copy
+        this.template = Utils.copy(this.template); //make a local copy
         this.template.html = this.template.html.replace("_HEADER_", this.headerTemplate.html);
         this.template.html = this.template.html.replace("_FOOTER_", this.footerTemplate.html);
         this.template.html = this.template.html.replace("_LIST_",   this.listTemplate.html);
@@ -11,7 +11,7 @@ var Selector = Class("Selector",{
         
         //create element out of template
         var UID = Math.floor(Math.random()*Math.pow(10,7)); //add UID to element because there could be many instances of this class(as a menu for instance)
-        var n = createTemplateElement(this.className, this.template, UID);
+        var n = Utils.createTemplateElement(this.className, this.template, UID);
         
         this.element = n.element;
         this.element.css({width:"calc(100% + 1px)",height:"100%",position:"absolute", overflow:"hidden", "border-right-width":"1px"});
@@ -200,16 +200,14 @@ var Selector = Class("Selector",{
             setTimeout(function(){t.disableSelect = false}, 100);
             
             if(this.selectedItem){
-                var prev = this.selectedItem.element.prev();
+                var prev = this.selectedItem.element.prevAll(":not(.divider)").first();
                 if(prev.length>0){
                     this.selectItem(prev[0].selectorItem);
                     this.focusOnSelectedItem();
-                    return true;
                 }
             }
-        }else{
-            return true;
         }
+        return true;
     },
     selectDown: function(){ //select the selectorItem below the currently selected SelectorItem
         if(!this.disableSelect){
@@ -218,21 +216,20 @@ var Selector = Class("Selector",{
             setTimeout(function(){t.disableSelect = false}, 100);
                 
             if(this.selectedItem){
-                var next = this.selectedItem.element.next();
+                var next = this.selectedItem.element.nextAll(":not(.divider)").first();
                 if(next.length>0){
                     this.selectItem(next[0].selectorItem);
                     this.focusOnSelectedItem();
-                    return true;
                 }
             }
-        }else{
-            return true;
         }
+        return true;
     },
     executeItem: function(){ //execute the currently selected item
         if(this.selectedItem){
             return this.selectedItem.execute();
         }
+        return true;
     },
     keyboardEvent: function(event){ //pass the keyboard event to the currently selected item
         if(event.key=="ArrowUp"){
@@ -240,7 +237,7 @@ var Selector = Class("Selector",{
         }else if(event.key=="ArrowDown"){
             return this.selectDown();
         }else if(event.key=="Enter"){
-            return !this.executeItem();
+            return this.executeItem();
         }
         
         if(this.selectedItem){

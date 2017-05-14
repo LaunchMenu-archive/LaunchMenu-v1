@@ -1,4 +1,4 @@
-/*global variables Class lm $ createTemplateElement jQuery*/
+/*global variables Class, Utils, $,  jQuery*/
 var SelectorHandler = (function(){
     var openedStack = [];
     var topSelector = function(){
@@ -17,7 +17,7 @@ var SelectorHandler = (function(){
     };
     
     sh.registerSelector = function(selector){ //add the Selector's element to the page
-        lm(".selector").append(selector.element);
+        Utils.lm(".selector").append(selector.element);
     };
     sh.setOpenedSelector = function(selector, animationDuration){ //register that a selector has opened
         var top = topSelector();

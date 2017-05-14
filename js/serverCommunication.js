@@ -464,13 +464,13 @@ var Actions = (function(){
     
     /**
      * object: Actions
-     * name: automation.dos
-     * def: This function executes dos commands given as a string.
+     * name: automation.cmd
+     * def: This function executes cmd commands given as a string.
      * params: dosCode as string, args as array, callback as function
      * callback: function(stderr as string, stdout as string)
      * os: windows
      */
-    Actions.automation.dos = function(dosCode,args,callback){};
+    Actions.automation.cmd = function(dosCode,args,callback){};
     /** DOS does not have functions in the conventional sense that other languages do.
      *  however you can print to stdin and stderr. However DOS does have labels. You can also
      *  pass text to the stdin of other functions. E.G. `DIR /S | MORE` where DIR
@@ -488,7 +488,7 @@ var Actions = (function(){
      * EXIT /b
     */
     
-    //ALIAS FOR Actions.automation.dos
+    //ALIAS FOR Actions.automation.cmd
     Actions.automation.batch = function(dosCode,args,callback){};
     
     /**
@@ -703,53 +703,114 @@ Language.prototype.call = function(){
     switch(this.language){
         case "cs":
 	        break;
-        case "dos":
-        	break;
-        case "batch":
-        	break;
+        case "batch": //alias for cmd
+        case "cmd":
+        	return dedent(`@echo Off
+                               
+                           {//code//}`).replace("{//code//}",this.code)
         case "vbs":
-        	break;
+            var matches = /(Function|Sub)\s+Invoke\((.*?)\)/i.exec(this.code)
+            if(matches[1].toLowerCase()=='function'){
+                return dedent(`WScript.StdOut.Write(Invoke(${bashArgs.apply(this,arguments).replace(/ /g, ", ")}))
+                               
+                               {//code//}`).replace("{//code//}",this.code)
+            } else if (matches[1].toLowerCase()=='sub') {
+                return dedent(`Invoke ${bashArgs.apply(this,arguments).replace(/ /g, ", ")}
+                               
+                               {//code//}`).replace("{//code//}",this.code)
+            } else {
+                throw new Error("The invoke function given is neither a sub or a function.")
+            }
         case "powershell":
-        	break;
+            //  powershell -command "& {Set-ExecutionPolicy -Scope LocalMachine Unrestricted -Force}"
+            //  powershell .\myPS.ps1
+            //  Write-Host $(Invoke arg1 arg2 arg3 ...)
+            return dedent(`{//code//}
+                           
+                           Write-Hoset $(Invoke {//args//})
+                           `).replace("{//code//}",this.code).replace("{//args//}",bashArgs.apply(this,arguments))
         case "applescript":
+        	//osacompile -o myAppleScript.txt myAppleScript.scpt
+            //osascript myAppleScript.scpt
         	return dedent(`on run
         	                   return Invoke(${this.fillArgs(arguments,this.code,"{}","missing value")})
         	               end run
         	               
         	               {//code//}`).replace("{//code//}",this.code.replace(/(Invoke\(.*)\*/,"$1"))
         case "jxa":
+            //osacompile -l JavaScript -o myJXA.txt myJXA.scpt
+            //osascript -l JavaScript myJXA.scpt
             return dedent(`function run(){
         	                   return Invoke(${this.fillArgs(arguments,this.code)})
                            }
         	               
         	               {//code//}`).replace("{//code//}",this.code.replace(/(Invoke\(.*)\*/,"$1"))
         case "python":
+            //python script.py
             return dedent(`{//code//}
                            
                            import sys
                            sys.stdout.write(Invoke(${this.fillArgs(arguments,this.code,"{}","None")}))
                            `).replace("{//code//}",this.code.replace(/(Invoke\(.*)\*/,"$1"))
         case "bash":
-        	var bash = function(){
-                var args = [];
-                for(var i in arguments){
-                    var arg = arguments[i]
-                    if(typeof arg == "object"){
-                        args.push(JSON.stringify(JSON.stringify(arg)));
-                    } else {
-                        args.push(JSON.stringify(arg));
-                    }
-                }
-                return args.join(" ")
-            }
+            //bash script.sh
             return dedent(`{//code//}
                            
                            Invoke {//args//}
-                           `).replace("{//code//}",this.code).replace("{//args//}",bash.apply(this,arguments))
+                           `).replace("{//code//}",this.code).replace("{//args//}",bashArgs.apply(this,arguments))
         default:
             throw new Error(this.language + " is not a known language.")
     }
+    function bashArgs(){
+        var args = [];
+        for(var i in arguments){
+            var arg = arguments[i]
+            if(typeof arg == "object"){
+                args.push(JSON.stringify(JSON.stringify(arg)));
+            } else {
+                args.push(JSON.stringify(arg));
+            }
+        }
+        return args.join(" ")
+    }
 }
+
+/* VBS Example:
+***********************************
+lang = new Language("vbs")
+lang.code = `
+sub Invoke(a,b,c)
+    'do stuff
+end sub
+`
+lang.call("a",1,{a:1,b:{a:"A",b:"B"}})
+
+'==> Invoke "a", 1, "{\"a\":1,\"b\":{\"a\":\"A\",\"b\":\"B\"}}"
+
+VBS Example 2:
+***********************************
+lang = new Language("vbs")
+lang.code = `
+function Invoke(a,b,c)
+    'do stuff
+     Invoke = "bob"
+end function
+`
+lang.call("a",1,{a:1,b:{a:"A",b:"B"}})
+
+'==> WScript.StdOut.Write(Invoke("a", 1, "{\"a\":1,\"b\":{\"a\":\"A\",\"b\":\"B\"}}"))
+*/
+
+/* Powershell Example
+***********************************
+var ps = new Language('powershell')
+ps.code =`
+function Invoke($arg1,$arg2,$arg3){
+    return $arg1 + "," + $arg2 + "," + $arg3
+}`
+ps.call(1,2,3)
+# ==> 1,2,3
+*/
 
 /* Applescript example:
 ***********************************

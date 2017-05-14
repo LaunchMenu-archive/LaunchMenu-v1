@@ -1,72 +1,42 @@
-/*global variables Class, Menu */
+/*global variables Class, Menu, Main, ContextMenu, ContextMenuHandler */
 var ActionMenu = Class("ActionMenu",{
-    const: function(){
-        this.super.const();
-        
-        this.shortcuts = [];
-        
-        var actions = this.standardActions.concat(this.actions);
-        for(var i=0; i<actions.length; i++){
-            var action = actions[i];
-            if(!action.hidden)
-                this.addItem(action.icon, action.text, action.func);
-            
+    /*actions as an array with objects with the following data:
+    {
+        icon: "imgUrl",
+        text: "action name",
+        menuHidden: boolean,            *optional,  defaults to false*
+        contextMenuHidden: boolean,     *optional,  defaults to false*
+        children: actions array,        *           sub list of actions*
+        func: function,                 *           the function to execute*
+        shortcut: "ctrl+s"              *optional,  a shortcut for the action*
+    }
+    you can not both define children and func*/
+    const: function(actions){
+        if(actions){
+            this.super.const(actions);
+            this.contextMenu = new ContextMenu(actions);
+        }else{
+            this.super.const();
         }
     },
+    closeable: true,
     extensions: [],
-    standardActions:[
-        {
-            icon: "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT48NWIxlFg8U3dtHYji6Y_FKp2WeeNnptzHbQw0ljkeRcHaY0Gf18VBhXFpA",
-            text: "Copy",
-            shortcut: "Ctrl+C",
-            hidden: true,
-            func: function(){
-                console.log(this.file, "copy");
-            }
-        },{
-            icon: "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT48NWIxlFg8U3dtHYji6Y_FKp2WeeNnptzHbQw0ljkeRcHaY0Gf18VBhXFpA",
-            text: "Cut",
-            shortcut: "Ctrl+X",
-            func: function(){
-                console.log(this.file, "cut");
-            }
-        },{
-            icon: "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT48NWIxlFg8U3dtHYji6Y_FKp2WeeNnptzHbQw0ljkeRcHaY0Gf18VBhXFpA",
-            text: "Paste",
-            shortcut: "Ctrl+V",
-            hidden: true,
-            func: function(){
-                console.log(this.file, "paste");
-            }
-        }
-    ],
-    actions:[],
-    openFile: function(file){
-        this.file = file;
+    openFileItem: function(fileItem){
+        this.setExecuteObject(fileItem);
         this.open();
     },
-    executeFile: function(file){
-        
+    openContextMenu: function(fileItem, offset){
+        if(this.contextMenu){
+            offset = ContextMenuHandler.getRelativeOffset(offset);
+            this.contextMenu.setExecuteObject(fileItem);
+            this.contextMenu.open();
+            this.contextMenu.setPosition(offset.left, offset.top);
+        }
     },
     
-    keyboardEvent: function(event){
-        if(event.key=="Tab"){
-            if(event.shiftKey){
-                this.close();
-            }
-            return true;
-        }
-        return this.super.keyboardEvent(event);
-    }, 
-    executeItem: function(){ //execute the currently selected item
-        if(this.selectedItem){
-            if(!this.selectedItem.execute()){
-                var t = this;
-                setTimeout(function(){
-                    t.close();
-                },70);
-            }
-        }
+    
+    executeFile: function(file){ //the function that runs when a file is being executed
+        
     },
     headerTemplate:{
         html:`  <div class='bd3 bg1 actionHeader'>
