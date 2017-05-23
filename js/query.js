@@ -1,16 +1,17 @@
-/*global Settings regexEscape tree Quicksort*/
+/*global variables Settings, Utils, tree, Quicksort, File, Directory*/
 var Querier = (function(){
     var Querier = {};
     
     Querier.acronymMatch = {
         regex:null,
-        prepareRegex:function(query){
-            this.regex = this.getRegex(query);  
+        prepareRegex:function(query, caseSensitive){
+            this.regex = this.getRegex(query, caseSensitive);  
         },
-        getRegex:function(query){
+        getRegex:function(query, caseSensitive){
+            var parts = query.split(/\./);
             var regex = "^";
-            var upperQuery = query.toUpperCase();
-            var lowerQuery = query.toLowerCase();
+            var upperQuery = parts[0].toUpperCase();
+            var lowerQuery = parts[0].toLowerCase();
             for(var i=0;i<upperQuery.length;i++){
                 var upper = regexEscape(upperQuery[i]);
                 var lower = regexEscape(lowerQuery[i]);
@@ -19,6 +20,19 @@ var Querier = (function(){
                 }else{
                     regex += "( "+lower+"|"+upper+")([^A-Z]+)";
                 }
+            }
+            //add extension if available
+            for(var i=1; i<parts.length; i++){
+                var m = "";
+                var part = "."+parts[i];
+                if(!caseSensitive){ //case insensitive
+                    var upper = part.toUpperCase();
+                    var lower = part.toLowerCase();
+                    for(var i2=0; i2<upper.length; i2++)
+                        m+="["+regexEscape(lower[i2])+regexEscape(upper[i2])+"]";
+                }else
+                    m = regexEscape(part[i]);
+                regex += "("+m+")([^A-Z]*)";
             }
             regex+="$";
             return new RegExp(regex);
@@ -44,8 +58,8 @@ var Querier = (function(){
                 text = "";
                 for(var i=1; i<match.length; i++){
                     if(i%2==1){
-                        if(match[i].length>1) //includes a space
-                            text += match[i][0]+`<span class="${clas}">`+match[i][1]+`</span>`;    
+                        if(match[i][0].match(/\s/)) //includes a space
+                            text += match[i][0]+`<span class="${clas}">`+match[i].substr(1)+`</span>`;    
                         else 
                             text += `<span class="${clas}">`+match[i]+`</span>`;
                     }else 
@@ -101,8 +115,8 @@ var Querier = (function(){
                 if(firstMatch.length>0 && !/\s/.exec(firstMatch[firstMatch.length-1])) nScore+=0.1;
                 if(lastMatch.length>0 && !/\s/.exec(lastMatch[0])) nScore+=0.1;
                 
-                for(var i=1; i<match.length-2; i++){
-                    var length = match.length; 
+                for(var i=2; i<match.length-2; i+=2){
+                    var length = match[i].length; 
                     nScore += length/20; //characters inbetween words aren't too important
                 }
                 
@@ -171,8 +185,8 @@ var Querier = (function(){
                 if(firstMatch.length>0 && !/\s/.exec(firstMatch[firstMatch.length-1])) nScore+=0.1;
                 if(lastMatch.length>0 && !/\s/.exec(lastMatch[0])) nScore+=0.1;
                 
-                for(var i=1; i<match.length-1; i++){
-                    var length = match.length; 
+                for(var i=2; i<match.length-2; i+=2){
+                    var length = match[i].length; 
                     if(length>0) nScore += length+3;
                 }
                 
@@ -216,29 +230,31 @@ var Querier = (function(){
             this.matchTypes[i].prepareRegex(query, caseSensitive);
         }
     };
-    Querier.test = function(text, minScore){
-        if(!this.testRequirements(text)) return null;
+    Querier.test = function(text, minScore, object, regexList){
+        if(!this.testRequirements(text, object)) return null;
         
         if(!minScore) minScore=0;
         var mt = this.matchTypesImportance;
         var best = null;
         var addScore = this.importanceDepth;   
+        var typeIndex = 0;
         while(best==null && mt.matchTypes){
             addScore--;
             for(var i=0; i<mt.matchTypes.length; i++){
                 var type = mt.matchTypes[i];
-                var score = type.getScore(text)
+                var score = type.getScore(text, regexList?regexList[typeIndex]:null);
                 if(score) score+=addScore;
                 if(score!==null && score>minScore && (best==null || best.score<score)){
                     best = {score:score, type:type};
                 }
+                typeIndex++;
             }
             mt = mt.descendants;
         }
         return best;
     };
-    Querier.regexTest = function(text, query){
-        if(!this.testRequirements(text)) return null;
+    Querier.regexTest = function(text, query, object){
+        if(!this.testRequirements(text, object)) return null;
         
         return query.test(text)?{score:1/(1+text.length/200), type:{highlight:function(text, clas){
             query.lastIndex = 0;
@@ -267,8 +283,37 @@ var Querier = (function(){
                 return this.value>=text.length;
             }
         },
+        minChildren:{
+            valueMatch: /^[0-9]+$/,
+            shorts: ["minC"],
+            parse: Number,
+            def: 0,
+            value: null,
+            testObject: function(dir){
+                if(dir instanceof File) 
+                    return this.value==this.def;
+                if(dir instanceof Directory)
+                    return this.value<=dir.children.length;
+                return true;
+            }
+        },
+        maxChildren:{
+            valueMatch: /^[0-9]+$/,
+            shorts: ["maxC"],
+            parse: Number,
+            def: Infinity,
+            value: null,
+            testObject: function(dir){
+                if(dir instanceof File) 
+                    return this.value==this.def;
+                if(dir instanceof Directory)
+                    return this.value>=dir.children.length;
+                return true;
+            }
+        },
         type:{
             valueMatch: /^d|f$/i,
+            shorts: ["t"],
             def: null,
             value:null,
             test: function(text){
@@ -284,6 +329,7 @@ var Querier = (function(){
         },
         not:{
             valueMatch: /^.+$/,
+            shorts: ["n"],
             def: [],
             multiple: true,
             init: function(){
@@ -302,6 +348,18 @@ var Querier = (function(){
             }
         }
     };
+    {//add shorts to additionalRequirements
+        var requirementKeys = Object.keys(Querier.additionalRequirements);
+        for(var i=0; i<requirementKeys.length; i++){
+            var key = requirementKeys[i];
+            var obj = Querier.additionalRequirements[key];
+            var shorts = obj.shorts;
+            if(shorts)
+                for(var j=0; j<shorts.length; j++){
+                    Querier.additionalRequirements[shorts[j]] = obj;
+                }
+        }
+    }
     Querier.resetRequirements = function(){
         var requirements = Object.keys(this.additionalRequirements);
         var arg;
@@ -398,10 +456,12 @@ var Querier = (function(){
         query = query[0];
         return query;
     };
-    Querier.testRequirements = function(text){
+    Querier.testRequirements = function(text, object){
         var keys = Object.keys(Querier.additionalRequirements);
         for(var i=0; i<keys.length; i++){
-            if(!Querier.additionalRequirements[keys[i]].test(text)) return false;
+            var req = Querier.additionalRequirements[keys[i]];
+            if(object && req.testObject && !req.testObject(object)) return false;
+            if(req.test && !req.test(text)) return false;
         }
         return true;
     }
@@ -417,7 +477,7 @@ var Querier = (function(){
             var text = null;
             if(getTextFunc) text = getTextFunc.call(list[i],list[i]);
             else            text = list[i];
-            var match = this.test(text, minScore);
+            var match = this.test(text, minScore, list[i]);
             if(match!==null) matches.push({match:match, item:list[i]});
         }
         
@@ -439,12 +499,12 @@ var Querier = (function(){
             var text = null;
             if(getTextFunc) text = getTextFunc.call(list[i],list[i]);
             else            text = list[i];
-            var match = this.regexTest(text, query);
+            var match = this.regexTest(text, query, list[i]);
             if(match!==null) matches.push({match:match, item:list[i]});
         }
         
         return matches;
-    }
+    };
     Querier.query = function(query, directory, searchDepth, minScore){
         minScore = minScore || Settings.minimalMatchScore;
         searchDepth = searchDepth || Settings.searchDepth;
@@ -455,11 +515,11 @@ var Querier = (function(){
         
         tree.each(function(file){
                 var text = tree.getFullName(file);
-                var match = Querier.test(text, minScore);
+                var match = Querier.test(text, minScore, file);
                 if(match!==null) matches.push({match:match, file:file});
             }, function(dir){
                 var text = tree.getFullName(dir);
-                var match = Querier.test(text, minScore);
+                var match = Querier.test(text, minScore, dir);
                 if(match!==null) matches.push({match:match, file:dir});
             }, directory, searchDepth);
             
@@ -481,11 +541,11 @@ var Querier = (function(){
         var matches = [];
         tree.each(function(file){
                 var text = tree.getFullName(file);
-                var match = Querier.regexTest(text, query);
+                var match = Querier.regexTest(text, query, file);
                 if(match!==null) matches.push({match:match, file:file});
             }, function(dir){
                 var text = tree.getFullName(dir);
-                var match = Querier.regexTest(text, query);
+                var match = Querier.regexTest(text, query, dir);
                 if(match!==null) matches.push({match:match, file:dir});
             }, directory, searchDepth);
             
@@ -527,6 +587,100 @@ var Querier = (function(){
             // }
             // return false;
         }, maxResults).slice(0, Math.min(matches.length,maxResults));
+    };
+    
+    Querier.queryListAsync = function(query, list, onComplete, getTextFunc, minScore){
+        minScore = minScore || Settings.minimalMatchScore;
+        
+        query = Querier.extractRequirements(query);
+        Querier.prepare(query, false);
+        
+        var regexList = [];
+        for(var i=0; i<Querier.matchTypes.length; i++){
+            regexList.push(Querier.matchTypes[i].regex);
+            Querier.matchTypes[i].regex = null;
+        }
+        
+        var matches = [];
+        return Utils.iterate(list, function(){
+                var text = null;
+                if(getTextFunc) text = getTextFunc.call(this,this);
+                else            text = this;
+                var match = Querier.test(text, minScore, this, regexList);
+                if(match!==null) matches.push({match:match, item:this});
+            }, function(){
+                onComplete(matches);
+            });
+    };
+    Querier.regexQueryListAsync = function(query, list, onComplete, getTextFunc){
+        query = Querier.extractRequirements(query);
+        var m = /\/(.+)\/(\w*)/.exec(query);
+        try{
+            query = new RegExp(m[1], m[2]);
+        }catch(e){
+            return e;
+        }
+        
+        var matches = [];
+        return Utils.iterate(list, function(){
+                var text = null;
+                if(getTextFunc) text = getTextFunc.call(this,this);
+                else            text = this;
+                var match = Querier.regexTest(text, query, this);
+                if(match!==null) matches.push({match:match, item:this});
+            }, function(){
+                onComplete(matches);
+            });
+    };
+    Querier.queryAsync = function(query, directory, onComplete, searchDepth, minScore){
+        minScore = minScore || Settings.minimalMatchScore;
+        searchDepth = searchDepth || Settings.searchDepth;
+        
+        query = Querier.extractRequirements(query);
+        Querier.prepare(query, false);
+        
+        var regexList = [];
+        for(var i=0; i<Querier.matchTypes.length; i++){
+            regexList.push(Querier.matchTypes[i].regex);
+            Querier.matchTypes[i].regex = null;
+        }
+            
+        var matches = [];
+        return tree.eachAsync(function(file){
+                var text = tree.getFullName(file);
+                var match = Querier.test(text, minScore, file, regexList);
+                if(match!==null) matches.push({match:match, file:file});
+            }, function(dir){
+                var text = tree.getFullName(dir);
+                var match = Querier.test(text, minScore, dir, regexList);
+                if(match!==null) matches.push({match:match, file:dir});
+            }, directory, function(){
+                onComplete(matches);
+            }, 50, searchDepth);
+    };
+    Querier.regexQueryAsync = function(query, directory, onComplete, searchDepth){
+        searchDepth = searchDepth || Settings.searchDepth;
+        
+        var m = /\/(.+)\/(.*)/.exec(query);
+        m[2] = Querier.extractRequirements(m[2]);
+        try{
+            query = new RegExp(m[1], m[2]);
+        }catch(e){
+            return e;
+        }
+        
+        var matches = [];
+        return tree.eachAsync(function(file){
+                var text = tree.getFullName(file);
+                var match = Querier.regexTest(text, query, file);
+                if(match!==null) matches.push({match:match, file:file});
+            }, function(dir){
+                var text = tree.getFullName(dir);
+                var match = Querier.regexTest(text, query, dir);
+                if(match!==null) matches.push({match:match, file:dir});
+            }, directory, function(){
+                onComplete(matches);
+            }, 50, searchDepth);
     };
     
     return Querier;

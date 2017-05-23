@@ -1,4 +1,4 @@
-/*global variables File, Directory, FileSelectorItem*/
+/*global variables File, Directory, FileSelectorItem, EventHandler*/
 var ActionMenuHandler = (function(){
     var actionMenuList = [];
     var actionMenuByExtension = {};
@@ -55,12 +55,30 @@ var ActionMenuHandler = (function(){
         }
     };
     amh.executeFile = function(file){
-        amh.getActionMenuFromFile(file).executeFile(file);
+        if(EventHandler.trigger("ActionMenuHandler.executeFile:pre", this, {file: file})){
+            var result = amh.getActionMenuFromFile(file).executeFile(file);
+            
+            EventHandler.trigger("ActionMenuHandler.executeFile:post", this, {file: file});
+            return result;
+        }
+        return false;
     };
     amh.openFileItemMenu = function(fileItem){
         if(FileSelectorItem.classof(fileItem)){
             var am = amh.getActionMenuFromFile(fileItem.file);
-            am.openFileItem(fileItem);
+            if(EventHandler.trigger("ActionMenuHandler.openFileItemMenu:pre", this, {
+                fileItem: fileItem,
+                actionMenu: am
+            })){
+                var result = am.openFileItem(fileItem);
+                
+                EventHandler.trigger("ActionMenuHandler.openFileItemMenu:post", this, {
+                    fileItem: fileItem,
+                    actionMenu: am
+                });  
+                return result;
+            }
+            return false;
         }else{
             throw Error("argument must be an instance of FileSelectorItem");
         }
@@ -68,7 +86,20 @@ var ActionMenuHandler = (function(){
     amh.openFileItemContextMenu = function(fileItem, offset){
         if(FileSelectorItem.classof(fileItem)){
             var am = amh.getActionMenuFromFile(fileItem.file);
-            am.openContextMenu(fileItem, offset);
+            if(EventHandler.trigger("ActionMenuHandler.openFileItemContextMenu:pre", this, {
+                fileItem: fileItem,
+                actionMenu: am,
+                contextMenu: am.contextMenu
+            })){
+                var result = am.openContextMenu(fileItem, offset);
+                
+                EventHandler.trigger("ActionMenuHandler.openFileItemContextMenu:post", this, {
+                    fileItem: fileItem,
+                    actionMenu: am,
+                    contextMenu: am.contextMenu
+                });  
+                return result;
+            }
         }else{
             throw Error("argument must be an instance of FileSelectorItem");
         }

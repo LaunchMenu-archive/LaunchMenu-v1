@@ -16,7 +16,7 @@ var Utils = (function(){
             return q;    
     };
     
-    u.fitImageInDiv = function(imgEl, imageData, padding){
+    u.fitImageInDiv = function(imgEl, imageData, padding, callback){
         var oldWidth = imgEl.width();
         var oldHeight = imgEl.height();
         
@@ -32,7 +32,6 @@ var Utils = (function(){
             var width = img.width;
             var height = img.height;
             
-        	imgEl.attr("src", imageData);
             var ratio = height/width;
             
             if(ratio>maxRatio){
@@ -43,6 +42,8 @@ var Utils = (function(){
                 height = width*ratio;
             }
             imgEl.width(width).height(height);	
+        	imgEl.attr("src", imageData);
+        	callback(img.width, img.height, width, height);
         };
     }
     
@@ -121,6 +122,37 @@ var Utils = (function(){
             return jQuery.extend({}, object);
         }
     }
+    
+    u.iterate = function(list, itemFunction, completeFunction, maxTime){
+        if(!maxTime) maxTime = 50;
+        
+        var i = 0;
+        var timeoutID;
+        var func = function(){
+            var startTime = Date.now();
+            outer:{
+                inner:{
+                    while(i<list.length){
+                        if(Date.now()-startTime>maxTime) 
+                            break inner;
+                        var item = list[i++];
+                        itemFunction.call(item, item);
+                    }      
+                    
+                    completeFunction();
+                    break outer;
+                }
+                
+                timeoutID = setTimeout(func,0);
+            }
+        };
+        func();
+        
+        return function(){
+            clearTimeout(timeoutID);
+        };
+    };
+    
     return u;
 })();
 

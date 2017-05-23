@@ -2,7 +2,7 @@
 var ActionMenuDefault = Class("ActionMenuDefault",{
     actions: [],
     default: true,
-    executeFile: function(file){
+    onExecuteFile: function(file){
         console.log("execute",file);
         return true;
     }

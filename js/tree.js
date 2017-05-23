@@ -171,6 +171,66 @@ function Tree(fileArray){
         }
     };
     
+    //loop through a directory to execute functions on all files or sub directories
+    this.eachAsync = function(fileFunc, dirFunc, directory, onComplete, maxTime, maximumDepth){
+        if(!maxTime) maxTime = 50;
+        
+        directory = directory||this;
+        
+        var indexArray = [0]; //an array of the index it is at, in every directory
+        var curDir = directory; //the directory that is currently being looped through
+        var lastIndex = function(){return indexArray[indexArray.length-1];}; //get the index it is at in curDir
+        var increaseIndex = function(){indexArray[indexArray.length-1]++;}; //increase the index in curdir
+        var exitDir = function(){
+            indexArray.pop();
+            curDir = curDir.p;
+        }; //exit curdir
+        
+        var timeoutID;
+        var func = function(){
+            //get millis when the looping started
+            var startTime = Date.now();
+            outer:{
+                inner:{
+                    while(curDir && indexArray.length>0){
+                        if(Date.now()-startTime>maxTime) 
+                            break inner;//stop looping and prevent onComplete from being executed
+                        
+                        if(curDir instanceof File){ //if directory is actually a file
+                            if(fileFunc) 
+                                fileFunc.call(curDir, curDir);
+                            exitDir();
+                        }else{ //if directory is a directory
+                            if(lastIndex()<curDir.c.length){ //go to next child if there are any left
+                                var dir = curDir.c[lastIndex()]; //select the child dir
+                                increaseIndex();
+                                if(!maximumDepth || maximumDepth>indexArray.length){
+                                    curDir = dir;
+                                    indexArray.push(0);
+                                }
+                            }else{ //exit directory if there are no children left
+                                if(dirFunc && curDir instanceof Directory && indexArray.length>1)
+                                    dirFunc.call(curDir, curDir);
+                                exitDir();
+                            }
+                        }
+                    }
+                    
+                    //fire onComplete and prevent a timeout to be set
+                    onComplete(); 
+                    break outer;
+                }
+                //register the function to continue in the next cycle
+                timeoutID = setTimeout(func,0);
+            }
+        };
+        func();
+        
+        return function(){
+            clearTimeout(timeoutID);
+        };
+    };
+    
     //setup the roots that should be used
     this.setRoots = function(roots){
         //loop through roots;
@@ -215,6 +275,9 @@ function Tree(fileArray){
     });
     File.prototype.__defineSetter__("extension", function(e){
         this.e = e;
+    });
+    File.prototype.__defineGetter__("className", function(){
+        return "File";
     });
     File.prototype.getPath = function(startDir){
         return tree.getPath(this, startDir);
@@ -264,6 +327,9 @@ function Tree(fileArray){
     Directory.prototype.__defineSetter__("children", function(c){
         this.c = c;
     });
+    Directory.prototype.__defineGetter__("className", function(){
+        return "Directory";
+    });
     Directory.prototype.getPath = function(startDir){
         return tree.getPath(this, startDir);
     };
@@ -272,6 +338,9 @@ function Tree(fileArray){
     };
     Directory.prototype.each = function(fileFunc, dirFunc, maxDepth){
         return tree.each(fileFunc, dirFunc, this, maxDepth);
+    };
+    Directory.prototype.eachAsync = function(fileFunc, dirFunc, onComplete, maxTime, maxDepth){
+        return tree.eachAsync(fileFunc, dirFunc, this, onComplete, maxTime, maxDepth);
     };
     Directory.prototype.delete = function(){
         return tree.delete(this);

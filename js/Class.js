@@ -6,6 +6,7 @@ var Inherit = (function(){
     var parentN = "super";      //the super object
     var parentClassN = "class"; //the original class that the super object was created from
     var classOfN = "classof";
+    var parentListN = "parentList";
     function Class(name, classObj, parentClass){
         if(typeof name != "string"){
             throw new Error("A name must be provided");
@@ -35,14 +36,17 @@ var Inherit = (function(){
         in order to display when a object is logged*/
         var constructorString = originalConstructor.toString().replace(/((\w*(:| ))*)(function ?\()/, "$4");
         constructorString = name+" "+constructorString;
+        var parentList = [];
         var parentStr = "";
         if(parentClass){
             var n = parentClass;
             do{
                 parentStr = n[classNameN]+":"+parentStr;
+                parentList.push(n);
             }while(n.prototype[parentN] && (n = n.prototype[parentN][parentClassN]));
             constructorString = parentStr+constructorString;
         }
+        
         
         var parent = {}; //the super object
         /*the object that is currently executing code, this knowledge is necessairy for executing parent functions*/
@@ -100,6 +104,7 @@ var Inherit = (function(){
             return false;
         };
         classObj[classNameN] = name;
+        classObj[parentListN] = parentList;
         
         
         /*retrieve class fields*/

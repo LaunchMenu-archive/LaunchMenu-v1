@@ -136,8 +136,8 @@ PreviewHandler.registerPreviewType(
             }
             n.querier(".childName").text(file.getFullName());
         },
-        loadFile: function(directory){
-            this.super.loadFile(directory);
+        onLoadFile: function(directory){
+            this.super.onLoadFile(directory);
             
             //load directory data
             var children = directory.children;
@@ -165,9 +165,11 @@ PreviewHandler.registerPreviewType(
             
             PreviewHandler.setGeneralData("none", null, null, null, path);        
             Actions.file.getDates(path, function(dates){
-                if(t.file == file){
-                    PreviewHandler.setGeneralData(null, dates.dateCreated, dates.dateModified, dates.dateAccessed, null);
-                    t.onDatesLoad(dates.dateCreated, dates.dateModified, dates.dateAccessed);
+                if(dates){
+                    if(t.file == file){
+                        PreviewHandler.setGeneralData(null, dates.dateCreated, dates.dateModified, dates.dateAccessed, null);
+                        t.onDatesLoad(dates.dateCreated, dates.dateModified, dates.dateAccessed);
+                    }
                 }
             });
         },

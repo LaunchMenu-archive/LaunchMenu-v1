@@ -124,19 +124,29 @@ Keyboard shorcuts:
 * [ ] right click menu system
 * [ ] shortcut dictonary popup dick
 * [ ] tab menu when hovering over an item <-- include in this, go to parent directory
+* [ ] log server-side errors on the client side.
 
 tgm's todo:
 * [x] Make worker for finding matches
 * [x] make a cut system
 * [x] create rightclick menu
-* [x] turn utilities into util object to get rid of floating variables
-* systemEvents:
-*   
-* [ ] create event system
+* [x] turn utilities into util object to get rid of floating variables  
+* [x] create event system:
+*       [x] autoprefix classname if available in name
+*       [x] make listeners work with parent class prefix
+*       [x] make open events not fire post events if canceled
+*       [x] add more events
+*       [x] fix contextSubMenu not closing  when parent closes
+* [x] format date properly
+* [x] make escape work then the searhbar contains a value
+* [x] number of children search term
+* [ ] redo actions menu structure
+* [ ] default actions menu - Add navigation items to this menu, assign keyboard shortcuts via this menu.
+* [ ] multi file selection
 * [ ] create settings system and menu, with on change events etc
-* [ ] setup custom preview and actions system with the .lmf file
+* [ ] setup custom pre§view and actions system with the .lmf file
 * [ ] create applet system
-
+* [ ] don't browse from system root, instead show a list of LM roots
 
 Sancarn's todo:
 

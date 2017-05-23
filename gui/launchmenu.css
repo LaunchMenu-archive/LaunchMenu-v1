@@ -1,4 +1,4 @@
-html, body._LM_{
+html, body{
     margin: 0px;
 }
 
@@ -110,82 +110,82 @@ html {
     /*}*/
     
 /*files*/
-    .files._LM_{
-        position: absolute;
-        right: 0px;
-        width: 270px;
-        height: 100%;
-    }
-    .matches._LM_{
-        height: 100%;
-    }
+    /*.files._LM_{*/
+    /*    position: absolute;*/
+    /*    right: 0px;*/
+    /*    width: 270px;*/
+    /*    height: 100%;*/
+    /*}*/
+    /*.matches._LM_{*/
+    /*    height: 100%;*/
+    /*}*/
     
-    .file._LM_{
-        min-height: 40px;
-        border-bottom: 1px solid #CCC;
-    }
-    .file.selected._LM_{
-        background-color: #EEE;
-    }
-    .file .fileIcon._LM_{
-        box-sizing: border-box;
-        float: left;
-        width: 40px;
-        height: 40px;
-        padding: 3px;
-    }
-    .file .fileIcon img._LM_{
-        width: 100%;
-        height: 100%;
-    }
-    .file .fileData._LM_{
-        float: left;
-        width: calc(100% - 40px);
-    }
-    .file .fileData .fileName._LM_{
-        word-wrap: break-word;
-        padding: 5px;
-        padding-bottom: 0px;
-    }
-    .file .fileData .fileName span._LM_{
-        background-color: #6be1ff;
-        border-radius: 2px;
-    }
-    .file .fileData .filePath._LM_{
-        word-break: break-word;
-        padding-right: 5px;
-        color: #AAA;
-        font-size: 12px;
-        text-align: right;
-    }
+    /*.file._LM_{*/
+    /*    min-height: 40px;*/
+    /*    border-bottom: 1px solid #CCC;*/
+    /*}*/
+    /*.file.selected._LM_{*/
+    /*    background-color: #EEE;*/
+    /*}*/
+    /*.file .fileIcon._LM_{*/
+    /*    box-sizing: border-box;*/
+    /*    float: left;*/
+    /*    width: 40px;*/
+    /*    height: 40px;*/
+    /*    padding: 3px;*/
+    /*}*/
+    /*.file .fileIcon img._LM_{*/
+    /*    width: 100%;*/
+    /*    height: 100%;*/
+    /*}*/
+    /*.file .fileData._LM_{*/
+    /*    float: left;*/
+    /*    width: calc(100% - 40px);*/
+    /*}*/
+    /*.file .fileData .fileName._LM_{*/
+    /*    word-wrap: break-word;*/
+    /*    padding: 5px;*/
+    /*    padding-bottom: 0px;*/
+    /*}*/
+    /*.file .fileData .fileName span._LM_{*/
+    /*    background-color: #6be1ff;*/
+    /*    border-radius: 2px;*/
+    /*}*/
+    /*.file .fileData .filePath._LM_{*/
+    /*    word-break: break-word;*/
+    /*    padding-right: 5px;*/
+    /*    color: #AAA;*/
+    /*    font-size: 12px;*/
+    /*    text-align: right;*/
+    /*}*/
     
-    .rootPath._LM_{
-        word-break: break-word;
-        background-color: #F3F3F3;
-        color: #AAA;
-        font-size: 12px;
-        border-bottom: 1px solid #CCC;
-    }
-    .regexErrorMessage._LM_,
-    .noFileMessage._LM_{
-        position:absolute;
-        left: 0px;
-        top: 0px;
-        width: 100%;
-        height: 100%;
-        text-align: center;
-        vertical-align: center;
-        display: table;
-        color: #444;
-    }
-    .regexErrorMessage span._LM_,
-    .noFileMessage span._LM_{
-        display: table-cell;
-        vertical-align: middle;
-    }
-    .regexError._LM_{
-        color: red;
-    }
+    /*.rootPath._LM_{*/
+    /*    word-break: break-word;*/
+    /*    background-color: #F3F3F3;*/
+    /*    color: #AAA;*/
+    /*    font-size: 12px;*/
+    /*    border-bottom: 1px solid #CCC;*/
+    /*}*/
+    /*.regexErrorMessage._LM_,*/
+    /*.noFileMessage._LM_{*/
+    /*    position:absolute;*/
+    /*    left: 0px;*/
+    /*    top: 0px;*/
+    /*    width: 100%;*/
+    /*    height: 100%;*/
+    /*    text-align: center;*/
+    /*    vertical-align: center;*/
+    /*    display: table;*/
+    /*    color: #444;*/
+    /*}*/
+    /*.regexErrorMessage span._LM_,*/
+    /*.noFileMessage span._LM_{*/
+    /*    display: table-cell;*/
+    /*    vertical-align: middle;*/
+    /*}*/
+    /*.regexError._LM_{*/
+    /*    color: red;*/
+    /*}*/
 /*preview*/
     .specificPreviewData>div._LM_{
         display: none;
@@ -215,28 +215,34 @@ html {
         width: 100%;
         height: calc(100% - 20px);
     }
+    
     /*general data*/
     .generalDataInner .dataLabel._LM_{
-        text-align:left;
         display: inline-block;
-        width: 70px;
+        vertical-align: middle;
     }
     .generalDataInner .dataValue._LM_{
+        text-align: right;
         display: inline-block;
+        max-width: 105px;
+        word-break: keep-all;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        vertical-align: middle;
+        float: right;
+        padding-left: 5px;
     }
-    .generalDataInner .left._LM_{
+    .generalDataInner .dataValue._LM_:empty{
+        width: 80px;
+    }
+    .generalDataInner .left._LM_,.generalDataInner .right._LM_{
         float: left;
-        widtH: 50%;
+        max-widtH: calc(50% - 2px);
+        display:inline-block;
     }
     .generalDataInner .right._LM_{
         float: right;
-        widtH: 50%;
-    }
-    .generalDataInner .right._LM_{
-        text-align: right;
-    }
-    .generalDataInner .right .dataValue._LM_{
-        width: 90px;
     }
     .generalDataInner .path._LM_{
         padding-top: 8px;

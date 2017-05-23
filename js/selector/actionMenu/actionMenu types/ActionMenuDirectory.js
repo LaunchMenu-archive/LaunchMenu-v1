@@ -28,7 +28,7 @@ var ActionMenuDirectory = Class("ActionMenuDirectory",{
         }
     ],
     directory: true,
-    executeFile: function(directory){
+    onExecuteFile: function(directory){
         Main.fileSelector.setDirectory(directory);
         Searchbar.clear();
         return true;

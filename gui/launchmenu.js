@@ -29,9 +29,10 @@ var Main = (function(){
             });
             Searchbar.addEventListener(function(event){
                 if(event.key=="Escape"){
-                    if(fileSelector.directory.parent){
+                    if(fileSelector.directory.parent || fileSelector.searchTerm.length>0){
                         Searchbar.setText("");
                         fileSelector.setDirectory(tree);
+                        fileSelector.clearHistory();
                     }else{
                         
                     }

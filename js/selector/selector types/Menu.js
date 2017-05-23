@@ -1,4 +1,4 @@
-/*global variables Class, Utils, Selector, SelectorItem, Searchbar, Querier*/
+/*global variables Class, Utils, Selector, SelectorItem, Searchbar, Querier, EventHandler*/
 var Menu = Class("Menu",{
     const: function(buttons){
         this.super.const();
@@ -7,31 +7,37 @@ var Menu = Class("Menu",{
         }
     },
     insertButtons: function(buttons){
-        var insertDivider = false;
-        var first = true;
-        for(var i=0; i<buttons.length; i++){
-            var buttonItem = buttons[i];
-            if(buttonItem){
-                if(!buttonItem.menuHidden){
-                    //insert divider
-                    if(insertDivider){
-                        insertDivider = false;
-                        if(!first)
-                            this.insertItemElement(`
-                                <div class='bd3 bg1 divider _MenuDivider_' style='width:100%; height:20px; border-bottom-width:1px'>
-                                </div>
-                            `);
+        if(EventHandler.trigger("inserButtons:pre", this, {buttons: buttons})){
+            var insertDivider = false;
+            var first = true;
+            for(var i=0; i<buttons.length; i++){
+                var buttonItem = buttons[i];
+                if(buttonItem){
+                    if(!buttonItem.menuHidden){
+                        //insert divider
+                        if(insertDivider){
+                            insertDivider = false;
+                            if(!first)
+                                this.insertItemElement(`
+                                    <div class='bd3 bg1 divider _MenuDivider_' style='width:100%; height:20px; border-bottom-width:1px'>
+                                    </div>
+                                `);
+                        }
+                        
+                        //insert button    
+                        var button = new MenuButton(buttonItem);
+                        this.addItem(button);
+                        first = false;
                     }
-                    
-                    //insert button    
-                    var button = new MenuButton(buttonItem);
-                    this.addItem(button);
-                    first = false;
+                }else{
+                    insertDivider = true;
                 }
-            }else{
-                insertDivider = true;
             }
+            
+            EventHandler.trigger("inserButtons:post", this, {buttons: buttons});
+            return true;
         }
+        return false;
     },
     closeable: false, //if menu is closable using shift+tab
     onOpen: function(){
@@ -54,7 +60,8 @@ var Menu = Class("Menu",{
                 this.selectedItem.execute();
                 return true;
             }
-        }else if(shortcut==this.leaveShortcut){
+        }
+        if(shortcut==this.leaveShortcut || shortcut==this.enterShortcut){
             if(this.parentMenu){
                 this.parentMenu.open();
             }else if(this.closeable){
@@ -65,55 +72,67 @@ var Menu = Class("Menu",{
         return this.super.keyboardEvent(event);
     }, 
     searchbarChange: function(value){
-        for(var i=0; i<this.selectorItems.length; i++){
-            this.selectorItems[i].element.hide();
-        }
-        
-        //query for matches
-        var matches;
-        var regexSearch = false;
-        if(/\/(.+)\/(\w*)/.test(value)){
-            matches = Querier.regexQueryList(value, this.selectorItems, function(){
-                return this.text;
-            });
-            regexSearch = true;
-        }else{
-            matches = Querier.queryList(value, this.selectorItems, function(){
-                return this.text;
-            }, 1);
-        }
-        
-        if(!(matches instanceof Array) || matches.length==0){
-            this.$(".messageOuter").show();
-            if(!(matches instanceof Array)){
-                this.$(".noActionsMessage").hide();
-                this.$(".regexErrorMessage").show();
-                this.$(".regexError").text(matches.message);
-            }else{
-                this.$(".noActionsMessage").show();
-                this.$(".regexErrorMessage").hide();
+        if(EventHandler.trigger("search:pre", this, {text:value})){
+            for(var i=0; i<this.selectorItems.length; i++){
+                this.selectorItems[i].element.hide();
             }
-        }else{
-            this.$(".messageOuter").hide();
             
-            //show matches
-            Querier.prepare(value);
-            for(var i=0; i<matches.length; i++){
-                var menuItem = matches[i].item;
-                menuItem.highlight(matches[i].match.type);
-                menuItem.element.show();
+            //query for matches
+            var matches;
+            var regexSearch = false;
+            if(/\/(.+)\/(\w*)/.test(value)){
+                matches = Querier.regexQueryList(value, this.selectorItems, function(){
+                    return this.text;
+                });
+                regexSearch = true;
+            }else{
+                matches = Querier.queryList(value, this.selectorItems, function(){
+                    return this.text;
+                }, 1);
             }
-            if(!this.selectedItem.element.is(":visible") && matches.length>0)
-                matches[0].item.select();
-            this.$(".list").scrollbar("reset");
+            
+            if(!(matches instanceof Array) || matches.length==0){
+                this.$(".messageOuter").show();
+                if(!(matches instanceof Array)){
+                    this.$(".noActionsMessage").hide();
+                    this.$(".regexErrorMessage").show();
+                    this.$(".regexError").text(matches.message);
+                }else{
+                    this.$(".noActionsMessage").show();
+                    this.$(".regexErrorMessage").hide();
+                }
+            }else{
+                this.$(".messageOuter").hide();
+                
+                //show matches
+                Querier.prepare(value);
+                for(var i=0; i<matches.length; i++){
+                    var menuItem = matches[i].item;
+                    menuItem.highlight(matches[i].match.type);
+                    menuItem.element.show();
+                }
+                if(!this.selectedItem.element.is(":visible") && matches.length>0)
+                    matches[0].item.select();
+                this.$(".list").scrollbar("reset");
+            }
+            
+            EventHandler.trigger("search:post", this, {text:value});
+            return true;
         }
+        return false;
     },
     setExecuteObject: function(obj){
-        for(var i=0; i<this.selectorItems.length; i++){
-            var item = this.selectorItems[i];
-            if(item.setExecuteObject)
-                item.setExecuteObject(obj);
+        if(EventHandler.trigger("setExecuteObject:pre", this, {object:obj})){
+            for(var i=0; i<this.selectorItems.length; i++){
+                var item = this.selectorItems[i];
+                if(item.setExecuteObject)
+                    item.setExecuteObject(obj);
+            }
+            
+            EventHandler.trigger("setExecuteObject:post", this, {object:obj});
+            return true;
         }
+        return false;
     },
     template:{ //template for the main structure of the selector
         html:  `<div class='bg0 wrapper'>
@@ -174,6 +193,7 @@ var MenuButton = Class("MenuButton",{
         
         if(children){
             this.subMenu = new Menu(children);
+            this.$(".childrenIcon").show();
         }else{
             this.func = func;
             this.dontCloseAfter = dontCloseAfter;
@@ -196,20 +216,33 @@ var MenuButton = Class("MenuButton",{
             this.subMenu.setParentMenu(menu);
             this.subMenu.closeable = menu.closeable;
         }
+        EventHandler.trigger("setSelector:post", this, {selector: menu});
     },
     highlight: function(type){
-        if(type){
-            this.$(".textInner").html(type.highlight(this.text, this.htmlClassName+" backgroundHighlight0"));
-        }else{
-            this.$(".textInner").text(this.text);
+        if(EventHandler.trigger("highlight:pre", this, {matchType: type})){
+            if(type){
+                this.$(".textInner").html(type.highlight(this.text, this.htmlClassName+" backgroundHighlight0"));
+            }else{
+                this.$(".textInner").text(this.text);
+            }
+            
+            EventHandler.trigger("highlight:post", this, {matchType: type});
+            return true;
         }
+        return false;
     },
     setExecuteObject: function(obj){
-        this.executeObj = obj;
-        if(this.subMenu)
-            this.subMenu.setExecuteObject(obj);
+        if(EventHandler.trigger("setExecuteObject:pre", this, {object:obj})){
+            this.executeObj = obj;
+            if(this.subMenu)
+                this.subMenu.setExecuteObject(obj);
+            
+            EventHandler.trigger("setExecuteObject:post", this, {object:obj});
+            return true;
+        }
+        return false;
     },
-    execute: function(){
+    onExecute: function(){
         if(this.subMenu){
             this.subMenu.open();
             return true;
@@ -224,7 +257,7 @@ var MenuButton = Class("MenuButton",{
         }
     },
     template:{
-        html:   `<div class=icon>
+        html:   `<div class=actionIcon>
                     <img src=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAA1JREFUGFdj+P//PwMACPwC/ohfBuAAAAAASUVORK5CYII=>
                 </div>
                 <div class='f0 text'>
@@ -233,6 +266,8 @@ var MenuButton = Class("MenuButton",{
                 <div class='f6 shortcut'>
                 
                 </div>
+                <div class='childrenIcon bd1'>
+                </div>
                 <br style=clear:both;>`,
         style:  `.root{
                     position:relative;
@@ -240,7 +275,7 @@ var MenuButton = Class("MenuButton",{
                     width: 100%;
                     border-bottom-width: 1px;
                 }
-                .icon{
+                .actionIcon{
                     width: 40px;
                     height: 40px;
                     float: left;
@@ -269,6 +304,18 @@ var MenuButton = Class("MenuButton",{
                     font-size: 12px;
                     right: 5px;
                     bottom: 2px;
+                }
+                .childrenIcon{
+                    display: none;
+                    position: absolute;
+                    right: 8px;
+                    bottom: 7px;
+                    
+                    width: 24px;
+                    height: 24px;
+                    border-right-width: 6px;
+                    transform: rotate(45deg);
+                    border-top-width: 6px;
                 }`
     }
 }, SelectorItem);

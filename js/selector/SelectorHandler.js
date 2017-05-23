@@ -1,4 +1,4 @@
-/*global variables Class, Utils, $,  jQuery*/
+/*global variables Class, Utils, $,  jQuery, EventHandler*/
 var SelectorHandler = (function(){
     var openedStack = [];
     var topSelector = function(){
@@ -22,17 +22,24 @@ var SelectorHandler = (function(){
     sh.setOpenedSelector = function(selector, animationDuration){ //register that a selector has opened
         var top = topSelector();
         if(top!=selector){
-            selector.element.css("z-index",2); //set element on top
             
             //call the events on the Selector that is currently opened
             if(top){
-                top.element.css("z-index", 1); //set old top element just below the top one
-                top.onHide();
-                setTimeout(function(){
-                    top.onHide(true);
-                    top.element.css("z-index", 0); //reset the old top element to be on bottom
-                }, animationDuration);
+                if(EventHandler.trigger("onHide:pre", top, {})){
+                    top.element.css("z-index", 1); //set old top element just below the top one
+                    top.onHide();
+                    setTimeout(function(){
+                        top.onHide(true);
+                        top.element.css("z-index", 0); //reset the old top element to be on bottom
+                    }, animationDuration);
+                    
+                    EventHandler.trigger("onHide:post", top, {});
+                }else{
+                    return false;
+                }
             }
+            
+            selector.element.css("z-index",2); //set element on top
                 
             //remove the selector from the openedStack if it was already in there
             var index = openedStack.indexOf(selector);

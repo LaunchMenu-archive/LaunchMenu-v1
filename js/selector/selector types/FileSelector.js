@@ -1,4 +1,4 @@
-/*global variables Class, LargeSetSelector, SelectorItem, tree, Querier, regexEscape, PreviewHandler, Directory, Searchbar, ActionMenuHandler, WorkerCommunication, ContextMenuHandler*/
+/*global variables Class, LargeSetSelector, SelectorItem, tree, Querier, regexEscape, PreviewHandler, Directory, Searchbar, ActionMenuHandler, ContextMenuHandler, EventHandler*/
 var FileSelector = Class("FileSelector",{
     const: function(){
         this.super.const();
@@ -6,6 +6,7 @@ var FileSelector = Class("FileSelector",{
         this.search();
         this.searchTerm = "";
         this.history = [];
+        this.keyboardEventBuffer = [];
     },
     template:{ //template for the main structure of the selector
         html:  `<div class='bg0 wrapper'>
@@ -115,98 +116,171 @@ var FileSelector = Class("FileSelector",{
     },
     gotoParentDirectory: function(){
         if(this.directory.parent){
-           this.setDirectory(this.directory.parent);
-           this.search(this.searchTerm);
-           return true;
+            if(EventHandler.trigger("gotoParentDirectory:pre", this, {parentDirectory:this.directory.parent})){
+               this.setDirectory(this.directory.parent);
+               this.search(this.searchTerm);
+               
+               EventHandler.trigger("gotoParentDirectory:post", this, {parentDirectory:this.directory.parent});
+               return true;
+            }
         }
+        return false;
     },
     gotoLastDirectory: function(){ //goto last item in the history
         var h = this.history.pop();  
         if(h){
-            this.setDirectory(h.directory, true);
-            var t = this;
-            var loadFunc = function(){
-                var list = t.$(".list");
-                list[0].setVerticalOffset((h.index-1)*t.selectorItemHeight-list.height()/2);
-                var element = t.$("#"+h.index)[0];
-                if(element)
-                    element.selectorItem.select();
-            };
-            if(h.search && h.search.length>0){
-                this.search(h.search, loadFunc);  
-                Searchbar.setText(h.search, false);
-            }else{
-                this.search("", loadFunc);
-                Searchbar.clear();
+            if(EventHandler.trigger("gotoLastDirectory:pre", this, {history:h})){
+                this.setDirectory(h.directory, true);
+                var t = this;
+                var loadFunc = function(){
+                    var list = t.$(".list");
+                    list[0].setVerticalOffset((h.index-1)*t.selectorItemHeight-list.height()/2);
+                    var element = t.$("#"+h.index)[0];
+                    if(element)
+                        element.selectorItem.select();
+                };
+                if(h.search && h.search.length>0){
+                    this.search(h.search, loadFunc);  
+                    Searchbar.setText(h.search, false);
+                }else{
+                    this.search("", loadFunc);
+                    Searchbar.clear();
+                }
+                
+                EventHandler.trigger("gotoLastDirectory:poost", this, {history:h});
+                return true;
             }
-            return true;
         }
+        return false;
     },
     clearHistory: function(){
-        this.history = [];
+        if(EventHandler.trigger("clearHistory:pre", this, {})){
+            this.history = [];
+            
+            EventHandler.trigger("clearHistory:post", this, {});
+            return true;
+        }
+        return false;
     },
     search: function(text, loadEvent){
-        this.searchTerm = text;
-        if(text==null || text.length==0){
-            this.setDataSet(this.directory.children);
-            this.$(".messageOuter").hide();
-            if(loadEvent) loadEvent();
-        }else{
-            console.time("load time");
-            var regexSearch = /\/(.+)\/(\w*)/.test(text);
-            var t = this;
-            WorkerCommunication.getMatches(text, function(matches){
-                if(t.searchTerm.length>0){ //only load the data if the last search was not empty
-                    console.time("lag time");
-                    if(!(matches instanceof Array) || matches.length==0){
-                        t.setDataSet([]);    
-                        t.$(".messageOuter").show();
-                        if(!(matches instanceof Array)){
-                            t.$(".noFileMessage").hide();
-                            t.$(".regexErrorMessage").show();
-                            t.$(".regexError").text(matches.message);
-                        }else{
-                            t.$(".noFileMessage").show();
-                            t.$(".regexErrorMessage").hide();
-                        }
-                    }else{
-                        t.$(".messageOuter").hide();
-                        t.setDataSet(matches, !regexSearch?text:null);
-                    }
-                    console.log(" ");
-                    console.timeEnd("lag time");
-                    console.timeEnd("load time");
-                }
+        if(EventHandler.trigger("search:pre", this, {text:text, onLoadEvent:loadEvent})){
+            this.searchTerm = text;
+            if(text==null || text.length==0){
+                this.setDataSet(this.directory.children);
+                this.$(".messageOuter").hide();
                 if(loadEvent) loadEvent();
-            });
+            }else{
+                var random = Math.floor(Math.random()*1000);
+                console.time("load time"+random);
+                var regexSearch = /\/(.+)\/(\w*)/.test(text);
+                var t = this;
+                this.querying = true;
+                var query = regexSearch?Querier.regexQueryAsync:Querier.queryAsync;
+                if(this.cancelSearch) this.cancelSearch();
+                var cancelSearch = query(text, this.directory, function(matches){
+                    console.time("lag time"+random);
+                    
+                    console.time("sort time"+random);
+                    Querier.sortMatches(matches);
+                    console.log(" ");
+                    console.timeEnd("sort time"+random);
+                    
+                    if(t.searchTerm.length>0){ //only load the data if the last search was not empty
+                        if(!(matches instanceof Array) || matches.length==0){
+                            t.setDataSet([]);    
+                            t.$(".messageOuter").show();
+                            if(!(matches instanceof Array)){
+                                t.$(".noFileMessage").hide();
+                                t.$(".regexErrorMessage").show();
+                                t.$(".regexError").text(matches.message);
+                            }else{
+                                t.$(".noFileMessage").show();
+                                t.$(".regexErrorMessage").hide();
+                            }
+                        }else{
+                            t.$(".messageOuter").hide();
+                            t.query = !regexSearch?text:null;
+                            t.setDataSet(matches);
+                        }
+                        console.timeEnd("lag time"+random);
+                        console.timeEnd("load time"+random);
+                    }
+                    if(loadEvent) loadEvent();
+                    
+                    EventHandler.trigger("foundMatches:post", t, {text:text, matches:matches});
+                    
+                    if(t.cancelSearch == cancelSearch){
+                        t.querying = false;
+                        if(t.keyboardEventBuffer.length>0)
+                            t.executeKeyboardEventBuffer();
+                    }
+                });
+                this.cancelSearch = cancelSearch;
+            }
+            
+            EventHandler.trigger("search:post", this, {text:text, onLoadEvent:loadEvent});
+            return true;
         }
+        return false;
     },
-    setDataSet: function(list, query){
-        if(query)
-            Querier.prepare(Querier.extractRequirements(query));
+    setDataSet: function(list){
+        if(this.query)
+            Querier.prepare(Querier.extractRequirements(this.query));
         this.super.setDataSet(list);
+    },
+    loadElements: function(){
+        if(this.query)
+            Querier.prepare(Querier.extractRequirements(this.query));
+        this.super.loadElements();
     },
     onHide: function(){}, //don't close on hide
     onClose: function(){}, //don't destroy when closed
     onOpen: function(){
         Searchbar.setText(this.searchTerm, true);
     },
-    createSelectorItem: function(file){ 
+    createItem: function(file){ 
         return new FileSelectorItem(file);
     },
     
     keyboardEvent: function(event){
-        if(event.key=="Enter"){
-            if(event.shiftKey){
-                return this.gotoLastDirectory();
-            }else if(event.ctrlKey){
-                return this.gotoParentDirectory();
+        if(!this.querying){
+            if(event.key=="Enter"){
+                if(event.shiftKey){
+                    return this.gotoLastDirectory();
+                }else if(event.ctrlKey){
+                    return this.gotoParentDirectory();
+                }
+            }
+            return this.super.keyboardEvent(event);
+        }else{
+            var k = event.key;
+            var ret = k=="ArrowUp"||k=="ArrowDown"||k=="Enter";
+            
+            console.log(this.searchTerm, event.key);
+            this.keyboardEventBuffer.push(event);
+            
+            return ret;
+        }
+    },
+    executeKeyboardEventBuffer: function(){
+        if(!this.querying){
+            while(this.keyboardEventBuffer.length>0){
+                var event = this.keyboardEventBuffer[0];
+                console.log("call",this.searchTerm,event.key);
+                this.keyboardEvent(event);
+                
+                this.keyboardEventBuffer.splice(0, 1);
             }
         }
-        return this.super.keyboardEvent(event);
     },
     searchbarChange: function(value){
-        this.search(value);
+        console.log("search",value);
+        return this.search(value);
+    },
+    executeItem: function(){
+        if(this.dataSet.length>0){
+            this.super.executeItem();
+        }
     }
 },LargeSetSelector);
 
@@ -232,8 +306,6 @@ var FileSelectorItem = Class("FileSelectorItem",{
         this.$(".fileName").html(name);
     },
     setSelector: function(selector){
-        this.super.setSelector(selector);
-        
         if(this.file.parent){
             var s = regexEscape(tree.seperator);
             var path = this.file.parent.getPath(selector.directory);
@@ -246,25 +318,45 @@ var FileSelectorItem = Class("FileSelectorItem",{
             }
             this.$(".filePath").text(path);
         }
+        
+        this.super.setSelector(selector);
     },
     select: function(){
-        this.super.select();
-        PreviewHandler.openFile(this.file);
-        
-        var actionMenu = ActionMenuHandler.getActionMenuFromFile(this.file);
-        var contextMenu = actionMenu.contextMenu;
-        if(contextMenu){
-            ContextMenuHandler.setSelectedContextMenu(contextMenu, this);
+        if(EventHandler.trigger("select:pre", this, {})){
+            EventHandler.disableEvents();
+            if(this.super.select()){
+                EventHandler.enableEvents();
+                
+                PreviewHandler.openFile(this.file);
+                
+                var actionMenu = ActionMenuHandler.getActionMenuFromFile(this.file);
+                var contextMenu = actionMenu.contextMenu;
+                if(contextMenu){
+                    ContextMenuHandler.setSelectedContextMenu(contextMenu, this);
+                }
+                
+                EventHandler.trigger("select:post", this, {});
+                return true;
+            }
         }
+        return false;
     },
     keyboardEvent: function(event){
         if(event.key=="Tab"){
-            this.openActionsMenu();
-            return true;
+           this.openActionsMenu();
+           return true;
         }
+        return false;
     },
     openActionsMenu: function(){
-        ActionMenuHandler.openFileItemMenu(this);  
+        if(EventHandler.trigger("openMenu:pre", this, {})){
+            if(!ActionMenuHandler.openFileItemMenu(this))
+                return false;
+            
+            EventHandler.trigger("openMenu:post", this, {});
+            return true;
+        }
+        return false;
     },
     eventSetup: function(){
         this.super.eventSetup();
@@ -279,7 +371,7 @@ var FileSelectorItem = Class("FileSelectorItem",{
     openContextMenu: function(offset){
         ActionMenuHandler.openFileItemContextMenu(this, offset);
     },
-    execute: function(){
+    onExecute: function(){
         ActionMenuHandler.executeFile(this.file);
     },
     setCut: function(state, dontUpdateFile){

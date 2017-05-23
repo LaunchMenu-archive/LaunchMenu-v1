@@ -1,4 +1,4 @@
-/*global Class, Utils*/
+/*global Class, Utils, EventHandler*/
 var SelectorItem = Class("SelectorItem", {
     const: function(){
         //create element out of template
@@ -30,12 +30,25 @@ var SelectorItem = Class("SelectorItem", {
     },
     setSelector: function(selector){
         this.selector = selector;
+        EventHandler.trigger("setSelector:post", this, {selector: selector});
     },
     select: function(){
-        this.element.addClass("bg3");
-        this.element.addClass("selected");
-        this.selector.selectItem(this, true);
-        this.selected = true;
+        if(EventHandler.trigger("select:pre", this, {})){
+            this.selected = true;
+            var ret = false;
+            if(this.selector.selectItem(this)){
+                this.element.addClass("bg3");
+                this.element.addClass("selected");
+                ret = true;
+            }else{
+                this.selected = false;
+            }
+            
+            if(ret)
+                EventHandler.trigger("select:post", this, {});
+            return ret;
+        }
+        return false;
     },
     deselect: function(){
         this.element.removeClass("bg3");
@@ -43,7 +56,16 @@ var SelectorItem = Class("SelectorItem", {
         this.selected = false;
     },
     execute: function(){ //execute the items function
-        console.log("hi", this.element);
+        if(EventHandler.trigger("execute:pre", this, {})){
+            if(!this.onExecute())
+                return false;
+            EventHandler.trigger("execute:post", this, {});
+            return true;
+        }
+        return false;
+    },
+    onExecute: function(){
+          
     },
     keyboardEvent: function(event){ //listens to any keypresses on the page
         //return true if you use the keypress event

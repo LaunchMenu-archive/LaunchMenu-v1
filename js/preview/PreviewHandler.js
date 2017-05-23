@@ -1,4 +1,4 @@
-/*global variables Class, Utils, File, Directory*/
+/*global variables Class, Utils, File, Directory, EventHandler, DateFormatter*/
 var PreviewHandler = (function(){
     var previewList = [];
     var openedPreview = null;
@@ -23,6 +23,22 @@ var PreviewHandler = (function(){
         },
         get directoryPreview(){
             return directoryPreview;
+        },
+        get generalData(){
+            var obj = {
+                size:               generalData.size.val,
+                creationDate:       generalData.creationDate.val,
+                modificationDate:   generalData.modificationDate.val,
+                accessDate:         generalData.accessDate.val,
+                path:               generalData.path.val
+            };
+            obj.path = obj.path.replace(/<wbr>/g,"");
+            if(obj.size=="none")                obj.size=null;
+            if(obj.creationDate=="none")        obj.creationDate=null;
+            if(obj.modificationDate=="none")    obj.modificationDate=null;
+            if(obj.accessDate=="none")          obj.accessDate=null;
+            if(obj.path=="none")                obj.path=null;
+            return obj;
         }
     };
     
@@ -58,7 +74,8 @@ var PreviewHandler = (function(){
     ph.setOpenedPreview = function(preview){
         if(openedPreview!=preview){
             if(openedPreview){
-                openedPreview.close();
+                if(!openedPreview.close())
+                    return false;
             }
             openedPreview = preview;
             return true;
@@ -80,7 +97,7 @@ var PreviewHandler = (function(){
             throw new Error("first argument must be either a file or a directory");
         }
         
-        if(n) n.loadFile(file);
+        if(n) return n.loadFile(file);
         else if(openedPreview){
             openedPreview.close();
             openedPreview = null;
@@ -95,7 +112,8 @@ var PreviewHandler = (function(){
                 var n = Utils.lm(".dateCreated");
                 if(val.toLowerCase()=="none")   n.hide();
                 else                            n.show();
-                n.children(".dataValue").text(val);}
+                n.children(".dataValue").text(val);
+                n.attr("title",val);}
         },modificationDate:{val:"", setVal: 
             function(val){
                 this.val=val; 
@@ -103,7 +121,8 @@ var PreviewHandler = (function(){
                 var n = Utils.lm(".dateModified");
                 if(val.toLowerCase()=="none")   n.hide();
                 else                            n.show();
-                n.children(".dataValue").text(val);}
+                n.children(".dataValue").text(val);
+                n.attr("title",val);}
         },accessDate:{val:"", setVal:  
             function(val){
                 this.val=val; 
@@ -111,7 +130,8 @@ var PreviewHandler = (function(){
                 var n = Utils.lm(".dateAccessed");
                 if(val.toLowerCase()=="none")   n.hide();
                 else                            n.show();
-                n.children(".dataValue").text(val);}
+                n.children(".dataValue").text(val);
+                n.attr("title",val);}
         },size:{val:"", setVal:  
             function(val){
                 this.val=val; 
@@ -146,20 +166,35 @@ var PreviewHandler = (function(){
         },500);
     };
     ph.setGeneralData = function(size, creationDate, modificationDate, accessDate, path){
-        if(creationDate!==null && creationDate!==undefined)
-            generalData.creationDate.setVal(creationDate);
-        if(modificationDate!==null && modificationDate!==undefined) 
-            generalData.modificationDate.setVal(modificationDate);
-        if(accessDate!==null && accessDate!==undefined)       
-            generalData.accessDate.setVal(accessDate);
-        if(size!==null && size!==undefined)             
-            generalData.size.setVal(size);
-        if(path!==null && path!==undefined)             
-            generalData.path.setVal(path.replace(/\\/g, "\\<wbr>"));
+        var dateFormat = 'd-m-Y';
+        if(EventHandler.trigger("PreviewHandler.setGeneralData:pre", this, {
+            openedPreviewType:      this.openedPreview, 
+            size:                   size, 
+            creationDate:           creationDate, 
+            modificationDate:       modificationDate, 
+            accessDate:             accessDate, 
+            path:                   path
+        })){
+            if(creationDate!==null && creationDate!==undefined)
+                generalData.creationDate.setVal((new DateFormatter(creationDate)).format(dateFormat));
+            if(modificationDate!==null && modificationDate!==undefined) 
+                generalData.modificationDate.setVal((new DateFormatter(modificationDate)).format(dateFormat));
+            if(accessDate!==null && accessDate!==undefined)       
+                generalData.accessDate.setVal((new DateFormatter(accessDate)).format(dateFormat));
+            if(size!==null && size!==undefined)             
+                generalData.size.setVal(size);
+            if(path!==null && path!==undefined)             
+                generalData.path.setVal(path.replace(/\\/g, "\\<wbr>"));
+                
+            EventHandler.trigger("PreviewHandler.setGeneralData:post", this, {
+                openedPreviewType:  this.openedPreview, 
+                generalData:        this.generalData
+            });
+        }
     };
     
     ph.hideGeneralData = function(){
-        lm(".preview").addClass("full");
+        Utils.lm(".preview").addClass("full");
     };
     ph.showGeneralData = function(){
         Utils.lm(".preview").removeClass("full");

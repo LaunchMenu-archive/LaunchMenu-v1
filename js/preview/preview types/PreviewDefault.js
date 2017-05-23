@@ -6,8 +6,8 @@ PreviewHandler.registerPreviewType(
             html: ``,
             style:``
         },
-        loadFile: function(file){
-            this.super.loadFile(file);
+        onLoadFile: function(file){
+            this.super.onLoadFile(file);
         }
     },Preview)
 );

@@ -1,4 +1,4 @@
-/*global variables Class, Utils, SelectorHandler, SelectorItem*/
+/*global variables Class, Utils, SelectorHandler, SelectorItem, EventHandler*/
 var Selector = Class("Selector",{
     //template initialisation code
     const:function(){
@@ -93,50 +93,63 @@ var Selector = Class("Selector",{
         }
         
         if(animationDuration==null) animationDuration=this.animationDuration;
-        //register this selector as being opened
-        if(SelectorHandler.setOpenedSelector(this, animationDuration)){
-            //open the element using css
-            this.element.css("border-right-width","1px");
-            if(animationDuration){
-                var wrapper = this.element.children(".wrapper");
-                this.element.width("100%");
-                wrapper.width("100%").width(wrapper.width()-2); //set width to value instead of percentange
-                this.element.width(0);
-                var t = this;
-                this.element.animate({width: "100%"}, {duration:animationDuration, complete:function(){
-                    $(this).width("calc(100% + 1px)");
-                }});
-                this.onOpen();
-            }else{
-                this.element.width("calc(100% + 1px)").show();
-                this.onOpen();
+        
+        if(EventHandler.trigger("open:pre", this, {})){
+            //register this selector as being opened
+            if(SelectorHandler.setOpenedSelector(this, animationDuration)){
+                //open the element using css
+                this.element.css("border-right-width","1px");
+                if(animationDuration){
+                    var wrapper = this.element.children(".wrapper");
+                    this.element.width("100%");
+                    wrapper.width("100%").width(wrapper.width()-2); //set width to value instead of percentange
+                    this.element.width(0);
+                    var t = this;
+                    this.element.animate({width: "100%"}, {duration:animationDuration, complete:function(){
+                        $(this).width("calc(100% + 1px)");
+                    }});
+                    this.onOpen();
+                }else{
+                    this.element.width("calc(100% + 1px)").show();
+                    this.onOpen();
+                }
+                
+                EventHandler.trigger("open:post", this, {});
+                return true;
             }
         }
+        return false;
     },
     close: function(animationDuration){
         var openedStack = SelectorHandler.openedStack;
         var index = openedStack.indexOf(this);
         
-        var close = true;
-        //check if there is a selector underneath to open ontop of this one
-        if(index==openedStack.length-1){
-            var top = openedStack[openedStack.length-2];
-            if(top){
-                top.onShow();
-                top.open(); 
-                close = false; //onHide will call close again to properly close the element
+        if(EventHandler.trigger("close:pre", this, {})){
+            var close = true;
+            //check if there is a selector underneath to open ontop of this one
+            if(index==openedStack.length-1){
+                var top = openedStack[openedStack.length-2];
+                if(top){
+                    top.onShow();
+                    top.open(); 
+                    close = false; //onHide will call close again to properly close the element
+                }
             }
+            //if these is no element underneath, animate the closing and call the onClose event
+            if(close){
+                if(animationDuration==null) animationDuration=this.animationDuration;
+                var t = this;
+                this.element.animate({width:0}, {duration:animationDuration, complete:function(){
+                    t.element.css("border-right-width","0px");
+                    t.onClose();
+                }});
+                SelectorHandler.closeSelector(this);
+            }
+            
+            EventHandler.trigger("close:post", this, {});
+            return true;
         }
-        //if these is no element underneath, animate the closing and call the onClose event
-        if(close){
-            if(animationDuration==null) animationDuration=this.animationDuration;
-            var t = this;
-            this.element.animate({width:0}, {duration:animationDuration, complete:function(){
-                t.element.css("border-right-width","0px");
-                t.onClose();
-            }});
-            SelectorHandler.closeSelector(this);
-        }
+        return false;
     },
     isOpen: function(){
         return SelectorHandler.topSelector == this;
@@ -165,79 +178,113 @@ var Selector = Class("Selector",{
         if(!SelectorItem.classof(selectorItem)){
             throw Error("The first argument must be an instance of SelectorItem");
         }
-        //add the element to the page and register this as its Selector
-        this.insertItemElement(selectorItem.element);
-        selectorItem.setSelector(this);
         
-        //add the item to the item set and select it if it is the first item
-        this.selectorItems.push(selectorItem);
-        if(this.selectorItems.length==1)
-            selectorItem.select();
+        if(EventHandler.trigger("addItem:pre", this, {item:selectorItem})){
+            //add the element to the page and register this as its Selector
+            this.insertItemElement(selectorItem.element);
+            selectorItem.setSelector(this);
             
-        //refresh the scrollbar to register the height change
-        this.$(".list").first().scrollbar("refresh");
-    },
-    selectItem: function(selectorItem, firedBySelectorItem){
-        if(!this.selecting && this.selectedItem!=selectorItem){
-            this.selecting = true; //make sure no loop can be created if selectorItem calls this function when selectorItem.select() is ran
-            if(this.selectedItem)
-                this.selectedItem.deselect(); //deselect the previous selected SelectorItem
-            this.selectedItem = selectorItem; //register the selectorItem as the selected SelectorItem
-            if(!firedBySelectorItem)
-                this.selectedItem.select();
-            this.selecting = false;
-            return true;
+            //add the item to the item set and select it if it is the first item
+            this.selectorItems.push(selectorItem);
+            if(this.selectorItems.length==1)
+                selectorItem.select();
+                
+            //refresh the scrollbar to register the height change
+            this.$(".list").first().scrollbar("refresh");
+            
+            EventHandler.trigger("addItem:post", this, {item:selectorItem});
         }
+    },
+    selectItem: function(selectorItem){
+        if(this.selectedItem==selectorItem)
+            return true;
+        if(selectorItem!=null){
+            if(EventHandler.trigger("selectItem:pre", this, {item:selectorItem})){
+                var prevItem = this.selectedItem;
+                this.selectedItem = selectorItem; //register the selectorItem as the selected SelectorItem
+                if(!this.selectedItem.selected)
+                    if(!this.selectedItem.select()){
+                        this.selectedItem = prevItem;
+                        return false;
+                    }
+                if(prevItem)
+                    prevItem.deselect(); //deselect the previous selected SelectorItem
+                    
+                EventHandler.trigger("selectItem:post", this, {item:selectorItem});
+                return true;
+            }
+        }
+        return false;
     },
     focusOnSelectedItem: function(){ //scroll to the position of the selected SelectorItem
-        if(this.selectedItem)
-            this.$(".list")[0].focus(this.selectedItem.element, 100);
-    },
-    selectUp: function(){ //select the selectorItem above the currently selected SelectorItem
-        if(!this.disableSelect){
-            this.disableSelect = true;
-            var t = this;
-            setTimeout(function(){t.disableSelect = false}, 100);
-            
-            if(this.selectedItem){
-                var prev = this.selectedItem.element.prevAll(":not(.divider)").first();
-                if(prev.length>0){
-                    this.selectItem(prev[0].selectorItem);
-                    this.focusOnSelectedItem();
-                }
+        if(this.selectedItem){
+            if(EventHandler.trigger("focusOnSelectedItem:pre", this, {currentSelected:this.selectedItem})){
+                this.$(".list")[0].focus(this.selectedItem.element, 100);
+                EventHandler.trigger("focusOnSelectedItem:post", this, {currentSelected:this.selectedItem});
             }
         }
-        return true;
     },
-    selectDown: function(){ //select the selectorItem below the currently selected SelectorItem
-        if(!this.disableSelect){
-            this.disableSelect = true;
-            var t = this;
-            setTimeout(function(){t.disableSelect = false}, 100);
+    selectUp: function(overwriteTimeout){ //select the selectorItem above the currently selected SelectorItem
+        if(EventHandler.trigger("selectUp:pre", this, {currentSelected:this.selectedItem})){
+            if(!this.disableSelect || overwriteTimeout){
+                this.disableSelect = true;
+                var t = this;
+                setTimeout(function(){t.disableSelect = false}, 100);
                 
-            if(this.selectedItem){
-                var next = this.selectedItem.element.nextAll(":not(.divider)").first();
-                if(next.length>0){
-                    this.selectItem(next[0].selectorItem);
-                    this.focusOnSelectedItem();
+                if(this.selectedItem){
+                    var prev = this.selectedItem.element.prevAll(":not(.divider)").first();
+                    if(prev.length>0){
+                        this.selectItem(prev[0].selectorItem);
+                        this.focusOnSelectedItem();
+                    }
                 }
+                EventHandler.trigger("selectUp:post", this, {currentSelected:this.selectedItem});
+                return true;
             }
         }
-        return true;
+        return false;
+    },
+    selectDown: function(overwriteTimeout){ //select the selectorItem below the currently selected SelectorItem
+        if(EventHandler.trigger("selectDown:pre", this, {currentSelected:this.selectedItem})){
+            if(!this.disableSelect || overwriteTimeout){
+                this.disableSelect = true;
+                var t = this;
+                setTimeout(function(){t.disableSelect = false}, 100);
+                    
+                if(this.selectedItem){
+                    var next = this.selectedItem.element.nextAll(":not(.divider)").first();
+                    if(next.length>0){
+                        this.selectItem(next[0].selectorItem);
+                        this.focusOnSelectedItem();
+                    }
+                }
+                EventHandler.trigger("selectDown:post", this, {currentSelected:this.selectedItem});
+                return true;
+            }
+        }
+        return false;
     },
     executeItem: function(){ //execute the currently selected item
         if(this.selectedItem){
-            return this.selectedItem.execute();
+            if(EventHandler.trigger("executeItem:pre", this, {item:this.selectedItem})){
+                if(!this.selectedItem.execute())
+                    return false;
+                EventHandler.trigger("executeItem:post", this, {item:this.selectedItem});
+                return true;
+            }
         }
         return true;
     },
     keyboardEvent: function(event){ //pass the keyboard event to the currently selected item
         if(event.key=="ArrowUp"){
-            return this.selectUp();
+            this.selectUp();
+            return true;
         }else if(event.key=="ArrowDown"){
-            return this.selectDown();
+            this.selectDown();
+            return true;
         }else if(event.key=="Enter"){
-            return this.executeItem();
+            this.executeItem();
+            return true;
         }
         
         if(this.selectedItem){

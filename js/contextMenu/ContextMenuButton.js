@@ -1,4 +1,4 @@
-/*global variables Class, ContextMenu, Utils, ContextMenuHandler*/
+/*global variables Class, ContextMenu, Utils, ContextMenuHandler, EventHandler*/
 var ContextMenuButton = Class("ContextMenuButton", {
     const: function(icon, text, shortcut, func, children, dontCloseAfter){//you can only provide a func or children, the other must be null
         if(typeof icon == "object"){
@@ -47,24 +47,51 @@ var ContextMenuButton = Class("ContextMenuButton", {
         this.contextMenu = contextMenu;
         if(this.subMenu)
             this.subMenu.parentMenu = contextMenu;
+        EventHandler.trigger("setContextMenu:post", this, {contextMenu: contextMenu});
     },
     
     openSubMenu: function(){
-        if(this.subMenu){
-            this.subMenu.open();
-            this.subMenu.setPosition(this.element);
+        if(EventHandler.trigger("openSubMenu:pre", this, {})){
+            if(this.subMenu){
+                if(!this.subMenu.open())
+                    return false;
+                this.subMenu.setPosition(this.element);
+                
+                EventHandler.trigger("openSubMenu:post", this, {});
+                return true;
+            }
         }
+        return false;
     },
     closeSubMenu: function(){
-        if(this.subMenu){
-            this.subMenu.close();
-        } 
+        if(EventHandler.trigger("closeSubMenu:pre", this, {})){
+            if(this.subMenu){
+                if(!this.subMenu.close())
+                    return false;
+                    
+                EventHandler.trigger("closeSubMenu:post", this, {});
+                return true;
+            } 
+        }
+        return false;
     },
     select: function(){
-        this.element.addClass("bg3");
-        this.element.addClass("selected");
-        this.contextMenu.selectButton(this);
-        this.openSubMenu();
+        if(EventHandler.trigger("select:pre", this, {})){
+            this.element.addClass("selected");
+            var ret = false;
+            if(this.contextMenu.selectButton(this)){
+                this.element.addClass("bg3");
+                this.openSubMenu();
+                ret = true;
+            }else{
+                this.element.removeClass("selected");    
+            }
+            
+            if(ret)
+                EventHandler.trigger("select:post", this, {});
+            return ret;
+        }
+        return false;
     },
     deselect: function(){
         this.element.removeClass("bg3");
@@ -76,19 +103,31 @@ var ContextMenuButton = Class("ContextMenuButton", {
     },
     
     setExecuteObject: function(obj){
-        this.executeObj = obj;
-        if(this.subMenu)
-            this.subMenu.setExecuteObject(obj);
+        if(EventHandler.trigger("setExecuteObject:pre", this, {object:obj})){
+            this.executeObj = obj;
+            if(this.subMenu)
+                this.subMenu.setExecuteObject(obj);
+            
+            EventHandler.trigger("setExecuteObject:post", this, {object:obj});
+            return true;
+        }
+        return false;
     },
     execute: function(){
-        if(this.subMenu){
-            this.subMenu.executeButton();
-        }else if(this.func){
-            this.func.call(this.executeObj, this.executeObj);
-            if(!this.dontCloseAfter){
-                ContextMenuHandler.closeContextMenu();
+        if(EventHandler.trigger("execute:pre", this, {})){
+            if(this.subMenu){
+                this.subMenu.executeButton();
+            }else if(this.func){
+                this.func.call(this.executeObj, this.executeObj);
+                if(!this.dontCloseAfter){
+                    ContextMenuHandler.closeContextMenu();
+                }
             }
+           
+            EventHandler.trigger("execute:post", this, {});
+            return true;
         }
+        return false;
     },
     checkShortcuts: function(shortcut){
         if(this.shortcut==shortcut){

@@ -25,9 +25,9 @@ var Actions = (function(){
                 }else if(action.indexOf("getDates")!=-1){
                     setTimeout(function(){
                         callback('event', {
-                            dateCreated:"23-4-2017",
-                            dateModified:"24-4-2017",
-                            dateAccessed:"25-4-2017"
+                            dateCreated:"Sun May 21 2017 19:04:02 GMT+0200 (Central Europe Daylight Time)",
+                            dateModified:"Mon May 22 2017 19:04:02 GMT+0200 (Central Europe Daylight Time)",
+                            dateAccessed:"Tue May 23 2017 19:04:02 GMT+0200 (Central Europe Daylight Time)"
                         });
                     },100);
                 }else if(action.indexOf("getPreview")!=-1){
@@ -261,9 +261,10 @@ var Actions = (function(){
                                     registerCallback(uid = generateUUID(),arguments[callbackIndex]);
                                     
                                     var data = {action:shortPath, uid:uid};
-                                    for(var i=0; i<arguments.length; i++){
+                                    data.args = []; 
+                                    for(var i=0; i<argNames.length; i++){
                                         if(i!=callbackIndex)
-                                            data[argNames[i]] = arguments[i];
+                                           data.args.push(arguments[i]);
                                     }
                                     _ipc.send('invokeAction', data);
                                 };
@@ -271,8 +272,9 @@ var Actions = (function(){
                                 //target[name] = createFunction( , argNames, path);
                                 target[name] = function(){
                                     var data = {action:shortPath};
-                                    for(var i=0; i<arguments.length; i++){
-                                        data[argNames[i]] = arguments[i];
+                                    data.args = []; 
+                                    for(var i=0; i<argNames.length; i++){
+                                        data.args.push(arguments[i]);
                                     }
                                     _ipc.send('invokeAction', data);
                                 };
@@ -305,13 +307,9 @@ var Actions = (function(){
     //      });
     
     
-    /**
-     * object: Actions
-     * def: This function hides the main window. If an ID is passed then the IDth window is hidden (_currently unimplemented_).
-     * params: ID as integer
-     * name: window.hide
-     */
-    Actions.window.hide = function(ID){};
+    /*****************************************************************************************************************/
+    /*                                                   WINDOW                                                      */
+    /*****************************************************************************************************************/
     
     /**
      * object: Actions
@@ -320,6 +318,14 @@ var Actions = (function(){
      * name: window.show
      */
     Actions.window.show = function(ID){};
+    
+    /**
+     * object: Actions
+     * def: This function hides the main window. If an ID is passed then the IDth window is hidden (_currently unimplemented_).
+     * params: ID as integer
+     * name: window.hide
+     */
+    Actions.window.hide = function(ID){};
     
     /**
      * object: Actions
@@ -338,17 +344,22 @@ var Actions = (function(){
      */
     Actions.window.setSize = function(width, height){};
     
+    /**
+     * object: Actions
+     * def: This function toggles the auto-hide on loss of focus.
+     * params: state as boolean
+     * name: window.toggleAutoUnfocus
+     */
+    Actions.window.toggleAutoHide = function(state){};
+    
     Actions.window.hide.inspect = {text:"Actions.window.hide = function(ID as integer){} returns null;\nThis function hides the main window. If passed an ID, n, the function will hide the nth window."};
     Actions.window.show.inspect = {text:"Actions.window.show = function(ID as integer){} returns null;\nThis function shows the main window. If passed an ID, n, the function will hide the nth window."};
     Actions.window.getSize.inspect = {text:"Actions.window.getSize = function(){} returns {width,height};\nThis function gets the size of the main window."};
     Actions.window.setSize.inspect = {text:"Actions.window.setSize = function(width as float,height as float){} returns null;\nThis function sets the size of the main window."};
     
-    /**
-     * object: Actions
-     * def: This function shows the settings menu to the user.
-     * name: lm.settingsShow
-     */
-    Actions.lm.settingsShow = function(){};
+    /*****************************************************************************************************************/
+    /*                                                     LM                                                        */
+    /*****************************************************************************************************************/
     
     /**
      * object: Actions
@@ -365,11 +376,14 @@ var Actions = (function(){
      * params: ini as object
      * name: lm.writeIniFile
      */
-    Actions.lm.writeIniFile = function(ini){};
+    Actions.lm.writeIniFile = function(ini, callback){};
     
-    Actions.lm.settingsShow.inspect = {text:"Actions.lm.settingsShow = function(){} returns null;\nShows the settings menu to the user."}
     Actions.lm.readIniFile.inspect  = {text:"Actions.lm.readIniFile  = function(callback as function){} returns ini as object;\nObtain the initialisation object. This allows you to read and modify initialisation properties."}
     Actions.lm.writeIniFile.inspect = {text:"Actions.lm.writeIniFile = function(ini as object){} returns null;\n Write an initialisation object to the initialisation JSON file."}
+    
+    /*****************************************************************************************************************/
+    /*                                                    FILE                                                       */
+    /*****************************************************************************************************************/
     
     /**
      * object: Actions
@@ -379,6 +393,15 @@ var Actions = (function(){
      * name: file.getData
      */
     Actions.file.getData = function(path, callback){};
+   
+   /**
+     * object: Actions
+     * def: This function returns the binary data of a file as a base 64 string. 
+     * params: path as string, callback as function
+     * callback: data as string
+     * name: file.getData64
+     */
+    Actions.file.getData64 = function(path, callback){};
    
     /**
      * object: Actions
@@ -405,7 +428,7 @@ var Actions = (function(){
      * callback: data as string
      * name: file.getPreview
      */
-    Actions.file.getPreview = function(path, callback){};
+    Actions.file.getFilePreview = function(path, callback){};
     
     /**
      * object: Actions
@@ -424,18 +447,88 @@ var Actions = (function(){
      */
     Actions.file.execute = function(path, args){};
     
+    /**
+     * object: Actions
+     * def: This function selects a file in windows explorer / Finder application.
+     * params: file as string
+     * name: file.selectFile
+     */
+     Actions.file.select = function(file){};
+     
+    /**
+     * object: Actions
+     * def: This function sends a file to the trash/recycle bin
+     * params: file as string
+     * name: file.trashFile
+     */
+    Actions.file.delete = function(file){};
+    
+    /*****************************************************************************************************************/
+    /*                                                 FILE SYSTEM                                                   */
+    /*****************************************************************************************************************/
+    
+    /**
+     * object: Actions
+     * def: This function executes a file, using the shell.
+     * params: path as string, args as array
+     * name: fileSystem.getFullFileLists
+     */
     Actions.fileSystem.getFullFileLists = function(roots, callback){};
+    
+    /**
+     * object: Actions
+     * def: Hook into file events on a given file.
+     * params: path as string, callback as function
+     * name: fileSystem.registerFileHook
+     */
     Actions.fileSystem.registerFileHook = function(path, callback){
         registerCallback(uid = generateUUID(),callback);
         _ipc.send('invokeAction',{action: 'fileSystem.registerFileHook', directory: path});
         return uid;
     };        
+    
+    /**
+     * object: Actions
+     * def: This unhooks a previous file hook event
+     * params: uid as HookID
+     * name: fileSystem.unregisterFileHook
+     */
     Actions.fileSystem.unregisterFileHook = function(uid){
         _ipc.send('invokeAction',{action: 'fileSystem.unregisterFileHook', uid: uid});
     };
+    
+    /**
+     * object: Actions
+     * def: Determine whether a file exists
+     * params: path as string, callback as function
+     * name: fileSystem.fileExists
+     */
     Actions.fileSystem.fileExists = function(path, callback){};
     
+    /*****************************************************************************************************************/
+    /*                                                    SYSTEM                                                     */
+    /*****************************************************************************************************************/
+    
+    /**
+     * object: Actions
+     * def: Gets the current operating system
+     * params: callback as function
+     * name: system.getOS
+     */
     Actions.system.getOS = function(callback){};
+    
+    /**
+     * object: Actions
+     * def: Uses the system to beep.
+     * name: system.beep
+     */
+    Actions.system.beep = function(){};
+    
+    
+    /*****************************************************************************************************************/
+    /*                                                  AUTOMATION                                                   */
+    /*****************************************************************************************************************/
+    
     
     // Windows OS
     
@@ -616,6 +709,36 @@ var Actions = (function(){
                 }
             }\n\n{//jxaCode//}`).replace('{//jxaCode//',jxaCode);
     }
+    
+    /**
+     * object: Actions
+     * name: automation.objC
+     * params: objcCode as string, args as *, callback as function
+     * callback: function(stderr as string, stdout as string)
+     * os: mac
+     * def: This function executes objective-c code given as a string.
+     */
+    Actions.automation.objC = function(objcCode,args,callback){};
+    
+    /**
+     * object: Actions
+     * name: automation.ruby
+     * params: rbCode as string, args as *, callback as function
+     * callback: function(stderr as string, stdout as string)
+     * os: mac
+     * def: This function executes ruby code given as a string.
+     */
+    Actions.automation.ruby = function(pyCode, args, callback){};
+    
+    /**
+     * object: Actions
+     * name: automation.lisp
+     * params: lispCode as string, args as *, callback as function
+     * callback: function(stderr as string, stdout as string)
+     * os: mac
+     * def: This function executes lisp code given as a string.
+     */
+    Actions.automation.lisp = function(pyCode, args, callback){};
     
     /**
      * object: Actions

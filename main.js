@@ -23,6 +23,9 @@ let mainWindow
 // Keep a global reference of tray object
 let tray = null
 
+// ##IMPORTANT## Set to true on release
+var AUTO_UNFOCUS = true;
+
 function createWindow () {
 	// Create the browser window.
 	// mainWindow = new BrowserWindow({width: 740, height: 480})
@@ -74,11 +77,14 @@ app.on('ready', function(){
 			mainWindow.show()
 		})
 	}
-
+	
 	//When main window loses focus hide it.
 	mainWindow.on('blur', function(e){
-		mainWindow.hide()
+		if(AUTO_UNFOCUS){
+			mainWindow.hide();
+		}
 	})
+	
 
 	//Create tray menu
 	const {nativeImage} = require('electron')
@@ -90,19 +96,19 @@ app.on('ready', function(){
 		{label: 'Item1', type: 'checkbox'},
 		{label: 'Item2', type: 'checkbox'},
 		{label: 'Reload', type: 'normal', click: function(){
-				app.relaunch()
-				app.quit()
+				app.relaunch();
+				app.quit();
 			}
 		},
 		{label: 'Exit', type: 'normal', click: function(){
-				app.quit()
+				app.quit();
 			}
 		}
 	])
-	tray.setContextMenu(contextMenu)
+	tray.setContextMenu(contextMenu);
 
 	globalShortcut.register('control+f12', function(){
-		mainWindow.webContents.openDevTools()
+		mainWindow.webContents.openDevTools();
 	})
 
 	/*
@@ -122,7 +128,7 @@ app.on('activate', function () {
 	// On OS X it's common to re-create a window in the app when the
 	// dock icon is clicked and there are no other windows open.
 	if (mainWindow === null) {
-	    createWindow()
+	    createWindow();
 	}
 })
 
@@ -130,185 +136,317 @@ app.on('activate', function () {
 //http://stackoverflow.com/questions/32780726/how-to-access-dom-elements-in-electron
 var ipc = require('electron').ipcMain;
 
+ 
+var listeners = {};
+ipc.on("invokeSettingsChange", function(event,data){
+	var n = listeners[data.name];
+	if(n) n.sender.send(n.uid,data.setting);
+});
+ipc.on("addSettingsListeners", function(event,data){
+	listeners[data.name] = {uid:data.uid, sender:event.sender};
+});
+
+
 /*
  * Invoke action takes in a data object.
  * The most important property of the data object is the action property
  * which drives the switch statement.
  */
-
 ipc.on('invokeAction', function(event, data){
-	var replyChannel = data.uid
-    var result = (function(data){
-		switch(data.action) {
-			// window class
-			case "window.show":
-				return mainWindow.show()
-    		case "window.hide":
-				return mainWindow.hide()
-			case "window.getSize":
-				return mainWindow.getSize()
-			case "window.setSize":
-				return mainWindow.setSize(data.width,data.height)
-				
-			
-			// lm class
-    		case "lm.settingsShow":
-        		return 
-			case "lm.readIniFile":
-				// Instead of using an ini file we will use a JSON file.
-				return readIni(replyChannel)
-			case "lm.writeIniFile":
-				return writeIni(data.ini)
-			
-			
-			// file class
-			case "file.getData":
-				return GetPreviewData(data.path, function(result){
-        			event.sender.send(replyChannel, result);
-        		});
-			case "file.getDates":
-				return
-	        case 'file.getSize':
-	        	return
-	        case 'file.getPreviewImage':
-	        	return
-	        case 'file.getIcon32':
-	        	return GetFileIcon(data.FileIn, data.FileOut, function(result){
-					event.sender.send(replyChannel, result);
-				})
-	        case 'file.execute':
-	        	console.log(data.file)
-	        	return
-			
-			
-			//fileSystem class
-			case 'fileSystem.getFullFileLists':
-				return
-	        case 'fileSystem.registerFileHook':
-	        	return
-	       	case 'fileSystem.unregisterFileHook': 
-	       		return
-	   		case 'fileSystem.fileExists':
-	   			return
-
-
-		    //system class
-            case 'GetOS':
-            	return require('os').platform()
-			
-    		default:
-    			return
-		}
-	})(data);
-	if(result)
-    	event.sender.send(replyChannel, result);
+	var replyChannel = data.uid;
+	try{
+		var pathParts = data.action.split(/\./g);
+		var p = ServerActions;
+		for(var i=0; i<pathParts.length; i++){
+			p = p[pathParts[i]];
+		};
+		data.args.push(function(result){
+			event.sender.send(replyChannel, result);
+		});
+	    var result = p.apply(this, data.args);
+	    
+	}catch(e){
+		console.error(e);
+		if(replyChannel)
+			event.sender.send(replyChannel, ["Error occurred",e]);
+	}
 });
 
-var api = {};
-var uid;
+
+var ServerActions = function(){
+	var api = {};
+	var uid;
 
 	api.window = {
-		show: function(id=1){
+		show: function(id){
+			if(id==null) id=1;
 			if(id!=1) return  //Future implementation
 			mainWindow.show();
 		},
-		hide: function(id=1){
+		hide: function(id){
+			if(id==null) id=1;
 			if(id!=1) return  //Future implementation
 			mainWindow.hide();
 		},
-		getSize: function(){
-			return mainWindow.getSize();
+		getSize: function(callback){
+			callback(mainWindow.getSize());
 		},
 		setSize: function(width,height){
-			mainWindow.setSize(width,height);	
-			return [width,height];
+			mainWindow.setSize(width,height);
+		},
+		toggleAutoHide: function(state){
+			if(state==undefined||state==null){
+				AUTO_UNFOCUS = !AUTO_UNFOCUS;
+			}else{
+				AUTO_UNFOCUS = state;
+			}
 		},
 	};
 
 	api.lm = {
-		settingsShow: function() {
-			
-		},
-		readIni: function(replyChannel){ // returns javascript object
-		var fs = require('fs');
-		var path = require('path');
-		fs.readFile(path.resolve(__dirname, 'ini.json'), 'UTF-8', function (err,content) {
-			event.sender.send(replyChannel, err ? {}: JSON.parse(content));
-		})},
-		
-		writeIni: function(obj,replyChannel){ // returns javascript object
+		readIniFile: function(callback){ // returns javascript object
 			var fs = require('fs');
 			var path = require('path');
-			fs.writeFile(path.resolve(__dirname, 'ini.json'), JSON.stringify(obj,null,4), 'UTF-8', function (err,content) {
-				if (replyChannel) event.sender.send(replyChannel, err ? false : true);
+			fs.readFile(path.resolve(__dirname, 'ini.json'), 'UTF-8', function (err,content) {
+				callback(err ? {}: JSON.parse(content));
 			});
-		}
+		},
+		writeIniFile: function(obj,callback){ // returns javascript object
+			var fs = require('fs');
+			var path = require('path');
+			fs.writeFile(
+				path.resolve(__dirname, 'ini.json'), 
+				JSON.stringify(obj,null,4), 
+				'UTF-8', 
+				function (err,content) {
+					if (callback) callback(err ? false : true);
+				}
+			);
+		},
 	}
 	
 	api.file = {
 		getData: function(path,callback){
-			
+			var fs = require('fs')
+			fs.readFile(path,'utf8', function(err,rContent){
+				callback(rContent==err?"":rContent);
+			});
 			// returns data (as ascii string)
         },
         getData64: function(path,callback){
-			
+        	this.getData(path,function(s){
+        		callback(new Buffer(s).toString('base64'));
+        	});
 			// returns data (as base64 string)
         },
         getDates: function(path,callback){
-        	
+        	var fs = require('fs');
+            //Get stats of file
+			fs.stat(path,function(error,rStats){
+				var dates = rStats==undefined ? null : {
+					dateCreated: rStats.birthtime,
+					dateModified: rStats.mtime,
+					dateAccessed: rStats.atime
+				};
+				callback(dates);
+			});
             // returns dates = {DateCreated: rStats.birthtime, DateModified: rStats.mtime, DateAccessed: rStats.atime}
         },
         getSize: function(path,callback){
+            var fs = require('fs');
             
+            //Get stats of file
+			fs.stat(path,function(error,rStats){
+				var size = rStats==undefined ? null : rStats.size;
+				callback(size);
+			});
             // returns size (as integer)
         },
         getFilePreview: function(path, callback){
-        	
-        	// returns pictureData (as base64 string)
+        	// returns pdf or picture data (as base64 string)
         },
     	getIcon32: function (fileIn,callback){
     		
             // returns pictureData (as base64 string) [32x32]
         },
         execute: function(file,args){
-            
+        	if(!file) throw new Error("No filepath specified.")
+        	if(args==null){
+				var shell = require('electron').shell;
+				shell.openItem(file);
+        	} else {
+        		throw new Error("Ur fucked m8");
+        	}
+        },
+        select: function(file){
+        	if(!file) throw new Error("No filepath specified.")
+        	var shell = require('electron').shell
+			shell.showItemInFolder(file)
+        },
+        delete: function(file){
+        	if(!file) throw new Error("No filepath specified.")
+        	var shell = require('electron').shell;
+        	shell.moveItemToTrash(file);
         },
 	}
+	
+	api.fileSystem = {
+		getFullFileLists: function(roots, callback){
+			
+		},
+		registerFileHook: function(path, callback){
+		 	
+		},
+		unregisterFileHook: function(uid){
+		 	
+		},
+		fileExists: function(path, callback){
+			
+		},
+	}
+	
+	api.system = {
+		getOS: function(callback){
+			callback(process.platform) 
+		},
+		beep: function(){
+			var shell = require('electron').shell;
+			shell.beep();
+		},
+	}
+	
+	api.automation = {
+		dllcall: function(args,callback){
+			
+		},
+		edge: function(csCode,args,callback){
+			
+		},
+		cmd: function(dosCode,args,callback){
+			
+		},
+		batch: function(dosCode,args,callback){
+			
+		},
+		vbs: function(vbsCode,args,callback){
+			
+		},
+		powershell: function(psCode,args,callback){
+			
+		},
+		applescript: function(asCode,args,callback){
+			
+		},
+		jxa: function(jxaCode,args,callback){
+			
+			wrapper = function(jxaCode){
+				return dedent(`
+            		// Try to catch when __args should be passed as an object rather than as a set of arguments.
+            		function run(__args){
+            		    var __count = /\\((.*?)\\)/.exec(Invoke.toString())[1].split(",").length
+            		    if ((__count == 1) & __args.length > 1){
+            		        return Invoke(__args);
+            		    } else {
+            		        return Invoke.apply(this,__args);
+            		    }
+            		}\n\n{//jxaCode//}`).replace('{//jxaCode//',jxaCode);
+			}
+		},
+		objC: function(objcCode,args,callback){
+			//Compiles and executes dynamically with gcc
+		},
+		python: function(pyCode,args,callback){
+			
+		},
+		bash: function(bashCode,args,callback){
+			
+		},
+		webJS: function(jsCode,args,callback){
+			
+		},
+		fromFile: function(action,codeFile,args,callback){
+			
+		},
+	}
+	
+	return api;
+}();
 
-function GetPreviewData(filepath, callback){
-	//let data be the filePath
-	var fs = require('fs');
-	var stats = undefined;
-	var content = undefined;
-	var previewPath = filepath + ".lmf"; //launchmenu preview file extension
+// generateFileList('.',function(list){console.log(list)})
 
-	//Get stats of file
-	fs.stat(filepath,function(error,rStats){
-		rStats = "" ? null : {
-			DateCreated: rStats.birthtime,
-			DateModified: rStats.mtime,
-			DateAccessed: rStats.atime,
-			Size: rStats.size
-		};
-		trySendCallback();
+// async version with basic error handling
+//given a path e.g. walk('.',function(e){console.log(e)})
+function generateFileList(dir, callback){
+	var list = []
+	if(dir[0]=='.'){
+		dir = __dirname + dir.substring(1)
+	}
+	walk(dir,function(path){
+		// console.log(path);
+		list.push(path);
+	},
+	function(){
+		callback(list);
 	});
-
-	//Get contents of .lmp file if it exists
-	fs.readFile(previewPath, 'utf8', function (err,rContent) {
-		content = err ? "" : rContent;
-		// if content == "" use some default Template TODO
-		trySendCallback();
-	});
-
-	//If all information gathered, return it.
-	var trySendCallback = function(){
-		if(stats!=undefined && content!=undefined){
-			if(!stats) stats = {};
-			stats.content = content;
-			callback(stats);
-		}
-	};
 }
+var n = 0;
+function walk(dir, callback, complete, recursion) {
+	if(!recursion) n=0
+	
+    var fs = require('fs'),
+        path = require('path');
+        
+    n++;
+    fs.readdir(dir, function(err, files){
+        if (err) {
+            throw new Error(err);
+        }
+        files.forEach(function (name) {
+            var filePath = path.join(dir, name);
+            var stat = fs.statSync(filePath);
+            if (stat.isFile()) {
+                callback(filePath.replace(/\//g,"\\"), stat);
+            } else if (stat.isDirectory()) {
+            	callback(filePath.replace(/\//g,"\\") + '\\', stat);
+                walk(filePath, callback, complete, true);
+            }
+        });
+        if(n--==0){
+        	complete();
+        }
+    });
+}
+/*
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.c9\.nakignore
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.c9\metadata\
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.c9\project.settings
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\COMMIT_EDITMSG
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\FETCH_HEAD
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\HEAD
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\branches\
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\config
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\description
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\hooks\
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\index
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\info\
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\logs\
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\objects\
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\.git\refs\
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\C#\Excel-HTML.cs
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\C#\RunningObjectTable.cs
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\SS\LaunchBar.ahk
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\SS\fuzzysearch.js
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\SS\fuzzyset.js
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\SS\main.js
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\VB\ExtractIcon.VB
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\Win32\ChangeAppType.ahk
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\Win32\Compile Instructions.txt
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\Win32\DynaCall\
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\Win32\Test\
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\data\1.png
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\data\2.png
+\Users\Sancarn\Downloads\LaunchMenu 21 May 2017 02-12\data\3.png
+*/
 
 // Usage: Actions.getIconAsync("data\\1.png","data\\1icon.png", function(e){console.log(e)})
 //        Actions.getIconAsync("C:\\Users\\sancarn\\Desktop\\Client.zip","data\\1icon.png", function(e){console.log(e)})
@@ -390,7 +528,7 @@ function getCaption(){
 
 
 
-/**
+/*
  * #####  ####   #####  #####
  * #      #   #  #      #    
  * #####  #   #  #  ##  #####
@@ -399,23 +537,25 @@ function getCaption(){
  */
  
  
- var pvwSupportedFormats =[]
- var xlToHTML = edge.func("C#\\Excel-HTML.cs");
- 
- 
- 
- edge.func("C#\\Excel-HTML.cs")("C:\\Users\\sancarn\\Documents\\helloExcel.xlsx", function(a,b){console.log(a,b)})
- 
- /* global edge */
- function _edgeWrapper(replyChannel,cscode,obj){
- 	edge.func(cscode)(obj,function(error,results){
- 		event.sender.send(replyChannel, {err: error, res: results});
- 	});
- }
- 
- ```cs
- Class 
- ```
+ //	const edge = require('edge')
+ //	
+ //	var pvwSupportedFormats =[]
+ //	var xlToHTML = edge.func("C#\\Excel-HTML.cs");
+ //	
+ //	
+ //	
+ //	edge.func("C#\\Excel-HTML.cs")("C:\\Users\\sancarn\\Documents\\helloExcel.xlsx", function(a,b){console.log(a,b)})
+ //	
+ //	/* global edge */
+ //	function _edgeWrapper(replyChannel,cscode,obj){
+ //		edge.func(cscode)(obj,function(error,results){
+ //			event.sender.send(replyChannel, {err: error, res: results});
+ //		});
+ //	}
+ //	
+ //	```cs
+ //	Class 
+ //	```
  
  
  

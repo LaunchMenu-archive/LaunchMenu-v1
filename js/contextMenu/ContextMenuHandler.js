@@ -1,4 +1,4 @@
-/*global variables Utils*/
+/*global variables Utils, EventHandler*/
 var ContextMenuHandler = (function(){
     var openedContextMenu;
     var selectedContextMenu; //the context menu that will open when hitting shift+f10
@@ -57,7 +57,8 @@ var ContextMenuHandler = (function(){
         }
         
         if(root!=openedContextMenu){ //if menu is not descendant from current menu, close current menu
-            cmh.closeContextMenu();
+            if(!cmh.closeContextMenu())
+                return false;
             cmh.setSelectedContextMenu(contextMenu);
             openedContextMenu = contextMenu;
             var buttons = contextMenu.buttons;
@@ -65,13 +66,15 @@ var ContextMenuHandler = (function(){
             container.show();
         }
         container.append(contextMenu.element);
+        return true;
     };
     cmh.closeContextMenu = function(contextMenu){
         if(!contextMenu) contextMenu = openedContextMenu;
         
         if(contextMenu){
             if(contextMenu.isOpened()){
-                contextMenu.close();
+                if(!contextMenu.close())
+                    return false;
             }
             
             if(contextMenu == openedContextMenu){
@@ -80,6 +83,7 @@ var ContextMenuHandler = (function(){
             }
             contextMenu.element.detach();
         }
+        return true;
     };
     
     cmh.getContainerWidth = function(){
@@ -122,12 +126,18 @@ var ContextMenuHandler = (function(){
         defaultContextMenu = contextMenu;
     };
     cmh.setSelectedContextMenu = function(contextMenu, executeObject){
-        if(contextMenu && executeObject)
-            contextMenu.setExecuteObject(executeObject);
-            
-        if(!contextMenu)
-            contextMenu = defaultContextMenu;
-        selectedContextMenu = contextMenu;
+        if(EventHandler.trigger("ContextMenuHandler:pre", this, {contextMenu:contextMenu, executeObject:executeObject})){
+            if(contextMenu && executeObject)
+                contextMenu.setExecuteObject(executeObject);
+                
+            if(!contextMenu)
+                contextMenu = defaultContextMenu;
+            selectedContextMenu = contextMenu;
+           
+            EventHandler.trigger("ContextMenuHandler:post", this, {contextMenu:contextMenu, executeObject:executeObject}); 
+            return  true;
+        }
+        return false;
     };
     cmh.checkShortcuts = function(event){
         if(selectedContextMenu){

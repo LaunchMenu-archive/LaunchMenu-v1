@@ -1,0 +1,1 @@
+ToConsoleApp\ChangeAppType.exe "Compiler.exe" "C"
