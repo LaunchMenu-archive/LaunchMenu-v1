@@ -2,7 +2,7 @@
   "name": "electron-quick-start",
   "version": "1.0.0",
   "description": "A tool akin to spotlight for Mac. The tool is being designed in NodeJS so it is supported by multiple operating systems. We are also trying to build the tool as general as possible, making it simple enough for ordinary users, yet flexible enough for programmers to customise infinitely.",
-  "main": "main.js",
+  "main": "server\\main.js",
   "scripts": {
     "start": "electron ."
   },

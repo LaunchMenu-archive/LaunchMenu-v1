@@ -140,6 +140,9 @@ tgm's todo:
 * [x] format date properly
 * [x] make escape work then the searhbar contains a value
 * [x] number of children search term
+* [ ] create sub-window system
+*       [ ] using mouseenter and mouseleave events make transparent areas of main LaunchMenu window ignore/unignore mouse events using: win.setIgnoreEvents(true/false) [perhaps extend to sub-window class?]
+*       [ ] use `-webkit-app-region: drag` style to make sub-window a draggable window (optionally)
 * [ ] redo actions menu structure
 * [ ] default actions menu - Add navigation items to this menu, assign keyboard shortcuts via this menu.
 * [ ] multi file selection
@@ -148,10 +151,15 @@ tgm's todo:
 * [ ] create applet system
 * [ ] don't browse from system root, instead show a list of LM roots
 
+
 Sancarn's todo:
 
-* Test GetActiveWindow functions Mac and Windows
-* Test Edge-VB.JS (possibly better than keeping an external application) 
-* Write node-js file list generator 
-* Make get icons multi-os compatible - also get larger icons on windows option!
-* General ini-file management.
+* [ ] Test GetActiveWindow functions Mac and Windows
+* [ ] Test Edge-VB.JS (possibly better than keeping an external application) 
+* [ ] Write node-js file list generator 
+* [ ] Make get icons multi-os compatible - also get larger icons on windows option!
+* [ ] General ini-file management.
+* [ ] DynaCLR.JS - 50%?
+* [ ] DynaCOM.JS
+* [ ] DynaDll.JS - 50%?
+* [ ] Use Enigma Virtual Box to package electron app to pure .exe file - http://enigmaprotector.com/en/aboutvb.html

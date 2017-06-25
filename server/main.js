@@ -18,7 +18,8 @@ const {globalShortcut} = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+let mainWindow;
+let windows = [];
 
 // Keep a global reference of tray object
 let tray = null
@@ -33,7 +34,6 @@ function createWindow () {
 		title: "Search Window",
 		width: 740,
 		height: 480,
-		useContentSize: true,
 		skipTaskbar:true,
 		frame: false,
 		resizable: false,
@@ -45,7 +45,7 @@ function createWindow () {
 
 	// and load the index.html of the app.
 	mainWindow.loadURL(url.format({
-		pathname: path.join(__dirname, 'gui' ,'launchmenu.html'),
+		pathname: path.join(__dirname, '..',  'gui' ,'launchmenu.html'),
 		protocol: 'file:',
 		slashes: true
 	}))
@@ -56,8 +56,26 @@ function createWindow () {
 		// in an array if your app supports multi windows, this is the time
 		// when you should delete the corresponding element.
 		mainWindow = null
-	})
+	});
+	
+	windows.push(mainWindow);
+}
 
+//Determine if application is already running
+//If it is, then restore the current instance and quit this one.
+//Else do nothing.
+var appAlreadyRunning = app.makeSingleInstance(function(commandLine, workingDirectory) {
+  // Someone tried to run a second instance, we should focus our window
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+  return true;
+});
+
+if (appAlreadyRunning) {
+  app.quit();
+  return;
 }
 
 // This method will be called when Electron has finished
@@ -110,17 +128,6 @@ app.on('ready', function(){
 	globalShortcut.register('control+f12', function(){
 		mainWindow.webContents.openDevTools();
 	})
-
-	/*
-	localShortcut.register(mainWindow,'Escape',function(){
-		if($(".input").val()==""){
-			mainWindow.hide()
-		} else {
-			$(".input").val("");
-			$(".placeHolder").show();
-		}
-	})
-	*/
 })
 
 //This may not be required for SearchMenu
@@ -339,7 +346,7 @@ var ServerActions = function(){
 		},
 		jxa: function(jxaCode,args,callback){
 			
-			wrapper = function(jxaCode){
+			this.wrapper = function(jxaCode){
 				return dedent(`
             		// Try to catch when __args should be passed as an object rather than as a set of arguments.
             		function run(__args){
