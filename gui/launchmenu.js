@@ -1,8 +1,30 @@
-/*global variables FileSelector, searchbar, SelectorHandler, $, tree, Searchbar, ContextMenu, ContextMenuHandler*/
-var Main = (function(){
+/*global variables FileSelector, searchbar, $SelectorHandler, $, $Tree, $Searchbar, ContextMenu, $ContextMenuHandler*/
+//import classes
+//import types
+$ScriptLoader.loadDir("/preview/previewTypes");
+$ScriptLoader.loadDir("/selector/fileMenu/fileMenuTypes");
+$ScriptLoader.loadDir("/styling/styles");
+
+//import handlers
+$ScriptLoader.loadOnce("/preview/$PreviewHandler.js");
+$ScriptLoader.loadOnce("/selector/$SelectorHandler.js");
+$ScriptLoader.loadOnce("/contextMenu/$ContextMenuHandler.js");
+
+//import other classes
+$ScriptLoader.loadOnce("/searchbar/$Searchbar.js");
+$ScriptLoader.loadOnce("/selector/selectorTypes/FileSelector");
+
+$ScriptLoader.loadOnce("/settings"); //outdated
+$ScriptLoader.loadOnce("/serverCommunication");
+$ScriptLoader.loadOnce("settings/$Settings");
+$ScriptLoader.loadOnce("settings/GUI/SettingsWindowController");
+//$ScriptLoader.loadOnce("/subWindow/subWindow");
+
+window.$Main = (function(){
+	new SettingsWindowController();
+	
     var fileSelector = new FileSelector();
-    var cutFile;
-    var Main = {
+    var $Main = {
         get fileSelector(){
             return fileSelector;
         },
@@ -13,7 +35,7 @@ var Main = (function(){
             if(file)
                 file.setCut(true);
             else
-                Main.resetCutFile();
+                $Main.resetCutFile();
         }
     };
     
@@ -21,35 +43,37 @@ var Main = (function(){
     {
         //keyboard event listeners
         {
-            Searchbar.addEventListener(function(event){
-                return ContextMenuHandler.keyboardEvent(event);
+            $Searchbar.addEventListener(function(event){
+                return $ContextMenuHandler.__keyboardEvent(event);
             });
-            Searchbar.addEventListener(function(event){
-                return SelectorHandler.keyboardEvent(event);
+            $Searchbar.addEventListener(function(event){
+                return $SelectorHandler.__keyboardEvent(event);
             });
-            Searchbar.addEventListener(function(event){
+            $Searchbar.addEventListener(function(event){
                 if(event.key=="Escape"){
-                    if(fileSelector.directory.parent || fileSelector.searchTerm.length>0){
-                        Searchbar.setText("");
-                        fileSelector.setDirectory(tree);
-                        fileSelector.clearHistory();
-                    }else{
-                        
-                    }
+                	if(fileSelector.isOpen()){ //might need to catch escape event in other menus instead
+                		if(fileSelector.directory.parent || fileSelector.searchTerm.length>0){
+                			$Searchbar.setText("");
+                			fileSelector.setDirectory($Tree);
+                			fileSelector.clearHistory();
+                		}else{
+                			//hide program
+                		}                		
+                	}
                 }    
             });
         }
         
-        //searhvalue listeners
+        //searchvalue listeners
         {
-            Searchbar.addValueListener(function(value){
-                return SelectorHandler.searchbarChange(value);
+            $Searchbar.addValueListener(function(value){
+                return $SelectorHandler.__searchbarChange(value);
             });
         }
         
         //right click setup
         {
-            ContextMenuHandler.setDefaultContextMenu(new ContextMenu([
+            $ContextMenuHandler.setDefaultContextMenu(new ContextMenu([
                 {
                     text: "close",
                     func: function(){
@@ -67,14 +91,17 @@ var Main = (function(){
             fileSelector.open(0);
         });
     }
-    Main.setCutFile = function(file){
+    
+    //move to fileSelector
+    var cutFile;
+    $Main.setCutFile = function(file){
         if(cutFile)
-            Main.resetCutFile();
+            $Main.resetCutFile();
         if(!file.cut)
             file.setCut(true);
         cutFile = file;
     };
-    Main.resetCutFile = function(){
+    $Main.resetCutFile = function(){
         if(cutFile){
             if(cutFile.cut)
                 cutFile.setCut(false);
@@ -82,5 +109,5 @@ var Main = (function(){
         }
     };
     
-    return Main;
+    return $Main;
 })();

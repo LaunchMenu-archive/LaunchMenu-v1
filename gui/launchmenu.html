@@ -1,15 +1,14 @@
 <html>
 	<head>
 		<!--< START SCRIPT IMPORT >-->
+		<script type="text/javascript" src="../js/scriptLoader/$ScriptLoader.js"></script>
+		
 		<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 		
 		<!--< Libraries >-->
-		<script type="text/javascript" src="../lib/jQuery.js"></script>
-		<script type="text/javascript" src="../lib/ResizeSensor.js"></script>
-		<script type="text/javascript" src="../lib/scrollbar.js"></script>
 		
 		<!--< Dev Libraries >-->
-		<script type="text/javascript" src="../dev/sizeof.js"></script>
+		<!--<script type="text/javascript" src="../dev/sizeof.js"></script>-->
 		
 		<!--< Test file structures >-->
 		<script type="text/javascript" src="../js/dictionary.js"></script>
@@ -19,16 +18,10 @@
 		<!--< END SCRIPT IMPORT >-->
 		<script>if (window.module) module = window.module;</script>
 		
+		<!--set style sheet-->
 		<link rel="stylesheet" href="launchmenu.css" type="text/css" />
 		<link rel="stylesheet" href="icons.css" type="text/css" />
 		
-		<!--set style sheet-->
-		<script type="text/javascript" src="../js/Class.js"></script>
-		
-		<script type="text/javascript" src="../js/styling/StyleHandler.js"></script>
-		<script type="text/javascript" src="../js/styling/Style.js"></script>
-		<script type="text/javascript" src="../js/styling/styles/StyleLight.js"></script>
-		<script type="text/javascript" src="../js/styling/styles/StyleDark.js"></script>
 	</head>
 	<body>
 		<Div class='bd3 bg0 body _LM_ _QUERYNODE_ expanded'>
@@ -36,38 +29,6 @@
 			</div>
 			<div class='bd3 results _LM_'>
 				<div class='selector _LM_'>
-					<!--<div class='files _LM_'>-->
-					<!--	<div class='rootPath _LM_'>-->
-					<!--		<div class='rootPathText _LM_'></div>-->
-					<!--	</div>-->
-					<!--	<div class='noFileMessage _LM_' style=display:none>-->
-					<!--		<span class='_LM_'>-->
-					<!--			No files could be found Mother Fucker.-->
-					<!--		</span>-->
-					<!--	</div>-->
-					<!--	<div class='regexErrorMessage _LM_' style=display:none>-->
-					<!--		<span class='_LM_'>-->
-					<!--			No files could be found Mother Fucker.-->
-					<!--			<div class='regexError _LM_'>-->
-									
-					<!--			</div>-->
-					<!--		</span>-->
-					<!--	</div>-->
-					<!--	<div class='matches _LM_'>-->
-					<!--		<div class='upper filesPlaceholder _LM_'></div>-->
-					<!--		<div class='file template _LM_'>-->
-					<!--			<div class='fileIcon _LM_'>-->
-					<!--				<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT48NWIxlFg8U3dtHYji6Y_FKp2WeeNnptzHbQw0ljkeRcHaY0Gf18VBhXFpA" class='_LM_'>-->
-					<!--			</div>-->
-					<!--			<div class='fileData _LM_'>-->
-					<!--				<div class='fileName _LM_'></div>-->
-					<!--				<div class='filePath _LM_'></div>-->
-					<!--			</div>-->
-					<!--			<br style=clear:both>-->
-					<!--		</div>-->
-					<!--		<div class='lower filesPlaceholder _LM_'></div>-->
-					<!--	</div>-->
-					<!--</div>-->
 				</div>
 				<div class='bd3 preview _LM_'>
 					<div class='specificPreviewData _LM_'>
@@ -104,7 +65,7 @@
 		<div class=colorExample>
 			<script>
 				if(false){
-					var types = StyleHandler.types;
+					var types = $StyleHandler.types;
 					var keys = Object.keys(types);
 					for(var i=0; i<keys.length; i++){
 						var key = keys[i]
@@ -151,44 +112,6 @@
 		</div>
 	</body>
 </html>
-
-<!--< Main scripts >-->
-<script type="text/javascript" src="../js/utilities.js"></script>
-<script type="text/javascript" src="../js/quicksort.js"></script>
-<script type="text/javascript" src="../js/settings.js"></script>
-<script type="text/javascript" src="../js/query.js"></script>
-<script type="text/javascript" src="../js/tree.js"></script>
-<script type="text/javascript" src="../js/templateBuilder.js"></script>
-<script type="text/javascript" src="../js/serverCommunication.js"></script>
-<script type="text/javascript" src="../js/DateFormatter.js"></script>
-
-<script type="text/javascript" src="../js/EventHandler.js"></script>
-<script type="text/javascript" src="../js/subWindow/SubWindow.js"></script>
-
-<script type="text/javascript" src="../js/searchbar/Searchbar.js"></script>
-
-<script type="text/javascript" src="../js/preview/PreviewHandler.js"></script>
-<script type="text/javascript" src="../js/preview/Preview.js"></script>
-<script type="text/javascript" src="../js/preview/preview types/PreviewImage.js"></script>
-<script type="text/javascript" src="../js/preview/preview types/PreviewDefault.js"></script>
-<script type="text/javascript" src="../js/preview/preview types/PreviewDirectory.js"></script>
-
-<script type="text/javascript" src="../js/selector/SelectorHandler.js"></script>
-<script type="text/javascript" src="../js/selector/SelectorItem.js"></script>
-<script type="text/javascript" src="../js/selector/Selector.js"></script>
-<script type="text/javascript" src="../js/selector/LargeSetSelector.js"></script>
-<script type="text/javascript" src="../js/selector/selector types/Menu.js"></script>
-<script type="text/javascript" src="../js/selector/selector types/FileSelector.js"></script>
-
-<script type="text/javascript" src="../js/contextMenu/ContextMenuHandler.js"></script>
-<script type="text/javascript" src="../js/contextMenu/ContextMenu.js"></script>
-<script type="text/javascript" src="../js/contextMenu/ContextMenuButton.js"></script>
-
-<script type="text/javascript" src="../js/selector/actionMenu/ActionMenuHandler.js"></script>
-<script type="text/javascript" src="../js/selector/actionMenu/ActionMenu.js"></script>
-<script type="text/javascript" src="../js/selector/actionMenu/ActionMenuStandard.js"></script>
-<script type="text/javascript" src="../js/selector/actionMenu/actionMenu types/ActionMenuDirectory.js"></script>
-<script type="text/javascript" src="../js/selector/actionMenu/actionMenu types/ActionMenuDefault.js"></script>
 
 <script type="text/javascript" src="launchmenu.js"></script>
 

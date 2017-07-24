@@ -89,7 +89,7 @@ Keyboard shorcuts:
 
 ## To Do
 
-* [x] FuzzySearch to handle tree type.
+* [x] FuzzySearch to handle $Tree type.
 * [x] File searching display
 * [x] Search highlighting.
 * [x] Scrolling beyond the current range.
@@ -140,16 +140,20 @@ tgm's todo:
 * [x] format date properly
 * [x] make escape work then the searhbar contains a value
 * [x] number of children search term
-* [ ] create sub-window system
+* [x] create sub-window system
 *       [ ] using mouseenter and mouseleave events make transparent areas of main LaunchMenu window ignore/unignore mouse events using: win.setIgnoreEvents(true/false) [perhaps extend to sub-window class?]
-*       [ ] use `-webkit-app-region: drag` style to make sub-window a draggable window (optionally)
-* [ ] redo actions menu structure
-* [ ] default actions menu - Add navigation items to this menu, assign keyboard shortcuts via this menu.
+*       [x] use `-webkit-app-region: drag` style to make sub-window a draggable window (optionally)
+* 		[ ] add global events to the window system
+*		[ ] change the main window to make use of the new window system
 * [ ] multi file selection
 * [ ] create settings system and menu, with on change events etc
-* [ ] setup custom pre§view and actions system with the .lmf file
+*		[x] create settings system with events
+*		[ ] make settings accessable from different windows through the main window
+*		[ ] create settings GUI
+* [ ] setup custom preview and actions system with the .lmf file
 * [ ] create applet system
 * [ ] don't browse from system root, instead show a list of LM roots
+* [ ] make the Querier class more modular, so people can alter its behaviour
 
 
 Sancarn's todo:

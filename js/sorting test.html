@@ -1,5 +1,5 @@
 <script>
-var Quicksort = (function() {
+var $Quicksort = (function() {
 
   /**
    * Swaps two values in the heap
@@ -99,12 +99,12 @@ for(var n=0; n<sortCount; n++){
     }
 
     var start = (new Date()).getTime();
-    Quicksort.sort(ar,1000);
+    $Quicksort.sort(ar,100);
     // ar.sort();
     var end = (new Date()).getTime();
     delta+=end-start;
 }
 console.log(delta, ar);
 
-//http://me.dt.in.th/page/Quicksort/#disqus_thread
+//http://me.dt.in.th/page/$Quicksort/#disqus_thread
 </script>
