@@ -1,18 +1,34 @@
-/*global Class Selector $ SelectorItem, EventHandler*/
-var LargeSetSelector = Class("LargeSetSelector", {
-    const: function(){
-        this.super.const();
-        
-        this.dataSet = [];              //the set of data that will be displayyed
-        this.selectorItemHeight = 0;    //the general height that items will have
-        this.selectedIndex = 0;         //the item index that is currently selected
-    },
-    htmlInitialisation: function(){
+/*global Class Selector $ SelectorItem, $EventHandler*/
+loadOnce("Selector");
+loadOnce("/$EventHandler");
+window.LargeSetSelector = class LargeSetSelector extends Selector{
+    __initVars(){
+    	super.__initVars();
+	
+    	this.dataSet = [];              //the set of data that will be displayyed
+    	this.selectorItemHeight = 0;    //the general height that items will have
+    	this.selectedIndex = 0;         //the item index that is currently selected
+    	this.listTemplate = {
+            html:   `<div class=content></div>`,
+            style:  `.content{
+                        width: 100%;
+                        display: inline-block;
+                    }`
+        }
+    }
+
+    //events that can be tapped into
+    __createItem(item){ 					//fires to create the item from the dataset items
+        return new SelectorItem(item);
+    }
+    
+    //html element methods
+    __htmlInitialisation(){
         var t = this;
         var lastOffset = 0;
         this.$(".list").scrollbar({clickScrollDuration:0,scrollListener: function(offset){
             if(Math.abs(lastOffset-offset)>60){ //up date the element, but not too often
-                t.loadElements();
+                t.__loadElements();
                 lastOffset = offset;
             }
             
@@ -23,36 +39,30 @@ var LargeSetSelector = Class("LargeSetSelector", {
                 t.scrolling = false;
             },200);
         }});
-        this.refreshListSize();
-    },
-    listTemplate:{
-        html:   `<div class=content></div>`,
-        style:  `.content{
-                    width: 100%;
-                    display: inline-block;
-                }`
-    },
+        this.__refreshListSize();
+    }
     
-    //disabled functions because an entire dataset should be passed
-    addItem: function(item){
+    //disable some methods from Selector because an entire dataset should be passed instead of individual items
+    addItem(item){
         throw new Error("You can only use setDataSet() to define the items when using the LargeSetSelector");
-    },
-    insertItemElement: function(element){},
+    }
+    __insertItemElement(element){}
     
-    setDataSet: function(list){
+    //data set methods
+    setDataSet(list){
         if(!(list instanceof Array)){
             throw new Error("the first argument should be an array of objects");
         }
-        if(EventHandler.trigger("setDataSet:pre", this, {dataSet:list})){
+        if($EventHandler.trigger("setDataSet:pre", this, {dataSet:list})){
             var items = this.$(".content").first().children();
             for(var i=0; i<items.length; i++){ //remove all currently loaded items
-                items[i].selectorItem.destroy(); 
+                items[i].selectorItem.__destroy(); 
             }
             
             this.dataSet = list;
             if(this.dataSet.length>0){
                 //get the general item height based on the first item in the list
-                var item = this.createItem(list[0]);
+                var item = this.__createItem(list[0]);
                 $("body").append(item.element);
                 this.selectorItemHeight = item.element.height();
                 item.element.remove();    
@@ -67,19 +77,19 @@ var LargeSetSelector = Class("LargeSetSelector", {
             
             // load elements from the dataset, this will also select the selectedIndex;
             this.selectedIndex = 0;
-            this.loadElements();
+            this.__loadElements();
             
             this.$(".list").first().scrollbar("reset");
             
-            EventHandler.trigger("setDataSet:post", this, {dataSet:list});
+            $EventHandler.trigger("setDataSet:post", this, {dataSet:list});
             return true;
         }
         return false;
-    },
-    loadElements: function(){
+    }
+    __loadElements(){
         var list = this.$(".list");
         var verticalOffset = list[0].getVerticalOffset();
-        if(EventHandler.trigger("loadElements:pre", this, {verticalOffset: verticalOffset})){
+        if($EventHandler.trigger("loadElements:pre", this, {verticalOffset: verticalOffset})){
             var items = this.$(".content").children();
             var scrollTop = list.offset().top;
             var height = list.height();
@@ -102,7 +112,7 @@ var LargeSetSelector = Class("LargeSetSelector", {
             //remove the files
             for(var i=0; i<removeItems.length; i++){
                 var item = removeItems[i];
-                this.removeItem(item);
+                this.__removeItem(item);
             }
                
             insertEnd:{
@@ -122,9 +132,9 @@ var LargeSetSelector = Class("LargeSetSelector", {
                 //insert the necessairy items at the end of the set
                 while(itemIndex<this.dataSet.length){
                     if(this.$("#"+itemIndex).length==0){//don't load the item if it is already on the page for some reason
-                        var selectorItem = this.createItem(this.dataSet[itemIndex]);
+                        var selectorItem = this.__createItem(this.dataSet[itemIndex]);
                         var el = selectorItem.element;
-                        this.insertItem(selectorItem, itemIndex++);
+                        this.__insertItem(selectorItem, itemIndex++);
                         if(el.offset().top>scrollTop+1.2*height) break; //stop loading items when enough are loaded
                     }else
                         itemIndex++;
@@ -148,29 +158,26 @@ var LargeSetSelector = Class("LargeSetSelector", {
                 //insert the necessairy items at the start of the set
                 while(itemIndex>=0){
                     if(this.$("#"+itemIndex).length==0){ //don't load the item if it is already on the page for some reason
-                        var selectorItem = this.createItem(this.dataSet[itemIndex]);
+                        var selectorItem = this.__createItem(this.dataSet[itemIndex]);
                         var el = selectorItem.element;
-                        this.insertItem(selectorItem, itemIndex--);
+                        this.__insertItem(selectorItem, itemIndex--);
                         if(el.offset().top<scrollTop-0.3*height) break;//stop loading items when enough are loaded
                     }else
                         itemIndex--;
                 }
             }
             
-            EventHandler.trigger("loadElements:post", this, {verticalOffset: verticalOffset});
+            $EventHandler.trigger("loadElements:post", this, {verticalOffset: verticalOffset});
             return true;
         }
         return false;
-    },
-    createItem: function(item){ //this the function that determines what SelectorItem class is used to load the items
-        return new SelectorItem(item);
-    },
-    insertItem: function(selectorItem, index){
-        if(EventHandler.trigger("insertItem:pre", this, {item:selectorItem, index:index})){
+    }
+    __insertItem(selectorItem, index){
+        if($EventHandler.trigger("insertItem:pre", this, {item:selectorItem, index:index})){
             var items = this.$(".content").children();
             var element = selectorItem.element;
             element.attr("ID",index);       //store the index in the id of the element
-            selectorItem.setSelector(this); //make sure the selectorItem has a reference to the selector
+            selectorItem.__setSelector(this); //make sure the selectorItem has a reference to the selector
             if(index==this.selectedIndex)   //select the item if this item was previously selected and unloaded because it went outside the visible range
                 selectorItem.select();
             var prevFirstItem = $(items[0]);
@@ -222,7 +229,7 @@ var LargeSetSelector = Class("LargeSetSelector", {
             // update the content height if the height did not match the general selectorItemHeight
             var deltaHeight = element.height()-this.selectorItemHeight;
             if(deltaHeight!=0)
-                this.alterContentHeight(deltaHeight);
+                this.__alterContentHeight(deltaHeight);
             
             //set the margin at the top if this is the new highest item in the list
             if(element.index()==0){
@@ -230,13 +237,13 @@ var LargeSetSelector = Class("LargeSetSelector", {
                 element.css({"margin-top":index*this.selectorItemHeight+"px"}).addClass("first");   
             }
             
-            EventHandler.trigger("insertItem:post", this, {item:selectorItem, index:index});
+            $EventHandler.trigger("insertItem:post", this, {item:selectorItem, index:index});
             return true;
         }
         return false;
-    },
-    removeItem: function(selectorItem){
-        if(EventHandler.trigger("removeItem:pre", this, {item:selectorItem})){
+    }
+    __removeItem(selectorItem){
+        if($EventHandler.trigger("removeItem:pre", this, {item:selectorItem})){
             var element = selectorItem.element;
             
             //set the second item to be the new highest item, if this item was the highest item
@@ -253,17 +260,17 @@ var LargeSetSelector = Class("LargeSetSelector", {
             //update the content height if this height was not the same as the general selectorItemHeight
             var deltaHeight = element.height()-this.selectorItemHeight;
             if(deltaHeight!=0)
-                this.alterContentHeight(-deltaHeight);
+                this.__alterContentHeight(-deltaHeight);
                 
             //destroy the object, (should destroy the html element)
-            selectorItem.destroy();
+            selectorItem.__destroy();
             
-            EventHandler.trigger("removeItem:post", this, {item:selectorItem});
+            $EventHandler.trigger("removeItem:post", this, {item:selectorItem});
             return true;
         }
         return false;
-    },
-    alterContentHeight: function(delta){
+    }
+    __alterContentHeight(delta){ 	//fires to update the placeholder content height, when and item didn't correspont with the expected item height
         var c = this.$(".content");
         //change the height of content, because an item's height might not have been the general selectorItemheight
         //animate the height change, so it is smoother and less noticeable
@@ -274,42 +281,43 @@ var LargeSetSelector = Class("LargeSetSelector", {
             c.height(c.height()+del);
             d = now;
         }});
-    },
+    }
     
-    selectItem: function(selectorItem){
+    //override selecting methods 
+    selectItem(selectorItem){
         //set the selected index when selecting an item, so it can be reselected after being unloaded because it fell outside the visible item range
         
-        if(EventHandler.trigger("selectItem:pre", this, {item:selectorItem})){
-            EventHandler.disableEvents();
+        if($EventHandler.trigger("selectItem:pre", this, {item:selectorItem})){
+            $EventHandler.disableEvents();
             
-            if(this.super.selectItem(selectorItem)){
+            if(super.selectItem(selectorItem)){
                 this.selectedIndex = Number(selectorItem.element.attr("ID"));
                 
-                EventHandler.enableEvents();
-                EventHandler.trigger("selectItem:post", this, {item:selectorItem});
+                $EventHandler.enableEvents();
+                $EventHandler.trigger("selectItem:post", this, {item:selectorItem});
                 return true;
             }
         }
         return false;
-    }, 
-    selectUp: function(){
+    }
+    selectUp(){
         if(this.selectedItem){ //select up as per usual
-            return this.super.selectUp();
+            return super.selectUp();
         }else{
             //scroll to the position of the selected item, because it has been unloaded
             var list = this.$(".list");
             list[0].focusVertical((this.selectedIndex-1)*this.selectorItemHeight-list.height()/2,200);
             return true;
         }
-    },
-    selectDown: function(){
+    }
+    selectDown(){
         if(this.selectedItem){ //select up as per usual
-            return this.super.selectDown();
+            return super.selectDown();
         }else{
             //scroll to the position of the selected item, because it has been unloaded
             var list = this.$(".list");
             list[0].focusVertical((this.selectedIndex-1)*this.selectorItemHeight-list.height()/2,200);
             return true;
         }
-    },
-}, Selector);
+    }
+}

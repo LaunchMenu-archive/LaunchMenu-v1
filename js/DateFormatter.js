@@ -1,4 +1,4 @@
-var DateFormatter = function(date){
+window.DateFormatter = function(date){
     if(typeof date == "string"){
         date = new Date(date);
     }

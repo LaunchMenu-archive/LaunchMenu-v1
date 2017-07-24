@@ -8,7 +8,7 @@
  * core implementations.
  *
  */
-var Actions = (function(){
+window.Actions = (function(){
     try{
         var _ipc = require('electron').ipcRenderer;
     }catch(e){
@@ -302,7 +302,7 @@ var Actions = (function(){
     
     // refer to another function with documentation stuffs
     //      ///ref: Actions.file.getSize
-    //      tree.find("somePath").actions.getSize(function(size){
+    //      $Tree.find("somePath").actions.getSize(function(size){
     //          doCrapWithSize(size);
     //      });
     

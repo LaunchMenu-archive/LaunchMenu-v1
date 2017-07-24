@@ -1,4 +1,4 @@
-var Settings = (function(){
+window.Settings = (function(){
     var Settings = {
         minimalMatchScore:0.005, //the minimal match score a file needs to have in order to show up
         searchDepth:Infinity, //the amount of sub directories that should be searched

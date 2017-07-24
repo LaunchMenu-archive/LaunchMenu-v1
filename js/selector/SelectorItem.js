@@ -1,11 +1,15 @@
-/*global Class, Utils, EventHandler*/
-var SelectorItem = Class("SelectorItem", {
-    const: function(){
+/*global Class, $Utils, $EventHandler*/
+loadOnce("/$Utils");
+loadOnce("/$EventHandler");
+window.SelectorItem = class SelectorItem{
+    constructor(){
+    	this.__initVars();
+    	
         //create element out of template
-        this.template = Utils.copy(this.template); //make a local copy of the class' template
+        this.template = $Utils.copy(this.template); //make a local copy of the class' template
         this.template.style += ".selected{"+this.selectedStyle+"}"; //add styling for if the item is selected
         var UID = Math.floor(Math.random()*Math.pow(10,7)); //add UID to element because there will be many instances of this class
-        var n = Utils.createTemplateElement(this.className, this.template);
+        var n = $Utils.createTemplateElement(this.constructor.name, this.template);
         
         this.element = n.element;
         this.element.css({width:"100%","min-height":"40px"});
@@ -14,9 +18,24 @@ var SelectorItem = Class("SelectorItem", {
         this.$ = n.querier;
         
         this.element[0].selectorItem = this; //used to retrieve the SelectorItem when navigating
-        this.eventSetup();
-    },
-    eventSetup: function(){ //setup the element evemt listeners
+        this.__eventSetup();
+    }
+    __initVars(){
+    	this.selectedStyle = ``;
+        this.template = {
+            html:   ``,
+            style:  ``
+        }
+    }
+    
+
+	//events that can be tapped into and altered
+    __onExecute(){}				//fires when the item is being executed on enter
+    __keyboardEvent(event){ 	//fires on keyboard events if the item is selected
+        //return true if you use the keypress event
+    }
+    __htmlInitialisation(){}	//fires when the element is added to the page, and you can initialize the element
+    __eventSetup(){ 			//fires to setup the element event listeners    
         var t = this;
         this.element.click(function(){
             t.execute();
@@ -27,13 +46,17 @@ var SelectorItem = Class("SelectorItem", {
                     t.select();
                 }
         });
-    },
-    setSelector: function(selector){
+    }
+    __onSelect(){}				//fires when the item is selected
+    __onDeselect(){}			//fires when the item is deselected
+    
+    //
+    __setSelector(selector){
         this.selector = selector;
-        EventHandler.trigger("setSelector:post", this, {selector: selector});
-    },
-    select: function(){
-        if(EventHandler.trigger("select:pre", this, {})){
+        $EventHandler.trigger("setSelector:post", this, {selector: selector});
+    }
+    select(){
+        if($EventHandler.trigger("select:pre", this, {})){
             this.selected = true;
             var ret = false;
             if(this.selector.selectItem(this)){
@@ -44,39 +67,31 @@ var SelectorItem = Class("SelectorItem", {
                 this.selected = false;
             }
             
-            if(ret)
-                EventHandler.trigger("select:post", this, {});
+            if(ret){
+            	this.__onSelect();
+                $EventHandler.trigger("select:post", this, {});
+        	}
             return ret;
         }
         return false;
-    },
-    deselect: function(){
+    }
+    deselect(){
         this.element.removeClass("bg3");
         this.element.removeClass("selected");
         this.selected = false;
-    },
-    execute: function(){ //execute the items function
-        if(EventHandler.trigger("execute:pre", this, {})){
-            if(!this.onExecute())
+        this.__onDeselect();
+    }
+    execute(){ //execute the items function
+        if($EventHandler.trigger("execute:pre", this, {})){
+            if(!this.__onExecute())
                 return false;
-            EventHandler.trigger("execute:post", this, {});
+            $EventHandler.trigger("execute:post", this, {});
             return true;
         }
         return false;
-    },
-    onExecute: function(){
-          
-    },
-    keyboardEvent: function(event){ //listens to any keypresses on the page
-        //return true if you use the keypress event
-    },
-    destroy: function(){
+    }
+    __destroy(){ //intended for item removal when LargeSetSelector unloads an item
         //remove the element from the page
         this.element.remove();  
-    },
-    selectedStyle: ``,
-    template:{
-        html:   ``,
-        style:  ``
-    }
-});
+    }   
+}
