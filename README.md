@@ -167,3 +167,14 @@ Sancarn's todo:
 * [ ] DynaCOM.JS
 * [ ] DynaDll.JS - 50%?
 * [ ] Use Enigma Virtual Box to package electron app to pure .exe file - http://enigmaprotector.com/en/aboutvb.html
+* [ ] Implement .lmf file auto-executables. LMF files will be reditected to a BAT file (or maybe a small exe?). It will inject the script's path into a named pipe:
+
+CMD commands (Setting lmf as auto-executable file):
+assoc .lmf=LaunchMenu
+ftype LaunchMenu="path\to\lminject.bat" "%%1"
+
+BAT file command for script injection:
+type %1 >\\.\pipe\lm_inject
+
+lmf file's code will be injected to the pipe. Here they will be read by the program.
+
