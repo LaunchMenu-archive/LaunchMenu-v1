@@ -170,11 +170,16 @@ Sancarn's todo:
 * [ ] Implement .lmf file auto-executables. LMF files will be reditected to a BAT file (or maybe a small exe?). It will inject the script's path into a named pipe:
 
 CMD commands (Setting lmf as auto-executable file):
+
+```BAT
 assoc .lmf=LaunchMenu
 ftype LaunchMenu="path\to\lminject.bat" "%%1"
+```
 
 BAT file command for script injection:
+
+```BAT
 type %1 >\\.\pipe\lm_inject
+```
 
 lmf file's code will be injected to the pipe. Here they will be read by the program.
-
