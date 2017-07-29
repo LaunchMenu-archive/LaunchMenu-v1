@@ -132,24 +132,24 @@ tgm's todo:
 * [x] create rightclick menu
 * [x] turn utilities into util object to get rid of floating variables  
 * [x] create event system:
-*       [x] autoprefix classname if available in name
-*       [x] make listeners work with parent class prefix
-*       [x] make open events not fire post events if canceled
-*       [x] add more events
-*       [x] fix contextSubMenu not closing  when parent closes
+		* [x] autoprefix classname if available in name
+		* [x] make listeners work with parent class prefix
+		* [x] make open events not fire post events if canceled
+		* [x] add more events
+		* [x] fix contextSubMenu not closing  when parent closes
 * [x] format date properly
 * [x] make escape work then the searhbar contains a value
 * [x] number of children search term
 * [x] create sub-window system
-*       [ ] using mouseenter and mouseleave events make transparent areas of main LaunchMenu window ignore/unignore mouse events using: win.setIgnoreEvents(true/false) [perhaps extend to sub-window class?]
-*       [x] use `-webkit-app-region: drag` style to make sub-window a draggable window (optionally)
-* 		[ ] add global events to the window system
-*		[ ] change the main window to make use of the new window system
+		* [ ] using mouseenter and mouseleave events make transparent areas of main LaunchMenu window ignore/unignore mouse events using: win.setIgnoreEvents(true/false) [perhaps extend to sub-window class?]
+		* [x] use `-webkit-app-region: drag` style to make sub-window a draggable window (optionally)
+ 		* [ ] add global events to the window system
+		* [ ] change the main window to make use of the new window system
 * [ ] multi file selection
 * [ ] create settings system and menu, with on change events etc
-*		[x] create settings system with events
-*		[ ] make settings accessable from different windows through the main window
-*		[ ] create settings GUI
+		* [x] create settings system with events
+		* [ ] make settings accessable from different windows through the main window
+		* [ ] create settings GUI
 * [ ] setup custom preview and actions system with the .lmf file
 * [ ] create applet system
 * [ ] don't browse from system root, instead show a list of LM roots
