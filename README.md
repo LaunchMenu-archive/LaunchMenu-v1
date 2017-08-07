@@ -154,6 +154,7 @@ tgm's todo:
 * [ ] don't browse from system root, instead show a list of LM roots
 * [ ] make the Querier class more modular, so people can alter its behaviour
 * [ ] make sure we have events for all important things that happen in LM
+* [ ] Redo $Settings & $Querier to make it cleaner and more modular
 
 
 Sancarn's todo:
