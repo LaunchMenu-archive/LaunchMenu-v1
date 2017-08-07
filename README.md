@@ -105,9 +105,7 @@ Keyboard shorcuts:
 * [ ] {10%} File icons/symbols in list of matches
 * [ ] Server client communication file.
 * [ ] Preview non image formats and stuff - https://github.com/maxlabelle/filepreview
-* [ ] Settings menu.
 * [ ] FileList includes zip folders.
-* [ ] Javascript custom actions - Maybe use require('eval')(theJSCode).
 * [ ] Create a windows messages API for use by other developers in other programming languages. Some actions: LaunchTerm(someTerm), UnregisterKeybind() and RegisterKeybind() {devs may need use of cmd/win+space for other stuff}, getMatches(searchTerm)...
 * [ ] Explore Capability of making LaunchMenu a Mac - Scriptable App: https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptX/Concepts/scriptable_apps.html
 * [ ] Ability to search in the contents of files.
@@ -116,14 +114,10 @@ Keyboard shorcuts:
 * [ ] Add some method to call applets given search term / pattern (js callback)
 * [ ] Add methods to call global applets etc.
 * [ ] Launch Menu Events. Example: Whenever LaunchMenu is activated, run "activated.event.js"
-* [ ] Event system with pre and postevent listeners; for instance for start event
 * [ ] Server communication wrapper requires error messages.
 * [ ] Auto-documentation generation.
 * [ ] Server communication support for more than 1 callback
 * [ ] _ipc.on support?
-* [ ] right click menu system
-* [ ] shortcut dictonary popup dick
-* [ ] tab menu when hovering over an item <-- include in this, go to parent directory
 * [ ] log server-side errors on the client side.
 
 tgm's todo:
@@ -136,7 +130,9 @@ tgm's todo:
 	* [x] make listeners work with parent class prefix
 	* [x] make open events not fire post events if canceled
 	* [x] add more events
-	* [x] fix contextSubMenu not closing  when parent closes
+* [x] tab menu when hovering over an item <-- include in this, go to parent directory
+* [x] right click menu system
+* [x] fix contextSubMenu not closing  when parent closes
 * [x] format date properly
 * [x] make escape work then the searhbar contains a value
 * [x] number of children search term
@@ -145,15 +141,19 @@ tgm's todo:
 	* [x] use `-webkit-app-region: drag` style to make sub-window a draggable window (optionally)
  	* [ ] add global events to the window system
 	* [ ] change the main window to make use of the new window system
-* [ ] multi file selection
 * [ ] create settings system and menu, with on change events etc
 	* [x] create settings system with events
-	* [ ] make settings accessable from different windows through the main window
-	* [ ] create settings GUI
+	* [x] make settings accessable from different windows through the main window
+	* [x] create settings GUI
+	* [ ] create elements for all comon variable types
+	* [ ] create styling interface through settings
+* [ ] multi file selection
+* [ ] create keyboard navigation system similar to  mnemonics
 * [ ] setup custom preview and actions system with the .lmf file
 * [ ] create applet system
 * [ ] don't browse from system root, instead show a list of LM roots
 * [ ] make the Querier class more modular, so people can alter its behaviour
+* [ ] make sure we have events for all important things that happen in LM
 
 
 Sancarn's todo:
