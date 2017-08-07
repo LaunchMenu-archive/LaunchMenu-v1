@@ -163,7 +163,8 @@ Keyboard shorcuts:
 ## Sancarn's todo list:
 
 * [x] Filelist
-* [ ] FileList includes zip folders.
+	* [ ] FileList includes zip folders.
+* [ ] Sync9
 * [ ] Test GetActiveWindow functions Mac and Windows
 * [x] Test Edge-VB.JS (possibly better than keeping an external application). EdgeJS will not be a viable option for this application as it is not portable.
 * [x] Write node-js file list generator 
