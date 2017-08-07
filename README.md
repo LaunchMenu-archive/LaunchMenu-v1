@@ -107,6 +107,7 @@ Keyboard shorcuts:
 * [ ] IPC access to main BrowserWindow functions and settings via proxy wrapper.
 * [ ] Auto-documentation generation.
 * [ ] log server-side errors on the client side.
+* [ ] Rewrite this readme.
 
 ## Tar's todo list:
 * [x] FuzzySearch to handle $Tree type.
