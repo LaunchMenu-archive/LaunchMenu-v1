@@ -87,8 +87,29 @@ Keyboard shorcuts:
 |<kbd>Shift</kbd>+<kbd>Tab</kbd>        | Close action menu                             |
 |<kbd>Esc</kbd>                         | Go back to root, if in root close program     |
 
-## To Do
+## General To Do
 
+* [ ] {50%} File preview
+* [ ] {25%} Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff.
+* [ ] {10%} File icons/symbols in list of matches
+* [ ] Applets to build:
+	* [ ] Add some method to call applets given search term / pattern (js callback)
+	* [ ] ColorPicker
+	* [ ] Calculator
+	* [ ] Dictionary
+	* [ ] Web Search
+	* [ ] Translate
+	* [ ] Notes
+	* [ ] Regexr
+	* [ ] Music player
+	* [ ] Log Maker
+	* [ ] Search-In-Files
+	* [ ] Discord chat
+* [ ] IPC access to main BrowserWindow functions and settings via proxy wrapper.
+* [ ] Auto-documentation generation.
+* [ ] log server-side errors on the client side.
+
+## Tar's todo list:
 * [x] FuzzySearch to handle $Tree type.
 * [x] File searching display
 * [x] Search highlighting.
@@ -96,31 +117,11 @@ Keyboard shorcuts:
 * [x] File navigation with arrows and mouse
 * [x] Animated window expanding/contracting
 * [x] Custom themes
-* [x] Ability to search for folders
-* [x] Ability to search for files using regex.
-* [x] Ability to search in selected folders (use '/' or '\' prefix '\myAmazingFolder' ), skipped because we can now navigate and to folders and search through them 
-* [ ] {50%} File preview
-* [ ] {10%} Implement myFile.lmf HTML preview.
-* [ ] {25%} Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff.
-* [ ] {10%} File icons/symbols in list of matches
-* [ ] Server client communication file.
-* [ ] Preview non image formats and stuff - https://github.com/maxlabelle/filepreview
-* [ ] FileList includes zip folders.
-* [ ] Create a windows messages API for use by other developers in other programming languages. Some actions: LaunchTerm(someTerm), UnregisterKeybind() and RegisterKeybind() {devs may need use of cmd/win+space for other stuff}, getMatches(searchTerm)...
-* [ ] Explore Capability of making LaunchMenu a Mac - Scriptable App: https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptX/Concepts/scriptable_apps.html
-* [ ] Ability to search in the contents of files.
-* [ ] Deprecate .LMP & .LMM files. Move to .LMF (Launch Menu Format). These files will store the preview and all assosciated files with that file.
-* [ ] Applets System: ColorPicker, Calculator, Dictionary, Web Search, Translate, Notes, Regexr, Music player, log maker
-* [ ] Add some method to call applets given search term / pattern (js callback)
-* [ ] Add methods to call global applets etc.
-* [ ] Launch Menu Events. Example: Whenever LaunchMenu is activated, run "activated.event.js"
-* [ ] Server communication wrapper requires error messages.
-* [ ] Auto-documentation generation.
-* [ ] Server communication support for more than 1 callback
-* [ ] _ipc.on support?
-* [ ] log server-side errors on the client side.
-
-tgm's todo:
+* [ ] LaunchMenu searches
+	* [x] Ability to search for folders
+	* [x] Ability to search for files using regex.
+	* [x] Ability to search in selected folders (use '/' or '\' prefix '\myAmazingFolder' ), skipped because we can now navigate and to folders and search through them
+	* [ ] Ability to search for file paths. E.G. `/My Excel Files/.*/my.csv/i`
 * [x] Make worker for finding matches
 * [x] make a cut system
 * [x] create rightclick menu
@@ -149,26 +150,34 @@ tgm's todo:
 	* [ ] create styling interface through settings
 * [ ] multi file selection
 * [ ] create keyboard navigation system similar to  mnemonics
-* [ ] setup custom preview and actions system with the .lmf file
-* [ ] create applet system
-* [ ] don't browse from system root, instead show a list of LM roots
-* [ ] make the Querier class more modular, so people can alter its behaviour
-* [ ] make sure we have events for all important things that happen in LM
-* [ ] Redo $Settings & $Querier to make it cleaner and more modular
+* [ ] Applets System:
+	* [ ] Initial Applet module.
+	* [ ] LMF file format. JSON5?
+	* [ ] Custom HTML preview of LMF file for LaunchMenu's treeview.
+	* [ ] HTML, CSS, JS compiled into 1 place.
+	* [ ] Setup custom preview and actions system with the .lmf file
+* [ ] Don't browse from system root, instead show a list of LM roots
+* [ ] Refactor $Settings & $Querier class more modular, so people can alter its behaviour
+* [ ] LaunchMenu Events for all important things that happen in LM.
 
+## Sancarn's todo list:
 
-Sancarn's todo:
-
+* [x] Filelist
+* [ ] FileList includes zip folders.
 * [ ] Test GetActiveWindow functions Mac and Windows
-* [ ] Test Edge-VB.JS (possibly better than keeping an external application) 
-* [ ] Write node-js file list generator 
+* [x] Test Edge-VB.JS (possibly better than keeping an external application). EdgeJS will not be a viable option for this application as it is not portable.
+* [x] Write node-js file list generator 
 * [ ] Make get icons multi-os compatible - also get larger icons on windows option!
 * [ ] General ini-file management.
-* [ ] DynaCLR.JS - 50%?
-* [ ] DynaCOM.JS
+* [ ] DynaCLR.JS - 90%
+* [ ] DynaCOM.JS - 10%?
 * [ ] DynaDll.JS - 50%?
 * [ ] Use Enigma Virtual Box to package electron app to pure .exe file - http://enigmaprotector.com/en/aboutvb.html
-* [ ] Implement .lmf file auto-executables. LMF files will be reditected to a BAT file (or maybe a small exe?). It will inject the script's path into a named pipe:
+* [ ] PDF Preview.
+* [ ] Preview non image formats - XLSX/DOCX/PPTX --> PDF
+* [ ] Windows Messages: WM_COPYDATA --> Eval(COPYDATA) || WM_COPYDATA --> Eval(LMF_COPYDATA) || WM_USER+1 --> Eval(COPYDATA) & WM_USER+2 --> Eval(LMF_COPYDATA). Use Function win.hookWindowMessage(message, callback)
+* [ ] Explore Capability of making LaunchMenu a Mac - Scriptable App: https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptX/Concepts/scriptable_apps.html
+* [ ] Implement .lmf file auto-executables. LMF files will be reditected to a BAT file (or maybe a small exe?). It will inject the script's path into a named pipe `LMF_InjectionPipe`:
 
 CMD commands (Setting lmf as auto-executable file):
 
