@@ -93,7 +93,6 @@ Keyboard shorcuts:
 * [ ] {25%} Context specific menus - If I have Window X active, and I open the GUI I want stuff related to that stuff.
 * [ ] {10%} File icons/symbols in list of matches
 * [ ] Applets to build:
-	* [ ] Add some method to call applets given search term / pattern (js callback)
 	* [ ] ColorPicker
 	* [ ] Calculator
 	* [ ] Dictionary
@@ -156,6 +155,7 @@ Keyboard shorcuts:
 	* [ ] Custom HTML preview of LMF file for LaunchMenu's treeview.
 	* [ ] HTML, CSS, JS compiled into 1 place.
 	* [ ] Setup custom preview and actions system with the .lmf file
+	* [ ] Add some method to call applets given search term / pattern (js callback)
 * [ ] Don't browse from system root, instead show a list of LM roots
 * [ ] Refactor $Settings & $Querier class more modular, so people can alter its behaviour
 * [ ] LaunchMenu Events for all important things that happen in LM.
