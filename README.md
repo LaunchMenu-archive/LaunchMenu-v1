@@ -176,8 +176,10 @@ Keyboard shorcuts:
 * [ ] Use Enigma Virtual Box to package electron app to pure .exe file - http://enigmaprotector.com/en/aboutvb.html
 * [ ] PDF Preview.
 * [ ] Preview non image formats - XLSX/DOCX/PPTX --> PDF
-* [ ] Windows Messages: WM_COPYDATA --> Eval(COPYDATA) || WM_COPYDATA --> Eval(LMF_COPYDATA) || WM_USER+1 --> Eval(COPYDATA) & WM_USER+2 --> Eval(LMF_COPYDATA). Use Function win.hookWindowMessage(message, callback)
-* [ ] Explore Capability of making LaunchMenu a Mac - Scriptable App: https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptX/Concepts/scriptable_apps.html
+* [ ] Windows Messages using Function win.hookWindowMessage(message, callback):
+	WM_USER+1 --> Eval(COPYDATA_STRUCT) & WM_USER+2 --> Eval(LMF). 
+* [ ] Explore Capability of making LaunchMenu a Mac - Scriptable App:
+	https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptX/Concepts/scriptable_apps.html
 * [ ] Implement .lmf file auto-executables. LMF files will be reditected to a BAT file (or maybe a small exe?). It will inject the script's path into a named pipe `LMF_InjectionPipe`:
 
 CMD commands (Setting lmf as auto-executable file):
