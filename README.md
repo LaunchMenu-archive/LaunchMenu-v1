@@ -123,6 +123,7 @@ Keyboard shorcuts:
 	* [x] Ability to search in selected folders (use '/' or '\' prefix '\myAmazingFolder' ), skipped because we can now navigate and to folders and search through them
 	* [ ] Ability to search for file paths. E.G. `/My Excel Files/.*/my.csv/i`
 * [x] Make worker for finding matches
+
 * [x] make a cut system
 * [x] create rightclick menu
 * [x] turn utilities into util object to get rid of floating variables  
@@ -162,6 +163,7 @@ Keyboard shorcuts:
 * [ ] Refactor $Settings & $Querier class more modular, so people can alter its behaviour.
 * [ ] Refactor $Tree so it fits the js style of class better
 * [ ] LaunchMenu Events for all important things that happen in LM.
+* [ ] add menu to access different search and filter options, like order by date (to an extend, as the match value should also count), disable certain match types, any other options you might want
 
 ## Sancarn's todo list:
 
