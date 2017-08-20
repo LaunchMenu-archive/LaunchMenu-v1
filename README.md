@@ -104,7 +104,7 @@ Keyboard shorcuts:
 	* [ ] Log Maker
 	* [ ] Search-In-Files
 	* [ ] Discord chat
-* [ ] IPC access to main BrowserWindow functions and settings via proxy wrapper.
+* [ ] IPC access to main BrowserWindow functions and settings via proxy wrapper. (or instead use a system similar to the window system, to execute code on server side)
 * [ ] Auto-documentation generation.
 * [ ] log server-side errors on the client side.
 * [ ] Rewrite this readme.
@@ -138,7 +138,7 @@ Keyboard shorcuts:
 * [x] make escape work then the searhbar contains a value
 * [x] number of children search term
 * [x] create sub-window system
-	* [ ] using mouseenter and mouseleave events make transparent areas of main LaunchMenu window ignore/unignore mouse events using: win.setIgnoreEvents(true/false) [perhaps extend to sub-window class?]
+	* [ ] using mouseenter and mouseleave events make transparent areas of main LaunchMenu window ignore/unignore mouse events using: win.setIgnoreEvents(true/false)
 	* [x] use `-webkit-app-region: drag` style to make sub-window a draggable window (optionally)
  	* [ ] add global events to the window system
 	* [ ] change the main window to make use of the new window system
@@ -149,16 +149,18 @@ Keyboard shorcuts:
 	* [ ] create elements for all comon variable types
 	* [ ] create styling interface through settings
 * [ ] multi file selection
+* [ ] make selector use the new schrollbar system
 * [ ] create keyboard navigation system similar to  mnemonics
 * [ ] Applets System:
 	* [ ] Initial Applet module.
-	* [ ] LMF file format. JSON5?
+	* [ ] LMF file format. (JSON5? <- wtf?)
 	* [ ] Custom HTML preview of LMF file for LaunchMenu's treeview.
 	* [ ] HTML, CSS, JS compiled into 1 place.
 	* [ ] Setup custom preview and actions system with the .lmf file
 	* [ ] Add some method to call applets given search term / pattern (js callback)
-* [ ] Don't browse from system root, instead show a list of LM roots
-* [ ] Refactor $Settings & $Querier class more modular, so people can alter its behaviour
+* [x] Don't browse from system root, instead show a list of LM roots
+* [ ] Refactor $Settings & $Querier class more modular, so people can alter its behaviour.
+* [ ] Refactor $Tree so it fits the js style of class better
 * [ ] LaunchMenu Events for all important things that happen in LM.
 
 ## Sancarn's todo list:
