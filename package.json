@@ -21,6 +21,6 @@
   },
   "dependencies": {
     "electron-localshortcut": "^1.1.1",
-    "edge":"^6.5.1"
+    "dynaclr":"*"
   }
 }
