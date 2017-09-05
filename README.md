@@ -149,6 +149,7 @@ Keyboard shorcuts:
 	* [x] create settings GUI
 	* [ ] create elements for all comon variable types
 	* [ ] create styling interface through settings
+		* [ ] create system for targetting ibdividual elements
 * [ ] multi file selection
 * [ ] make selector use the new schrollbar system
 * [ ] create keyboard navigation system similar to  mnemonics
