@@ -143,6 +143,7 @@ Keyboard shorcuts:
 	* [x] use `-webkit-app-region: drag` style to make sub-window a draggable window (optionally)
  	* [ ] add global events to the window system
 	* [ ] change the main window to make use of the new window system
+	* [ ] make it so a window closes its sub windows when closed
 * [ ] create settings system and menu, with on change events etc
 	* [x] create settings system with events
 	* [x] make settings accessable from different windows through the main window
