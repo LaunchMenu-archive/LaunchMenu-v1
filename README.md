@@ -1,6 +1,6 @@
 # LaunchMenu
 
-![LaunchMenu Icon](icon1.png)
+![LaunchMenu Icon](Icon1.png)
 
 
 ## Description:
