@@ -1,5 +1,8 @@
 # LaunchMenu
 
+![LaunchMenu Icon](/icon1.png)
+
+
 ## Description:
 
 LaunchMenu is an open source utility application similar to LaunchBar and SpotlightSearch for Mac.
