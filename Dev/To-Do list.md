@@ -19,7 +19,6 @@
 * [ ] IPC access to main BrowserWindow functions and settings via proxy wrapper. (or instead use a system similar to the window system, to execute code on server side)
 * [ ] Auto-documentation generation.
 * [ ] log server-side errors on the client side.
-* [ ] Rewrite this readme.
 
 ## Tar's todo list:
 * [x] FuzzySearch to handle $Tree type.
