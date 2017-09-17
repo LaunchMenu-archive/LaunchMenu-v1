@@ -17,6 +17,12 @@ Features will be listed at a later date.
 
 ![Literal Search](/Screen%20shots/literal%20search.png) ![Acronym Search](/Screen%20shots/acronym%20search.png)
 
+#### filter
+![Before Filter Search](/Screen%20shots/before%20filter.png) ![After Filter Search](/Screen%20shots/after%20filter.png)
+
+#### regex search
+![Regex Search](/Screen%20shots/regex%20search.png)
+
 ### context menu and file menu
 
 ![Context Menu](/Screen%20shots/context%20menu.png) ![File Menu](/Screen%20shots/file%20menu.png)
