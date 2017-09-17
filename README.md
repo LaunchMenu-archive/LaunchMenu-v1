@@ -15,7 +15,7 @@ Features will be listed at a later date.
 
 #searches
 
-![Literal Search](/Screen%20shots/literal%20search.png | width=50) ![Acronym Search](/Screen%20shots/acronym%20search.png | width=50)
+![Literal Search](/Screen%20shots/literal%20search.png =50) ![Acronym Search](/Screen%20shots/acronym%20search.png =50)
 
 #context menu and file menu
 
