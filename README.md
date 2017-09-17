@@ -13,23 +13,23 @@ Features will be listed at a later date.
 
 ![Directory Preview](Screen%20shots/general.png) 
 
-# searches
+### searches
 
 ![Literal Search](/Screen%20shots/literal%20search.png) ![Acronym Search](/Screen%20shots/acronym%20search.png)
 
-# context menu and file menu
+### context menu and file menu
 
 ![Context Menu](/Screen%20shots/context%20menu.png) ![File Menu](/Screen%20shots/file%20menu.png)
 
-# key settings
+### key settings
 
 ![Keys](/Screen%20shots/keys.png)
 
-# setting value validation
+### setting value validation
 
 ![Error message](/Screen%20shots/error%20message.png)
 
-# color customization
+### color customization
 
 ![Color Styling](/Screen%20shots/color%20styling.png) ![Specific Color Styling](/Screen%20shots/specific%20color%20styling.png)
 
