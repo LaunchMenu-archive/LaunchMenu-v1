@@ -11,10 +11,10 @@ Features will be listed at a later date.
 
 ## Screen Shots:
 
-![Directory Preview](/screen shots/general.png) 
+![Directory Preview](/Screen shots/general.png) 
 
 #searches
-![Literal Search](/screen shots/literal search.png) ![Acronym Search](/screen shots/acronym search.png)
+![Literal Search](/Screen shots/literal search.png) ![Acronym Search](/Screen shots/acronym search.png)
 
 ## Details:
 
