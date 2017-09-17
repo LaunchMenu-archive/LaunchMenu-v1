@@ -147,15 +147,23 @@ Keyboard shorcuts:
  	* [ ] add global events to the window system
 	* [ ] change the main window to make use of the new window system
 	* [ ] make it so a window closes its sub windows when closed
-* [ ] create settings system and menu, with on change events etc
+* [x] create settings system and menu, with on change events etc
 	* [x] create settings system with events
 	* [x] make settings accessable from different windows through the main window
 	* [x] create settings GUI
 	* [ ] create elements for all comon variable types
-	* [ ] create styling interface through settings
-		* [ ] create system for targetting ibdividual elements
+		* [x] strings
+		* [x] numbers
+		* [x] booleans
+		* [x] colors
+		* [x] shortcuts
+		* [ ] images
+	* [x] create styling interface through settings
+		* [ ] create system for targetting individual elements
+	* [ ] make it so you can open settings to go to a certain setting and or category
+	* [ ] make it so you can open a specific setting category
 * [ ] multi file selection
-* [ ] make selector use the new schrollbar system
+* [ ] make selector use the new scrollbar system
 * [ ] create keyboard navigation system similar to  mnemonics
 * [ ] Applets System:
 	* [ ] Initial Applet module.
@@ -165,10 +173,14 @@ Keyboard shorcuts:
 	* [ ] Setup custom preview and actions system with the .lmf file
 	* [ ] Add some method to call applets given search term / pattern (js callback)
 * [x] Don't browse from system root, instead show a list of LM roots
-* [ ] Refactor $Settings & $Querier class more modular, so people can alter its behaviour.
+* [x] Refactor $Settings to make it class more modular, so people can alter its behaviour.
+* [ ] Refactor $Querier to make it class more modular, so people can alter its behaviour.
 * [ ] Refactor $Tree so it fits the js style of class better
 * [ ] LaunchMenu Events for all important things that happen in LM.
 * [ ] add menu to access different search and filter options, like order by date (to an extend, as the match value should also count), disable certain match types, any other options you might want
+* [ ] make it so you can browse folders that aren't part of the root
+	* [ ] indicate in which directory you are currently
+	* [ ] make a way to enter an absolute path
 
 ## Sancarn's todo list:
 
