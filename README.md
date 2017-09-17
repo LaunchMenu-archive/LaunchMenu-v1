@@ -11,7 +11,7 @@ Features will be listed at a later date.
 
 ## Screen Shots:
 
-![Directory Preview](/Screen shots/general.png) 
+![Directory Preview](Screen%20shots/general.png) 
 
 #searches
 ![Literal Search](/Screen shots/literal search.png) ![Acronym Search](/Screen shots/acronym search.png)
