@@ -15,8 +15,7 @@ Features will be listed at a later date.
 
 #searches
 
-<img src="/Screen%20shots/literal%20search.png" alt="Literal Search" width=450> <img src="/Screen%20shots/acronym%20search.png" alt="Acronym Search" width=450>
-![Literal Search](/Screen%20shots/literal%20search.png =50) ![Acronym Search](/Screen%20shots/acronym%20search.png =50)
+![Literal Search](/Screen%20shots/literal%20search.png) ![Acronym Search](/Screen%20shots/acronym%20search.png)
 
 #context menu and file menu
 
