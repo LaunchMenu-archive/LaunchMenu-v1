@@ -18,7 +18,7 @@ Features will be listed at a later date.
 ![Literal Search](/Screen%20shots/literal%20search.png) ![Acronym Search](/Screen%20shots/acronym%20search.png)
 
 #### filter
-![Before Filter Search](/Screen%20shots/before%20filter.png) ![After Filter Search](/Screen%20shots/after%20filter.png)
+![Before Filter Search](/Screen%20shots/filter%20before.png) ![After Filter Search](/Screen%20shots/filter%20after.png)
 
 #### regex search
 ![Regex Search](/Screen%20shots/regex%20search.png)
