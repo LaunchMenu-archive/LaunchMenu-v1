@@ -9,6 +9,13 @@ LaunchMenu is an open source utility application similar to LaunchBar and Spotli
 
 Features will be listed at a later date.
 
+## Screen Shots:
+
+![Directory Preview](screen shots/general.png) 
+
+#searches
+![Literal Search](screen shots/literal search.png) ![Acronym Search](screen shots/acronym search.png)
+
 ## Details:
 
 14 May 2017 18:15 Backup: 
