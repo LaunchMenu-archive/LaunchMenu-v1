@@ -68,6 +68,9 @@
 		* [ ] images
 	* [x] create styling interface through settings
 		* [ ] create system for targetting individual elements
+	* [ ] refactor the styling system and inteface
+		* [ ] make styling interface elements grouped and collapsable, so it doesn't need to load everything right away
+		* [ ] make styling use css variables so that any proeprty can be altered instead of using html classes
 	* [ ] make it so you can open settings to go to a certain setting and or category
 	* [ ] make it so you can open a specific setting category
 * [ ] multi file selection
@@ -89,6 +92,10 @@
 * [ ] make it so you can browse folders that aren't part of the root
 	* [ ] indicate in which directory you are currently
 	* [ ] make a way to enter an absolute path
+* [ ] add a path bar in which you can see and alter the current location, keep the styling low key
+	* [ ] make a drop down for every directory, to show what they can be echanged with
+* [ ] make selectors make use of the new scrollbar element instead of the library
+* [ ] change how the setting/categoryAbove works, make the setting a child in the gui of the setting/categoryAbove
 
 ## Sancarn's todo list:
 
