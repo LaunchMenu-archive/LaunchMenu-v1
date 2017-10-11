@@ -4,7 +4,7 @@ loadOnce("ContextMenuButton");
 loadOnce("/$Utils");
 loadOnce("/$EventHandler");
 window.ContextMenu = class ContextMenu{
-	/*buttonData as an array with objects with the following data:
+    /*buttonData as an array with objects with the following data:
     {
         icon: "imgUrl",
         text: "action name",
@@ -15,8 +15,8 @@ window.ContextMenu = class ContextMenu{
     }
     you can not both define children and func*/
     constructor(buttonData){
-    	this.__initVars();
-    	
+        this.__initVars();
+        
         if(buttonData==null) buttonData = this.items;
         
         var n = $Utils.createTemplateElement(this.constructor.name, this.template);
@@ -57,8 +57,8 @@ window.ContextMenu = class ContextMenu{
     }
     
     //events that can be tapped into and altered
-    __onClose(){}   		    //fires when the context menu is closed
-    __onOpen(){}			    //fires when the context menu is opened
+    __onClose(){}               //fires when the context menu is closed
+    __onOpen(){}                //fires when the context menu is opened
     __keyboardEvent(event){     //fires on keyboard events
         if(this.selectedButton){
             if(this.selectedButton.subMenu)
@@ -85,13 +85,40 @@ window.ContextMenu = class ContextMenu{
             }
         }
     }
-    __checkShortcuts(shortcut){ //fires on keyboard events, but passes a shortcut string
+    __checkShortcuts(event){ //fires on keyboard events, but passes a shortcut string
         for(var i=0; i<this.buttons.length; i++){
             var button = this.buttons[i];
-            if(button.__checkShortcuts(shortcut))
+            if(button.__checkShortcuts(event))
                 return true;
         }
         return false;
+    }
+    
+
+    
+    //method to bind the context menu to a html element
+    bindToElement(element, executeObject){
+        var t = this;
+        element = $(element);
+        executeObject = executeObject||element[0];
+        element[0].contextMenu = this;
+        element.mouseup(function(event){
+            if(event.button==2){
+                t.setExecuteObject(executeObject);
+                t.open();
+                t.setPosition(event.pageX, event.pageY);
+                event.stopImmediatePropagation();
+            }
+        });
+    }
+    
+    //button methods
+    getButtonFromText(text){
+        for(var i=0; i<this.buttons.length; i++){
+            var button = this.buttons[i];
+            if(button.$(".text").text() == text)
+                return button;
+        }
     }
     
     //button insertion code
@@ -135,10 +162,10 @@ window.ContextMenu = class ContextMenu{
             if(!this.opened){
                 this.opened = $ContextMenuHandler.__setOpenedContextMenu(this);
                 
-                if(this.opened){                	
-                	this.__onOpen();
-                	$EventHandler.trigger("open:post", this, {});
-                	return true;
+                if(this.opened){                    
+                    this.__onOpen();
+                    $EventHandler.trigger("open:post", this, {});
+                    return true;
                 }
             }
         }
@@ -209,10 +236,10 @@ window.ContextMenu = class ContextMenu{
             var containerHeight = $ContextMenuHandler.getContainerHeight();
             
             var elOff = $ContextMenuHandler.getElementOffset(this.element);
-            if(elOff.left+this.element.width()>containerWidth-p)
-                this.element.css("left",left-this.element.width());    
-            if(elOff.top+this.element.height()>containerHeight-p)
-                this.element.css("top",top-this.element.height());    
+            if(elOff.left+elWidth>containerWidth-p)
+                this.element.css("left",left-elWidth);
+            if(elOff.top+elHeight>containerHeight-p)
+                this.element.css("top",top-elHeight);    
         }
         
         //if menu doesn't fit up nor down, snap to closest border
@@ -223,6 +250,7 @@ window.ContextMenu = class ContextMenu{
             this.element.css("top", p);
         }
         
+        //if menu doesn't fit left nor right, snap to closest border
         if(elOff.left+elWidth>containerWidth-p){
             this.element.css("left", containerWidth-p-elWidth);
         }else if(elOff.left<p){
@@ -253,8 +281,12 @@ window.ContextMenu = class ContextMenu{
     selectDown(){
         var index = this.buttons.indexOf(this.selectedButton);
         var button;
-        if(index+1<this.buttons.length)
-            button = this.buttons[index+1];
+        //find the first visible button
+        while(++index<this.buttons.length){
+            button = this.buttons[index];
+            if(!button.invisible) break;
+            button = null;
+        }
         
         if(button)    
             if($EventHandler.trigger("selectDown:pre", this, {currentSelected:this.selectedButton, button:button})){
@@ -268,10 +300,13 @@ window.ContextMenu = class ContextMenu{
     selectUp(){
         var index = this.buttons.indexOf(this.selectedButton);
         var button;
-        if(index==-1 && this.buttons.length>0)
+        if(index==-1 && this.buttons.length>0) //select first button if no button was selected
             button = this.buttons[0];
-        else if(index-1>=0)
-            button = this.buttons[index-1];
+        else while(--index>=0){ //find the first visible button
+            button = this.buttons[index];
+            if(!button.invisible) break;
+            button = null;
+        }
         
         if(button)
             if($EventHandler.trigger("selectUp:pre", this, {currentSelected:this.selectedButton, button:button})){

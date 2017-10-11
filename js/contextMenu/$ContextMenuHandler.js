@@ -2,7 +2,7 @@
 loadOnce("/$Utils");
 loadOnce("/$EventHandler");
 window.$ContextMenuHandler = (function(){
-	//TODO categorize the methods
+    //TODO categorize the methods
     var openedContextMenu;
     var selectedContextMenu; //the context menu that will open when hitting shift+f10
     var defaultContextMenu;
@@ -31,8 +31,8 @@ window.$ContextMenuHandler = (function(){
         var container = n.element;
         var htmlClassName = n.htmlClassName;
         var $ = n.querier;
+        window.$("body").first().prepend(container);
         
-        $Utils.lm(".body").prepend(container);
         var containerOffset = container.offset();
         container.hide();
         
@@ -41,7 +41,7 @@ window.$ContextMenuHandler = (function(){
                 cmh.__closeContextMenu();
             }
         });
-        $(window).mouseup(function(event){
+        window.$(window).mouseup(function(event){
             if(event.button==2){//right click
                 if(defaultContextMenu && event.target!=container[0]){
                     defaultContextMenu.open();
@@ -144,14 +144,14 @@ window.$ContextMenuHandler = (function(){
     };
     cmh.__checkShortcuts = function(event){
         if(selectedContextMenu){
-            return selectedContextMenu.__checkShortcuts($Utils.keyboardEventToShortcut(event));
+            return selectedContextMenu.__checkShortcuts(event);
         }
     };
     cmh.__keyboardEvent = function(event){
         if(cmh.__checkShortcuts(event))
             return true;
-        if(openedContextMenu){
-            return openedContextMenu.__keyboardEvent(event);
+        if(selectedContextMenu){
+            return selectedContextMenu.__keyboardEvent(event);
         }
     };
     

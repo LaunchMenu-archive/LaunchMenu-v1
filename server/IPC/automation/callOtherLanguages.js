@@ -33,6 +33,7 @@ Language.prototype.bash = function (args,del=" "){
 }
 
 
+/*
 Sub Invoke(arg1,arg2)
   Exit Sub
 End Sub
@@ -40,3 +41,4 @@ End Sub
 Function Invoke(arg1,arg2)
   Exit Function
 End Function
+*/

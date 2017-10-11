@@ -1,162 +1,166 @@
-/*global variables Class, $, $StyleHandler*/
+loadOnce("/$Utils");
 loadOnce("$StyleHandler");
 window.Style = class Style{
-	/*
-	 inpColors should be an object containing the following keys:
-		 - background
-		 - border
-		 - font
-		 - fontError
-		 - backgroundHighlight
-	 where each key is an array with 2 css colors, and a gradient will be create inbetween those colors
-	 
-	 you can also specify a specific index of the gradient values by adding a key to the inpColors like this:
-	 	background2: "#fff"
-	    
-	 a complete inpColors object could look something like this:
-	  	{
-  			background: ["#FFF", "#CCCCCC"],
-            border: ["#EEE", "#888"],
-            font: ["rgb(0,0,0)", "#BBB"],
-            fontError: ["#900","#D00"],
-            backgroundHighlight: ["#00e9ff", "#8cf5ff"]
-            background3: #DDD
-       }
-	 */
-    constructor(inpColors){
-    	this.__initVars();
-    	
-        var getRGB = function(color){ //extract rgb data
-            var match = $("<n></n>").css("color",color).css("color").match(/[^0-9]+([0-9]+)[^0-9]+([0-9]+)[^0-9]+([0-9]+)[^0-9]+/);
-            if(!match){
-                throw Error(color+" is not a supported color");
-            }
-            color = [];
-            color[0] = Number(match[1]);
-            color[1] = Number(match[2]);
-            color[2] = Number(match[3]);
-            return color;
-        };
-        var getColor = function(color1, color2, per){ //mix colors
-            var r = Math.sqrt(Math.pow(color2[0],2)*per+Math.pow(color1[0],2)*(1-per));
-            var g = Math.sqrt(Math.pow(color2[1],2)*per+Math.pow(color1[1],2)*(1-per));
-            var b = Math.sqrt(Math.pow(color2[2],2)*per+Math.pow(color1[2],2)*(1-per));
-            return `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
-        };
+    constructor(setting){
+        this.setting = setting;
+        this.ID = setting[Setting.getSymbol("name")];
+        this.styleElements = {};        //the styling with gradientNames as keys
+        this.transitionSelectors = [];  //a list of transition selectors, grouped by gradients
+        this.colors = {}                //a map of the computed colors by html classname
+        this.__setupSetting();
         
-        //acronyms
-        var colors = {};
-        var keys = Object.keys(inpColors);
-        
-        //create the different shades
-        for(var i=0; i<keys.length; i++){
-            var type = keys[i];
-            //make sure it is a shade and not a specific color
-            if(!/[0-9]$/.test(type)){
-                var colorTransition = inpColors[type];
-                if(!colorTransition instanceof Array)
-                    throw Error("You must define an array with 2 colors, or specify a specific type like: "+type+"0");
-                    
-                //get color prefix, like fileselector_
-                var specifier = (type.match(/(([0-9a-zA-Z]+_)*)[0-9a-zA-Z]+/)[2]||"").replace("_",".");
-                var t = type.match(/[0-9a-zA-Z]+$/)[0];
-                var type = $StyleHandler.types[t];
-                if(type){
-                    if(!type.addition) type.addition="";
-                    
-                    //get the 2 colors
-                    var color1 = getRGB(colorTransition[0]);
-                    var color2 = getRGB(colorTransition[1]);
-                    
-                    var shadeCount = type.shades;
-                    //create all shades
-                    for(var j=0; j<shadeCount; j++){
-                        var per = j/(shadeCount-1);
-                        var color = getColor(color1, color2, per);
-            
-                        //create colors with their acronyms
-                        colors[specifier+t+j] = [type, color, j];
-//                        var m = type.acronyms;
-//                        for(var p=0; p<m.length; p++){
-//                            colors["."+specifier+m[p]+j] = [type, color];
-//                        }
-                    }
-                }
-                
-            }
+        var t = this;
+        this.transitionTimeChangeListener = function(){
+            t.__assembleStyling();
         }
-        //overwrite specific values like background0
-        for(var i=0; i<keys.length; i++){
-            var type = keys[i];
-            if(/[0-9]$/.test(type)){
-                var color = inpColors[type];
-                
-                //get color prefix, like fileselector_
-                var specifier = (type.match(/(([0-9a-zA-Z]+_)*)[0-9a-zA-Z]+/)[2]||"").replace("_",".");
-                var t = type.match(/[0-9a-zA-Z]+$/)[0];
-                var type = $StyleHandler.types[t.match(/(.+)[0-9]/)[1]];
-                
-                //create colors with their acronyms
-                colors[specifier+t] = [type, color];
-//                var m = type.acronyms;
-//                for(var j=0; j<m.length; j++){
-//                    colors["."+specifier+m[j]] = [type, color];
-//                }
+        $Settings.styling.general.transitionTime.addListener(this.transitionTimeChangeListener);
+    }
+
+    __setupSetting(){
+        var t = this;
+        var s = this.setting;
+        if(s._categoryPushSettings===undefined) s._categoryPushSettings = true;
+        if(s._categoryInvisible===undefined)    s._categoryInvisible = true;
+        
+        //setup gradients
+        var types = $StyleHandler.types;
+        var names = Object.keys(types);
+        for(var i=0; i<names.length; i++){
+            var gradientName = names[i];
+            var type = types[gradientName];
+            this.__createGradient(gradientName, type, i);
+        }
+        
+        //setup custom gradients
+        var customTypes = $StyleHandler.customTypes;
+        var names = Object.keys(customTypes);
+        for(var i=0; i<names.length; i++){
+            var gradientName = names[i];
+            var type = customTypes[gradientName];
+            this.__createGradient(gradientName, type, null, true);
+        }
+        
+        //assemble style
+        this.__assembleStyling();
+    }
+    __createGradient(gradientName, type, guiIndex, customGradient){
+        var s = this.setting;
+        var t = this;
+        
+        //create setting
+        if(s[gradientName]._shades===undefined)                                 s[gradientName]._shades = type.shades;
+        if(s[gradientName]._type===undefined)                                   s[gradientName]._type = "styleGradient";
+        if(s[gradientName]._defaultValue===undefined)                           s[gradientName]._defaultValue = {gradient: $Utils.copy(type.default)};
+        if(s[gradientName]._settingIndex===undefined && guiIndex!=undefined)    s[gradientName]._settingIndex = guiIndex;
+
+        //add visibility check, so the setting is only visible when needed
+        if(s[gradientName]._settingVisibilityCheck===undefined){
+            var settings = ["styling.selectedTheme"];
+            if(customGradient) settings.push("styling.showCustomColors");             //custom gradient behaviour; make them hideable with the showCustomColors setting
+            s[gradientName]._settingVisibilityCheck = {
+                settings: settings,
+                func: function(selectedTheme, customColors){ return selectedTheme.selected.ID==this[Setting.getSymbol("parent")][Setting.getSymbol("name")] && customColors!==false; } //hide color if not part of selected style
             }
         }
         
-        //create element selector
-        var hovers = ["Hover","H"];
-        var createSelector = function(selectors, index, dontRemoveComma){
-        	var selectorString = "";
-            for(var n=0; n<selectors.length; n++){
-            	var selector = "."+selectors[n];
-            	if(n+1!=selectors.length)
-            		selector += index;
-            	selectorString += ","+selector;
-            	for(var m=0; m<hovers.length; m++){
-            		selectorString += ","+selector+hovers[m]+":hover";
-            	}
-            }
-            return selectorString.substring(dontRemoveComma?0:1);
+        //setup gradient styling
+        s[gradientName].addListener(function(newValue){
+            t.__createCssGradientShades(gradientName, s[gradientName].value);
+            t.__assembleStyling();
+            t.__updateStyling(gradientName);
+        });
+        this.__createCssGradientShades(gradientName, s[gradientName].value);
+        
+
+        //set custom setting data if defined
+        if(type.settingData){
+            s[gradientName] = type.settingData; 
         }
         
-        //create the css style
-        this.style = "<style class='colors LM "+this.constructor.name+"'>\n";
-        var keys = Object.keys(colors);
-        for(var i=0; i<keys.length; i++){
-            var key = keys[i];
-            var type = colors[key][0];
-            var color = colors[key][1];
-            var index = colors[key][2];
-            
-            //create css selector
-            var selectorString = createSelector(type.acronyms.concat(key), index);
+        
+        //create transition styling
+        var selector = "";
+        for(var j=0; j<type.shades; j++){
+            selector += ","+this.__createGradientShadeSelector(gradientName, j);
+        }
+        this.transitionSelectors.push(selector);
+    }
+    __assembleStyling(){
+        //create styling
+        this.style = "";
+        for(var styleElement of Object.values(this.styleElements)){
+            this.style += styleElement; 
+        }
+        this.style = "<style class='colors "+this.ID+"'>\n"+this.style+"</style>";
+        
+        //create transition styling
+        this.transitionStyle = "";
+        for(var selector of this.transitionSelectors){
+            this.transitionStyle += selector;
+        }
+        this.transitionStyle = this.transitionStyle.substring(1)+`{
+            transition: all ${$Settings.styling.general.transitionTime}s ease;
+            transition-property: color, background-color, border-color;
+        }`;
+        this.transitionStyle = "<style class='colors transition "+this.ID+"'>\n"+this.transitionStyle+"</style>";
+    }
+    __updateStyling(alteredGradientName){
+        if($StyleHandler.selectedStyle==this)
+            $StyleHandler.selectStyle(this, alteredGradientName);
+    }
+    __createCssGradientShades(typeName, value){
+//        console.log(value);
+        var type = $StyleHandler.getType(typeName);
+        var startColor = $Utils.getRGBA(value.gradient[0]);
+        var endColor = $Utils.getRGBA(value.gradient[1]);
+        
+        var output = "";
+        
+        //loop through all shades
+        for(var i=0; i<type.shades; i++){
+            //get color
+            var color;
+            if(value[i]){
+                color = value[i]; 
+            }else{
+                color = $Utils.rgbaToCss($Utils.getColorPer(startColor, endColor, i/Math.max(1, type.shades-1)));
+            }
             
             //create style
-            this.style += selectorString+"{"+type.property+":"+color+";"+type.addition+"}\n";
+            var styling = this.__createGradientShadeSelector(typeName, i)+"{"+type.property+":"+color+";"+(type.addition?type.addition:"")+"}\n";
+            output += styling;
+            
+            //store the value in the color map
+            this.colors[typeName+i] = $Utils.getRGBA(color);
         }
-        this.style += "</style>";
         
-        //create transition style
-        this.transitionStyle = "<style class='colors LM transition "+this.constructor.name+"'>\n";
-        var transitionSelector = "";
-        var keys = Object.keys(colors);
-        for(var i=0; i<keys.length; i++){
-            var key = keys[i];
-            var type = colors[key][0];
-            var index = colors[key][2];
-
-            //create css selector
-            transitionSelector += createSelector(type.acronyms.concat(key), index, true);
-        }
-        this.transitionStyle += transitionSelector.substring(1)+`{
-        	transition: all ${$StyleHandler.transitionDuration}s ease;
-        	transition-property: color, background-color, border-color;
-        }`
-        this.transitionStyle += "</style>";
+        //add styling
+        this.styleElements[typeName] = output;
     }
-    __initVars(){}
+    __addCustomGradient(name, object){
+        this.__createGradient(name, object, null, true);
+    }
+    __createGradientShadeSelector(typeName, shadeIndex){
+        var type = $StyleHandler.getType(typeName);
+        var selectors = [typeName].concat(type.acronyms);
+        var hovers = $StyleHandler.hoverPostFixes;
+        
+        var selectorString = "";
+        //go through all selectors
+        for(var i=0; i<selectors.length; i++){
+            var selector = "."+selectors[i]+shadeIndex;
+            selectorString += ","+selector;
+            //add hover selectors
+            for(var j=0; j<hovers.length; j++){
+                selectorString += ","+selector+hovers[j]+":hover";
+            }
+        }
+        return selectorString.substring(1);
+    }
+    delete(){
+        this.setting.delete();
+        $Settings.styling.general.transitionTime.removeListener(this.transitionTimeChangeListener);
+    }
     
     enable(){
         $StyleHandler.selectStyle(this);

@@ -1,14 +1,14 @@
 /*global variables $Utils, $, ResizeSensor*/
 loadOnce("/$Utils");
 (function(){
-	var BrowserWindow = require('electron').remote.BrowserWindow;
-	var ipc = require('electron').ipcRenderer;
+    var BrowserWindow = require('electron').remote.BrowserWindow;
+    var ipc = require('electron').ipcRenderer;
     
-	//functions to read functions from string
+    //functions to read functions from string
     var getFunction = function(str){
         var funcContent = str.match(/function\s*\((.*)\)\s*{((\s|.)*)}/);
         if(funcContent){
-        	var args = funcContent[1].split(",");
+            var args = funcContent[1].split(",");
             return Function(...args, funcContent[2]);
         }else
             return function(){

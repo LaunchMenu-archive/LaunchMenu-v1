@@ -21,7 +21,7 @@ window.$FileMenuHandler = (function(){
     };
     
     amh.registerFileMenuType = function(fileMenuClass){
-    	var fileMenu = new fileMenuClass();
+        var fileMenu = new fileMenuClass();
         if(fileMenuList.indexOf(fileMenu)!=-1){
             throw new Error("FileMenu type is already registered");
         }else{

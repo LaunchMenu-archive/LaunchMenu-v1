@@ -3,12 +3,11 @@ loadOnce("/$Utils");
 loadOnce("/$EventHandler");
 window.SelectorItem = class SelectorItem{
     constructor(){
-    	this.__initVars();
-    	
+        this.__initVars();
+        
         //create element out of template
         this.template = $Utils.copy(this.template); //make a local copy of the class' template
         this.template.style += ".selected{"+this.selectedStyle+"}"; //add styling for if the item is selected
-        var UID = Math.floor(Math.random()*Math.pow(10,7)); //add UID to element because there will be many instances of this class
         var n = $Utils.createTemplateElement(this.constructor.name, this.template);
         
         this.element = n.element;
@@ -21,7 +20,7 @@ window.SelectorItem = class SelectorItem{
         this.__eventSetup();
     }
     __initVars(){
-    	this.selectedStyle = ``;
+        this.selectedStyle = ``;
         this.template = {
             html:   ``,
             style:  ``
@@ -29,13 +28,13 @@ window.SelectorItem = class SelectorItem{
     }
     
 
-	//events that can be tapped into and altered
-    __onExecute(){}				//fires when the item is being executed on enter
-    __keyboardEvent(event){ 	//fires on keyboard events if the item is selected
+    //events that can be tapped into and altered
+    __onExecute(){}                //fires when the item is being executed on enter
+    __keyboardEvent(event){     //fires on keyboard events if the item is selected
         //return true if you use the keypress event
     }
-    __htmlInitialisation(){}	//fires when the element is added to the page, and you can initialize the element
-    __eventSetup(){ 			//fires to setup the element event listeners    
+    __initHtml(){}    //fires when the element is added to the page, and you can initialize the element
+    __eventSetup(){             //fires to setup the element event listeners    
         var t = this;
         this.element.click(function(){
             t.execute();
@@ -47,8 +46,8 @@ window.SelectorItem = class SelectorItem{
                 }
         });
     }
-    __onSelect(){}				//fires when the item is selected
-    __onDeselect(){}			//fires when the item is deselected
+    __onSelect(){}                //fires when the item is selected
+    __onDeselect(){}            //fires when the item is deselected
     
     //
     __setSelector(selector){
@@ -68,9 +67,9 @@ window.SelectorItem = class SelectorItem{
             }
             
             if(ret){
-            	this.__onSelect();
+                this.__onSelect();
                 $EventHandler.trigger("select:post", this, {});
-        	}
+            }
             return ret;
         }
         return false;

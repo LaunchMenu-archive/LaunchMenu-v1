@@ -2,42 +2,42 @@
 loadOnce("$PreviewHandler");
 loadOnce("/$Utils");
 loadOnce("/$EventHandler");
-loadOnce("/serverCommunication");
-window.Preview = class Preview{	
-	constructor(){
-		this.__initVars();
-		
+loadOnce("/communication/serverCommunication");
+window.Preview = class Preview{    
+    constructor(){
+        this.__initVars();
+        
         //create element out of template
         var n = $Utils.createTemplateElement(this.constructor.name, this.template);
         this.element = n.element;
         this.element.css({width:"100%",height:"100%",display:"none"});
         this.$ = n.querier;
         this.htmlClassName = n.htmlClassName;
-	}
-	__initVars(){
-		//vars that could be overriden to change behaviour
-		
-		this.extensions = [];
+    }
+    __initVars(){
+        //vars that could be overriden to change behaviour
+        
+        this.extensions = [];
         this.template = {
-        	html: "",
-        	style:""
+            html: "",
+            style:""
         };
         this.showGeneralData = true;
-	}
+    }
 
-	//events that can be tapped into and altered
-	__onLoadFile(file){} 	   							//fires to display a file
-	__htmlInitialisation(){} 							//fires to initialize html, if required
-	__onDatesLoad(created, modified, accessed){}		//fires when the dates are loaded in order to do something with them, if required
-	__onSizeLoad(size, formattedSize){}		   			//fires when the size is loaded in order to do something with them, if required
-	__resetFile(){}		   								//fires to reset the loaded file to cleanup after it, 
-														//mainly meant for when loading the next file can take some time,
-														//and you want to at least remove the old file from showing still
-	
-	//the actual file loading methods
-	loadFile(file){
+    //events that can be tapped into and altered
+    __onLoadFile(file){}                                    //fires to display a file
+    __initHtml(){}                             //fires to initialize html, if required
+    __onDatesLoad(created, modified, accessed){}        //fires when the dates are loaded in order to do something with them, if required
+    __onSizeLoad(size, formattedSize){}                       //fires when the size is loaded in order to do something with them, if required
+    __resetFile(){}                                           //fires to reset the loaded file to cleanup after it, 
+                                                        //mainly meant for when loading the next file can take some time,
+                                                        //and you want to at least remove the old file from showing still
+    
+    //the actual file loading methods
+    loadFile(file){
         if($EventHandler.trigger("openFile:pre", this, {newFile:file, file:this.file})){
-        	this.__resetFile();
+            this.__resetFile();
             this.file = file;
             if(this.showGeneralData){
                 this.__setGeneralData();   
@@ -51,13 +51,13 @@ window.Preview = class Preview{
             
             if(!open)
                 return false;
-	            
+                
             $EventHandler.trigger("openFile:post", this, {file:file});
             return true;
         }
         return false;
     }
-	__setGeneralData(){
+    __setGeneralData(){
         var file = this.file;
         var path = file.getPath();
         var t = this;
@@ -67,7 +67,7 @@ window.Preview = class Preview{
             if(dates){
                 if(t.file == file){
                     $PreviewHandler.setGeneralData(null, dates.dateCreated, dates.dateModified, dates.dateAccessed, null);
-                    t.onDatesLoad(dates.dateCreated, dates.dateModified, dates.dateAccessed);
+                    t.__onDatesLoad(dates.dateCreated, dates.dateModified, dates.dateAccessed);
                 }
             }
         });
@@ -85,16 +85,16 @@ window.Preview = class Preview{
                 }
                 if(t.file == file){
                     $PreviewHandler.setGeneralData(formattedSize, null, null, null, null);
-                    t.onSizeLoad(size, formattedSize);
+                    t.__onSizeLoad(size, formattedSize);
                 }
             }
         });
-	}
-	
-	//visibility methods
+    }
+    
+    //visibility methods
     open(){
-    	if($EventHandler.trigger("open:pre", this, {file:this.file})){
-    		if($PreviewHandler.__setOpenedPreview(this)){
+        if($EventHandler.trigger("open:pre", this, {file:this.file})){
+            if($PreviewHandler.__setOpenedPreview(this)){
                 this.element.show();
                 $EventHandler.trigger("open:post", this, {file:this.file});
                 return true;

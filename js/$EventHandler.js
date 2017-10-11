@@ -76,54 +76,54 @@ window.$EventHandler = (function(){
     //functions for creating a list of all events
     var getTypes = function(obj, first){
         var maxLength = 8;
-    	if(obj instanceof Array){
-    		if(obj.length>maxLength){
-    			return ["Array with many items"];
+        if(obj instanceof Array){
+            if(obj.length>maxLength){
+                return ["Array with many items"];
             }else{
-    			var typeAr = [];
-    			for(var i=0; i<obj.length; i++){
-    				typeAr.push(getTypes(obj[i]));
+                var typeAr = [];
+                for(var i=0; i<obj.length; i++){
+                    typeAr.push(getTypes(obj[i]));
                 }
-    			return [typeAr];
+                return [typeAr];
             }
         }else if(obj instanceof Object && obj!=null){
-    		var keys = Object.keys(obj);
-    		if(obj.constructor.name!="Object" || (keys.length>maxLength && !first)){
+            var keys = Object.keys(obj);
+            if(obj.constructor.name!="Object" || (keys.length>maxLength && !first)){
                 return [obj.constructor.name||"Object"];
             }else{
-    			var typeObj = {};
+                var typeObj = {};
                 for(var i=0; i<keys.length; i++){
                     var key = keys[i];
                     var val = obj[key];
-    				
-    				typeObj[key] = getTypes(val);
+                    
+                    typeObj[key] = getTypes(val);
                 }
-    			return [typeObj];
+                return [typeObj];
             }
         }else{
-    		return [obj==null?"null":typeof obj];
+            return [obj==null?"null":typeof obj];
         }
     };
     var combineTypes = function(typeObj1, typeObj2){
-    	var val2 = typeObj2[0];
-    	outer:{
-    		//check if the value matches a value in the array
-    		for(var i=0; i<typeObj1.length; i++){
+        var val2 = typeObj2[0];
+        outer:{
+            //check if the value matches a value in the array
+            for(var i=0; i<typeObj1.length; i++){
                 var val1 = typeObj1[i];
-    			if(val1 instanceof Array){
-    				if(val2 instanceof Array){
-    					if(val1.length == val2.length){
-    						for(var j=0; j<val1.length; j++){
-    							val1.splice(j,1, combineTypes(val1[j], val2[j]));
+                if(val1 instanceof Array){
+                    if(val2 instanceof Array){
+                        if(val1.length == val2.length){
+                            for(var j=0; j<val1.length; j++){
+                                val1.splice(j,1, combineTypes(val1[j], val2[j]));
                             }
-    						break outer;
+                            break outer;
                         }
                     }
                 }else if(val1 instanceof Object){
-    				if(val2 instanceof Object){
-                    	var keys1 = Object.keys(val1);	
-    					var keys2 = Object.keys(val2);
-    					if(keys1.length == keys2.length){
+                    if(val2 instanceof Object){
+                        var keys1 = Object.keys(val1);    
+                        var keys2 = Object.keys(val2);
+                        if(keys1.length == keys2.length){
                             same:{
                                 for(var j=0; j<keys1.length; j++){
                                     if(keys1[j]!=keys2[j])
@@ -139,72 +139,72 @@ window.$EventHandler = (function(){
                         }
                     }
                 }else{
-    				if(val1 == val2)
-    					break outer;
+                    if(val1 == val2)
+                        break outer;
                 }
             }
     
-    		//add new alternative
-    		typeObj1.push(typeObj2[0]);
+            //add new alternative
+            typeObj1.push(typeObj2[0]);
         }
         return typeObj1;
     };
     var getTypesString = function(types){
-    	var tab = "    ";
-    	var typesOptions = types.sort(function(a,b){
-    	    if(a=="null" && b!="null"){
-    	        return 1
-    	    }else if(a!="null" && b=="null"){    
-    	        return -1
-    	    }else if(typeof a == "string" && typeof b == "string"){
-    	        return a>b;
-    	    }else if(typeof a == "string"){
-    	        return 1;
-    	    }else if(typeof b == "string"){
-    	        return -1;
-    	    }else{
-    	        return 0;
-    	    }
-    	});
-    	var out = "";
-    	for(var i=0; i<typesOptions.length; i++){
-    		types = typesOptions[i];
-    		if(i>0)
-    			out += "||";
-    		if(types instanceof Array){
-    			out += "[\n";
-    			for(var j=0; j<types.length; j++){
-    				var val = getTypesString(types[j]);
-    				out += tab+val.replace(/(\r\n?|\n)/g, "$1"+tab)+",\n";
-                }
-    			out += "]";
-            }else if(types instanceof Object){
-    			var keys = Object.keys(types);
-    			out += "{\n";
-    			
-    			var maxKeyLength = 0;
-    			for(var j=0; j<keys.length; j++){
-    			    if(keys[j].length>maxKeyLength)
-    			        maxKeyLength = keys[j].length;
-    			}
-    			var spacer = " ".repeat(maxKeyLength+1);
-    			
-    			for(var j=0; j<keys.length; j++){
-    				var key = keys[j];
-    				var val = getTypesString(types[key]);
-    				var tabVal = val.replace(/(\r\n?|\n)/g, "$1"+tab);
-    				if(tabVal==val){
-    				    out += tab+key+":"+spacer.substring(key.length)+val+",\n";
-    				}else{
-    				    out += tab+key+":"+tabVal+",\n";
-    				}
-                }
-    			out += "}";
+        var tab = "    ";
+        var typesOptions = types.sort(function(a,b){
+            if(a=="null" && b!="null"){
+                return 1
+            }else if(a!="null" && b=="null"){    
+                return -1
+            }else if(typeof a == "string" && typeof b == "string"){
+                return a>b;
+            }else if(typeof a == "string"){
+                return 1;
+            }else if(typeof b == "string"){
+                return -1;
             }else{
-    			out += types;
+                return 0;
+            }
+        });
+        var out = "";
+        for(var i=0; i<typesOptions.length; i++){
+            types = typesOptions[i];
+            if(i>0)
+                out += "||";
+            if(types instanceof Array){
+                out += "[\n";
+                for(var j=0; j<types.length; j++){
+                    var val = getTypesString(types[j]);
+                    out += tab+val.replace(/(\r\n?|\n)/g, "$1"+tab)+",\n";
+                }
+                out += "]";
+            }else if(types instanceof Object){
+                var keys = Object.keys(types);
+                out += "{\n";
+                
+                var maxKeyLength = 0;
+                for(var j=0; j<keys.length; j++){
+                    if(keys[j].length>maxKeyLength)
+                        maxKeyLength = keys[j].length;
+                }
+                var spacer = " ".repeat(maxKeyLength+1);
+                
+                for(var j=0; j<keys.length; j++){
+                    var key = keys[j];
+                    var val = getTypesString(types[key]);
+                    var tabVal = val.replace(/(\r\n?|\n)/g, "$1"+tab);
+                    if(tabVal==val){
+                        out += tab+key+":"+spacer.substring(key.length)+val+",\n";
+                    }else{
+                        out += tab+key+":"+tabVal+",\n";
+                    }
+                }
+                out += "}";
+            }else{
+                out += types;
             }
         }
-    	return out;
+        return out;
     }
 
     //the main trigger function that is called by classes
@@ -227,32 +227,32 @@ window.$EventHandler = (function(){
                         }   
                 }    
                 if(eh.eventsList!=null){
-                	var classes = [];
+                    var classes = [];
                     var n = caller;
                     while(n.__proto__.constructor.name!="Object"){
-                    	classes.push(n.__proto__.constructor.name);
-                    	n = n.__proto__;
+                        classes.push(n.__proto__.constructor.name);
+                        n = n.__proto__;
                     }
-                	for(var i=0; i<classes.length; i++){
-                		var c = classes[i];
-                		var typeName = c+"."+type;
-                		try{
-                			if(!eh.eventsList[typeName]){
-                				eh.eventsList[typeName] = getTypes(data);
-                			}else{
-                				eh.eventsList[typeName] = combineTypes(eh.eventsList[typeName], getTypes(data));
-                			}
-                		}catch(e){}
-                	}
-                	if(classes.length==0){
-                		try{
-                			if(!eh.eventsList[type]){
-                				eh.eventsList[type] = getTypes(data);
-                			}else{
-                				eh.eventsList[type] = combineTypes(eh.eventsList[type], getTypes(data));
-                			}
-                		}catch(e){}
-                	}
+                    for(var i=0; i<classes.length; i++){
+                        var c = classes[i];
+                        var typeName = c+"."+type;
+                        try{
+                            if(!eh.eventsList[typeName]){
+                                eh.eventsList[typeName] = getTypes(data);
+                            }else{
+                                eh.eventsList[typeName] = combineTypes(eh.eventsList[typeName], getTypes(data));
+                            }
+                        }catch(e){}
+                    }
+                    if(classes.length==0){
+                        try{
+                            if(!eh.eventsList[type]){
+                                eh.eventsList[type] = getTypes(data);
+                            }else{
+                                eh.eventsList[type] = combineTypes(eh.eventsList[type], getTypes(data));
+                            }
+                        }catch(e){}
+                    }
                 }
             }
             
@@ -269,37 +269,37 @@ window.$EventHandler = (function(){
             if(caller.constructor.name != "Object"){ //caller of the event is of a custom class
                 var n = caller;
                 while(n.__proto__.constructor.name!="Object"){ //loop through all super classes
-                	listenerNames.push(n.__proto__.constructor.name+"."+type[0]);
-                	listenerNames.push(n.__proto__.constructor.name+".*"); //also trigger the event for the class.* listener
-                	n = n.__proto__;
+                    listenerNames.push(n.__proto__.constructor.name+"."+type[0]);
+                    listenerNames.push(n.__proto__.constructor.name+".*"); //also trigger the event for the class.* listener
+                    n = n.__proto__;
                 }
                 event.name = caller.constructor.name+"."+type[0]+":"+type[1];
             }else{
-            	listenerNames.push(type[0]);
-            	event.name = type[0]+":"+type[1];
+                listenerNames.push(type[0]);
+                event.name = type[0]+":"+type[1];
             }
             
             //loop through all listeners and fire the events
             listenerIterator:
             for(var n=0; n<listenerNames.length; n++){
-            	var ln = listenerNames[n];
-            	
-            	var l = listeners[ln];
-            	
-            	if(l){
-            		if(type[1]=="pre")  l = l.pre;
-            		else                l = l.post;
-            		
-            		for(var i=0; i<orderTypes.length; i++){
-            			var t = l[orderTypes[i]];
-            			
-            			for(var j=0; j<t.length; j++){
-            				t[j](data, event);
-            				if(event.stopPropagation)
-            					break listenerIterator;
-            			}
-            		}
-            	}
+                var ln = listenerNames[n];
+                
+                var l = listeners[ln];
+                
+                if(l){
+                    if(type[1]=="pre")  l = l.pre;
+                    else                l = l.post;
+                    
+                    for(var i=0; i<orderTypes.length; i++){
+                        var t = l[orderTypes[i]];
+                        
+                        for(var j=0; j<t.length; j++){
+                            t[j](data, event);
+                            if(event.stopPropagation)
+                                break listenerIterator;
+                        }
+                    }
+                }
             }
             
             return !event.canceled;

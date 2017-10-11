@@ -148,7 +148,7 @@ resizeGui = function(dw,dh,multiplier,fps,seconds){
 }
 
 //http://stackoverflow.com/questions/32780726/how-to-access-dom-elements-in-electron
-var ipc = require('electron').ipcMain;
+var ipc = require('electron').ipc$Main;
 ipc.on('invokeAction', function(event, data){
     var result = (function(data){
 		switch(data) {

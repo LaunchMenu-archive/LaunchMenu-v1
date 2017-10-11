@@ -1,6 +1,6 @@
 /*global variables Class, FileMenu, $FileMenuHandler, $Main, $Searchbar*/
 (function(){
-	var defActions = [
+    var defActions = [
         null,
         {
             text: "Copy",
@@ -16,7 +16,8 @@
             menuHidden: true,
             func: function(){
                 console.log(this, "cut");
-                $Main.resetCutFile();
+                //TODO make $Main.resetCutFile(); also make the old file fully opaque, if cut in the same folder 
+                $Main.resetCutFile(); 
                 this.setCut(true);
                 return true;
             }
@@ -30,15 +31,15 @@
             }
         }
     ];
-	
-	loadOnce("FileMenu");
-	window.FileMenuStandard = class FileMenuStandard extends FileMenu{
-	    constructor(actions){
-	        if(actions && actions instanceof Array){
-	            super(actions.concat(defActions));
-	        }else{
-	            super(defActions);
-	        }
-	    }   
-	}
+    
+    loadOnce("FileMenu");
+    window.FileMenuStandard = class FileMenuStandard extends FileMenu{
+        constructor(actions){
+            if(actions && actions instanceof Array){
+                super(actions.concat(defActions));
+            }else{
+                super(defActions);
+            }
+        }   
+    }
 })();

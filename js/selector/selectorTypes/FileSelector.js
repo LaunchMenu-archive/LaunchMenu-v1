@@ -3,62 +3,85 @@ loadOnce("../LargeSetSelector")
 loadOnce("/$Querier");
 loadOnce("/$EventHandler");
 loadOnce("/$Utils");
-window.FileSelector = class FileSelector extends LargeSetSelector{
-	constructor(){
-		super();
 
+//set up keyboard shortcuts
+$Settings.navigation.gotoParent = {
+    settingSpacing: true,
+    settingDisplayName: "Go to parent",
+    settingIndex: 6,
+    defaultValue: new Shortcut("shift+enter")
+};
+$Settings.navigation.gotoPreviousView = {
+    settingDisplayName: "Go to previous view",
+    settingIndex: 7,
+    defaultValue: new Shortcut("ctrl+enter")
+};
+
+window.FileSelector = class FileSelector extends LargeSetSelector{
+    constructor(){
+        super();
         this.search();
-	}
+    }
     __initVars(){
-    	super.__initVars();
-    	
+        super.__initVars();
+        
         this.directory = $Tree;  
         this.searchTerm = "";
         this.history = [];
         this.keyboardEventBuffer = [];
         this.template = { //template for the main structure of the selector
             html:  `<div class='bg0 wrapper'>
-		                <div class=header>_HEADER_</div>
-		                <div class=list>_LIST_</div>
-		                <div class=footer>_FOOTER_</div>
-		                <div class=messageOuter style=display:none>
-		                    <div class=message>
-								<span class='noFileMessage' style=display:none>
-									No files could be found Mother Fucker.
-								</span>
-								<span class='regexErrorMessage' style=display:none>
-									No files could be found Mother Fucker.
-									<span class='fontError regexError'>
-										
-									</span>
-								</span>
-		                    </div>
-		                </div>
-		            </div>`,
-		    style:` .wrapper,
-		            .list{
-		                width: 100%;
-		                height:100%;
-		            }
-		            .wrapper{
-		                float: right;
-		                position: relative;
-		            }
-		            .messageOuter{
-		                position: absolute;
-		                top: 0%;
-		                height: 100%;
-		                width: 100%;
-		            }
-		            .message{
-		                padding: 10px;
-		                text-align: center;
-		                position: relative;
-		                top: 50%;
-		                left: 50%;
-		                transform: translate(-50%, -50%);
-		            }`
-    	}
+                        <div class=header>_HEADER_</div>
+                        <div class=list>
+                            <c-scroll dontUpdateOnResize>
+                                _LIST_
+                            </c-scroll>
+                        </div>
+                        <div class=footer>_FOOTER_</div>
+                        <div class=messageOuter style=display:none>
+                            <div class=message>
+                                <span class='noFileMessage' style=display:none>
+                                    No files could be found Mother Fucker.
+                                </span>
+                                <span class='regexErrorMessage' style=display:none>
+                                    No files could be found Mother Fucker.
+                                    <div class='errorFont0 regexError'>
+                                        
+                                    </div>
+                                </span>
+                            </div>
+                        </div>
+                    </div>`,
+            style:` .wrapper,
+                    .list{
+                        width: 100%;
+                        height:100%;
+                    }
+                    .wrapper{
+                        float: right;
+                        position: relative;
+                    }
+                    .messageOuter{
+                        position: absolute;
+                        top: 0%;
+                        height: 100%;
+                        width: 100%;
+                    }
+                    .message{
+                        padding: 10px;
+                        text-align: center;
+                        position: relative;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                    }
+                    c-scroll{
+                        width:100%;
+                        height:100%;
+                    }`
+        }
+        this.gotoParentKey = $Settings.navigation.gotoParent;
+        this.gotoPreviousViewKey = $Settings.navigation.gotoPreviousView;
     }
  
     //
@@ -73,7 +96,7 @@ window.FileSelector = class FileSelector extends LargeSetSelector{
         this.directory = directory;
         if(directory.parent){
             this.$(".folder").show();
-            this.$(".fileName").html(directory.getFullName());
+            this.$(".fileName").html(directory.getDisplayName());
             this.$(".filePath").html(directory.getPath().replace(new RegExp($Utils.regexEscape($Tree.seperator),"g"), $Tree.seperator+"<wbr>"));
         }else{
             this.$(".folder").hide();
@@ -102,11 +125,21 @@ window.FileSelector = class FileSelector extends LargeSetSelector{
                 this.setDirectory(h.directory, true);
                 var t = this;
                 var loadFunc = function(){
-                    var list = t.$(".list");
-                    list[0].setVerticalOffset((h.index-1)*t.selectorItemHeight-list.height()/2);
-                    var element = t.$("#"+h.index)[0];
-                    if(element)
-                        element.selectorItem.select();
+                    var scroll = t.$("c-scroll");
+                    var maxScroll = scroll[0].getMaxVerticalOffset();
+                    var element;
+                    //scroll until the element is found
+                    for(var o=0; o<maxScroll; o+=scroll.height()){
+                        scroll[0].setVerticalOffset(h.index*t.selectorItemHeight);                        
+                        element = t.$("#"+h.index)[0];
+                        if(element)
+                            break;
+                    }
+                    //select element if found
+                    if(element){
+                        t.selectItem(element.selectorItem);
+                        t.focusOnSelectedItem(0);
+                    }
                 };
                 if(h.search && h.search.length>0){
                     this.search(h.search, loadFunc);  
@@ -152,14 +185,8 @@ window.FileSelector = class FileSelector extends LargeSetSelector{
                 this.querying = true;
                 var query = regexSearch?$Querier.regexQueryAsync:$Querier.queryAsync;
                 if(this.cancelSearch) this.cancelSearch();
-                var cancelSearch = query(text, this.directory, function(matches){
-                    console.time("lag time"+random);
-                    
-                    console.time("sort time"+random);
-                    $Querier.sortMatches(matches);
-                    console.log(" ");
-                    console.timeEnd("sort time"+random);
-                    
+                var cancelSearch;
+                cancelSearch = query(text, this.directory, function(matches){                    
                     if(t.searchTerm.length>0){ //only load the data if the last search was not empty
                         if(!(matches instanceof Array) || matches.length==0){
                             t.setDataSet([]);    
@@ -173,6 +200,13 @@ window.FileSelector = class FileSelector extends LargeSetSelector{
                                 t.$(".regexErrorMessage").hide();
                             }
                         }else{
+                            console.time("lag time"+random);
+                            
+                            console.time("sort time"+random);
+                            $Querier.sortMatches(matches);
+                            console.log(" ");
+                            console.timeEnd("sort time"+random);
+                            
                             t.$(".messageOuter").hide();
                             t.query = !regexSearch?text:null;
                             t.setDataSet(matches);
@@ -184,13 +218,15 @@ window.FileSelector = class FileSelector extends LargeSetSelector{
                     
                     $EventHandler.trigger("foundMatches:post", t, {text:text, matches:matches});
                     
-                    if(t.cancelSearch == cancelSearch){
+                    if(t.cancelSearch == cancelSearch || cancelSearch==null){ //cancelSearch won't be set, if the callback happens synchronously when it was fast enough
                         t.querying = false;
                         if(t.keyboardEventBuffer.length>0)
                             t.__executeKeyboardEventBuffer();
                     }
                 });
-                this.cancelSearch = cancelSearch;
+                if(!(cancelSearch instanceof Error)){
+                    this.cancelSearch = cancelSearch;
+                }
             }
             
             $EventHandler.trigger("search:post", this, {text:text, onLoadEvent:loadEvent});
@@ -201,7 +237,7 @@ window.FileSelector = class FileSelector extends LargeSetSelector{
     
     //data loading
     setDataSet(list){
-    	//inser the requirements into $Querier for match highlighting
+        //inser the requirements into $Querier for match highlighting
         if(this.query)
             $Querier.prepare($Querier.extractRequirements(this.query));
         super.setDataSet(list);
@@ -212,31 +248,32 @@ window.FileSelector = class FileSelector extends LargeSetSelector{
         super.__loadElements();
     }
     __createItem(file){ 
-    	return new FileSelectorItem(file);
+        return new FileSelectorItem(file);
     }
     
     //override some Selector methods
-    __onHide(){} 	//don't close on hide
+    __onHide(){}     //don't close on hide
     __onClose(){}   //don't destroy when closed
     __onOpen(){
-    	//show the searchterm again
+        //show the searchterm again
         $Searchbar.setText(this.searchTerm, true);
     }
     
     //keyboard events
     __keyboardEvent(event){
         if(!this.querying){
-            if(event.key=="Enter"){
-                if(event.shiftKey){
-                    return this.gotoPrevDirectory();
-                }else if(event.ctrlKey){
-                    return this.gotoParentDirectory();
-                }
-            }
+            
+            if(this.gotoParentKey.test(event))
+                return this.gotoPrevDirectory();
+            else if(this.gotoPreviousViewKey.test(event))
+                return this.gotoParentDirectory();
+            
             return super.__keyboardEvent(event);
         }else{
             var k = event.key;
-            var ret = k=="ArrowUp"||k=="ArrowDown"||k=="Enter";
+            var ret = this.selectUpKey.value.test(event) ||
+                        this.selectDownKey.value.test(event) ||
+                        this.executeKey.value.test(event);
             
             console.log(this.searchTerm, event.key);
             this.keyboardEventBuffer.push(event);
@@ -265,47 +302,56 @@ window.FileSelector = class FileSelector extends LargeSetSelector{
 }
 
 loadOnce("../SelectorItem");
+//set up keyboard shortcuts
+$Settings.navigation.openFileMenu = {
+    settingIndex: 8,
+    settingDisplayName: "Open file menu",
+    defaultValue: new Shortcut("tab")
+};
+
 window.FileSelectorItem = class FileSelectorItem extends SelectorItem{
     constructor(match){
         super();
-        var name;
-        if(match.file){
-            this.file = match.file;
-            this.match = match.match;
-            name = match.match.type.highlight(this.file.getFullName(), this.htmlClassName+" backgroundHighlight0");
-        }else{
-            this.file = match;
-            name = this.file.getFullName();
+        if(match){            
+            var name;
+            if(match.file){
+                this.file = match.file;
+                this.match = match.match;
+                name = match.match.type.highlight(this.file.getDisplayName(), this.htmlClassName+" highlightBackground0");
+            }else{
+                this.file = match;
+                name = this.file.getDisplayName();
+            }
+            
+            if((this.file) instanceof Directory){
+                this.$("img").attr("src", "../resources/images/icons/folder icon.png");
+            }
+            if(this.file.cut)
+                this.setCut(true, true);
+            
+            this.$(".fileName").html(name);
         }
-        
-        if((this.file) instanceof Directory){
-            this.$("img").attr("src", "../resources/images/icons/folder icon.png");
-        }
-        if(this.file.cut)
-            this.setCut(true, true);
-        
-        this.$(".fileName").html(name);
     }
     __initVars(){
-    	super.__initVars();
-    	
-    	this.template = {
+        super.__initVars();
+        
+        this.template = {
             html:   `<div class='fileIcon'>
-    					<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT48NWIxlFg8U3dtHYji6Y_FKp2WeeNnptzHbQw0ljkeRcHaY0Gf18VBhXFpA">
-    				</div>
-    				<div class='fileData'>
-    					<div class='f0 fileName'></div>
-    					<div class='f6 filePath'></div>
-    				</div>
-    				<br style=clear:both>`,
-    		style:  `.root{
+                        <img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT48NWIxlFg8U3dtHYji6Y_FKp2WeeNnptzHbQw0ljkeRcHaY0Gf18VBhXFpA">
+                    </div>
+                    <div class='fileData'>
+                        <div class='f0 fileName'></div>
+                        <div class='f6 filePath'></div>
+                    </div>
+                    <br style=clear:both>`,
+            style:  `.root{
                         min-height: 40px;
                         border-bottom-width: 1px;
-    		        }
-    		        .cut{
-    		            opacity: 0.5;
-    		        }
-    		        .fileIcon{
+                    }
+                    .cut{
+                        opacity: 0.5;
+                    }
+                    .fileIcon{
                         box-sizing: border-box;
                         float: left;
                         width: 40px;
@@ -335,6 +381,7 @@ window.FileSelectorItem = class FileSelectorItem extends SelectorItem{
                         text-align: right;
                     }`
         }    
+        this.openFileMenuKey = $Settings.navigation.openFileMenu;
     }
 
     //event setup
@@ -402,7 +449,7 @@ window.FileSelectorItem = class FileSelectorItem extends SelectorItem{
         return false;
     }
     __keyboardEvent(event){
-        if(event.key=="Tab"){
+        if(this.openFileMenuKey.test(event)){
            this.openFileMenu();
            return true;
         }

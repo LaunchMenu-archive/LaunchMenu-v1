@@ -2,7 +2,7 @@
 loadOnce("/$Utils");
 loadOnce("/$Tree");
 loadOnce("$Quicksort");
-window.$Querier = (function(){	
+window.$Querier = (function(){    
     var $Querier = {};
     
     $Querier.acronymMatch = {
@@ -650,11 +650,11 @@ window.$Querier = (function(){
             
         var matches = [];
         return $Tree.eachAsync(function(file){
-                var text = $Tree.getFullName(file);
+                var text = $Tree.getDisplayName(file);
                 var match = $Querier.test(text, minScore, file, regexList);
                 if(match!==null) matches.push({match:match, file:file});
             }, function(dir){
-                var text = $Tree.getFullName(dir);
+                var text = $Tree.getDisplayName(dir);
                 var match = $Querier.test(text, minScore, dir, regexList);
                 if(match!==null) matches.push({match:match, file:dir});
             }, directory, function(){
@@ -669,16 +669,17 @@ window.$Querier = (function(){
         try{
             query = new RegExp(m[1], m[2]);
         }catch(e){
+            onComplete(e);
             return e;
         }
         
         var matches = [];
         return $Tree.eachAsync(function(file){
-                var text = $Tree.getFullName(file);
+                var text = $Tree.getDisplayName(file);
                 var match = $Querier.regexTest(text, query, file);
                 if(match!==null) matches.push({match:match, file:file});
             }, function(dir){
-                var text = $Tree.getFullName(dir);
+                var text = $Tree.getDisplayName(dir);
                 var match = $Querier.regexTest(text, query, dir);
                 if(match!==null) matches.push({match:match, file:dir});
             }, directory, function(){

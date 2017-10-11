@@ -1,0 +1,10 @@
+-make a system to find good fonts to use
+-research css variables for colors
+-add some way of changing styling of shadows
+-change how setting/categoryAbove works, make element become child of elementAbove, so settings referencing the same settingAbove, can still be subsorted.
+
+-make it so you can also browse folders not part of the root
+-make it so the folder you are in is clearly visible
+//-make the selectors use the new scrollbar
+-fix the scrollbar in the file menu
+-add the roots to the settings

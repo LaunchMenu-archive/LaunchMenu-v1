@@ -15,15 +15,15 @@ window.$Searchbar = (function(){
     
     var valueListeners = [];
     var eventListeners = [];
-    var lastInput = null;
+//    var lastInput = null;
     // init:
     {
         var gui ={
-            html:  `<div class="f6 icon icon-search"></div>
-    				<div class='searchInput'>
-    					<div class='f6 placeHolder'>Search...</div>
-    					<input type=field class='f0 input'>
-    				</div>`,
+            html:  `<div class="f6 icon icoMoon icon-search"></div>
+                    <div class='searchInput'>
+                        <div class='f6 placeHolder'>Search...</div>
+                        <input type=field class='f0 input'>
+                    </div>`,
             style: `.icon:before{
                         line-height: 60px;
                     }
@@ -68,6 +68,8 @@ window.$Searchbar = (function(){
         
         //input listener
         sb.$(".input").keydown(function(e){
+            if(e.key.toLowerCase()=="tab") e.preventDefault();
+            
             //sent event to event listeners
             for(var i=0; i<eventListeners.length; i++){
                 var listener = eventListeners[i];
@@ -84,17 +86,26 @@ window.$Searchbar = (function(){
                 }else{
                     sb.$(".placeHolder").show();
                 }
-                if(queryText!=lastInput){
-                    //sent new value to value listeners
-                    setTimeout(function(){ //timeout to let the placeholder visibility change process first
-                        for(var i=0; i<valueListeners.length; i++){
-                            var listener = valueListeners[i];
-                            listener(queryText);
-                        }
-                        lastInput = queryText;
-                    },1);
-                }
+//                if(queryText!=lastInput){
+//                    //sent new value to value listeners
+//                    setTimeout(function(){ //timeout to let the placeholder visibility change process first
+//                        for(var i=0; i<valueListeners.length; i++){
+//                            var listener = valueListeners[i];
+//                            listener(queryText);
+//                        }
+//                        lastInput = queryText;
+//                    },1);
+//                }
              });
+        });
+        //send changes to listeners, without triggering on keypresses like shift
+        sb.$(".input").bind("input", function(){
+            var queryText = sb.$(".input").val();
+            for(var i=0; i<valueListeners.length; i++){
+                var listener = valueListeners[i];
+                listener(queryText);
+            }
+            lastInput = queryText;
         });
         
         //select searchbar when something has been clicked, unless it is an input
@@ -123,7 +134,7 @@ window.$Searchbar = (function(){
     };
     sb.setText = function(value, dontCompute){
         if(value!=null && value.length>0){
-            lastInput = value;
+//            lastInput = value;
             this.$(".input").val(value);
             this.$(".placeholder").hide();
         }else{

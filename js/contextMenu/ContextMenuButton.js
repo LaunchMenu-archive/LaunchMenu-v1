@@ -1,6 +1,7 @@
 /*global variables Class, ContextMenu, $Utils, $ContextMenuHandler, $EventHandler*/
 loadOnce("/$Utils");
 loadOnce("/$EventHandler");
+loadOnce("/Shortcut");
 window.ContextMenuButton = class ContextMenuButton{
     constructor(icon, text, shortcut, func, children, dontCloseAfter){//you can only provide a func or children, the other must be null
         if(typeof icon == "object"){
@@ -26,7 +27,7 @@ window.ContextMenuButton = class ContextMenuButton{
             this.func = func;
             this.dontCloseAfter = dontCloseAfter;
             if(shortcut){
-                this.shortcut = shortcut.toLowerCase();
+                this.shortcut = new Shortcut(shortcut.toLowerCase());
                 this.$(".shortcut").text(shortcut.replace(/(\w)(\w*)/g, function(match, g1, g2){
                     return g1.toUpperCase()+g2;
                 }));
@@ -41,8 +42,9 @@ window.ContextMenuButton = class ContextMenuButton{
         this.__eventSetup();
     }
     __initVars(){
-    	this.template = {
+        this.template = {
             html:   `<div class=icon>
+                        <!--empty image by default-->
                         <img src=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAA1JREFUGFdj+P//PwMACPwC/ohfBuAAAAAASUVORK5CYII=>
                     </div>
                     <div class='f0 text'></div>
@@ -94,21 +96,21 @@ window.ContextMenuButton = class ContextMenuButton{
         });
     }
     //events that can be tapped into and altered
-    __onSelect(){}				//fires when the button is selected	
-    __onDeselect(){}			//fires when the button is deselected
-    __onExecute(){}				//fires when the button is being executed, return true to disable the default execute behaviour
-    __keyboardEvent(event){		//fires on keyboard events
-    	if(this.subMenu)
-    		return this.subMenu.__keyboardEvent(event);
-    	return false;
+    __onSelect(){}                //fires when the button is selected    
+    __onDeselect(){}            //fires when the button is deselected
+    __onExecute(){}                //fires when the button is being executed, return true to disable the default execute behaviour
+    __keyboardEvent(event){        //fires on keyboard events
+        if(this.subMenu)
+            return this.subMenu.__keyboardEvent(event);
+        return false;
     }
-    __checkShortcuts(shortcut){ //fires on keyboard events, but passes a shortcut string
-    	if(this.shortcut==shortcut){
-    		this.execute();
-    		return true;
-    	}
-    	if(this.subMenu)
-    		return this.subMenu.__checkShortcuts(shortcut);
+    __checkShortcuts(event){ //fires on keyboard events, but passes a shortcut string
+        if(this.shortcut && this.shortcut.test(event)){
+            this.execute();
+            return true;
+        }
+        if(this.subMenu)
+            return this.subMenu.__checkShortcuts(event);
     }
     
     //
@@ -117,6 +119,49 @@ window.ContextMenuButton = class ContextMenuButton{
         if(this.subMenu)
             this.subMenu.parentMenu = contextMenu;
         $EventHandler.trigger("setContextMenu:post", this, {contextMenu: contextMenu});
+    }
+    
+    //visibility methods
+    hide(){
+        this.invisible = true;
+        this.element.hide();
+        
+        //hide dividers if needed
+        var f = function(){
+            return $(this).css("display")!="none"
+        };
+        var prev = this.element.prevAll().filter(f).first(); //previous visible element
+        var next = this.element.nextAll().filter(f).first(); //next visible element
+        if(prev.length==0){
+            if(next.is("._ContextMenuDivider_")){
+                next.hide();
+            }
+        }else if(prev.is("._ContextMenuDivider_")){
+            if(next.length==0 || next.is("._ContextMenuDivider_")){
+                prev.hide();
+            }
+        }
+    }
+    show(){
+        this.invisible = false;
+        this.element.show();
+
+        //show dividers if needed
+        var f = function(){
+            return $(this).css("display")!="none"
+        };
+        var prev = this.element.prev();
+        var next = this.element.next();
+        if(next.is("._ContextMenuDivider_")){
+            var nNext = next.nextAll().filter(f).first();  //next visible element
+            if(nNext.length>0 && !nNext.is("._ContextMenuDivider_"))
+                next.show();
+        }
+        if(prev.is("._ContextMenuDivider_")){
+            var pPrev = prev.prevAll().filter(f).first();  //previous visible element
+            if(pPrev.length>0 && !pPrev.is("._ContextMenuDivider_"))
+                prev.show();
+        }
     }
     
     //submenu visibitly methods
@@ -134,8 +179,8 @@ window.ContextMenuButton = class ContextMenuButton{
         return false;
     }
     closeSubMenu(){
-    	if(this.subMenu){
-    		if($EventHandler.trigger("closeSubMenu:pre", this, {})){
+        if(this.subMenu){
+            if($EventHandler.trigger("closeSubMenu:pre", this, {})){
                 if(!this.subMenu.close())
                     return false;
                     
@@ -160,7 +205,7 @@ window.ContextMenuButton = class ContextMenuButton{
             }
             
             if(ret){
-            	this.__onSelect();
+                this.__onSelect();
                 $EventHandler.trigger("select:post", this, {});
             }
             return ret;
@@ -191,19 +236,19 @@ window.ContextMenuButton = class ContextMenuButton{
     }
     execute(){
         if($EventHandler.trigger("execute:pre", this, {})){
-        	if(!this.__onExecute()){
-        		if(this.subMenu){
-        			this.subMenu.executeButton();
-        		}else if(this.func){
-        			this.func.call(this.executeObj, this.executeObj);
-        			if(!this.dontCloseAfter){
-        				$ContextMenuHandler.__closeContextMenu();
-        			}
-        		}
-        		
-        		$EventHandler.trigger("execute:post", this, {});
-        		return true;        		
-        	}
+            if(!this.__onExecute()){
+                if(this.subMenu){
+                    this.subMenu.executeButton();
+                }else if(this.func){
+                    this.func.call(this.executeObj, this.executeObj);
+                    if(!this.dontCloseAfter){
+                        $ContextMenuHandler.__closeContextMenu();
+                    }
+                }
+                
+                $EventHandler.trigger("execute:post", this, {});
+                return true;                
+            }
         }
         return false;
     }

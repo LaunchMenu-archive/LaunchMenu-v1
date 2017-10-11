@@ -66,7 +66,7 @@ function sortMatches(matches){
 }
 
 
-function searchTree(tree,query){
+function searchTree($Tree,query){
     var rQuery = "";
     var retArray = [];
     
@@ -80,8 +80,8 @@ function searchTree(tree,query){
     //Prepare regex...
     var regex = new RegExp(rQuery,"i");
     
-    //Loop through files in tree
-    tree.each(function(file){
+    //Loop through files in $Tree
+    $Tree.each(function(file){
         var name = file.n;
         var match;
         if((match = regex.exec(name)) != null){

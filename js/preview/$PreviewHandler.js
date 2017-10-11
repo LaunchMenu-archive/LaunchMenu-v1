@@ -46,14 +46,14 @@ window.$PreviewHandler = (function(){
     };
     
     ph.registerPreviewType = function(previewClass){
-    	var preview = new previewClass();
+        var preview = new previewClass();
         if(previewList.indexOf(preview)!=-1){
             throw new Error("Preview type is already registered");
         }else{
             previewList.push(preview);
             var n = previewByExtension;
             for(var i=0; i<preview.extensions.length; i++){
-                var ext = preview.extensions[i];
+                var ext = preview.extensions[i].toLowerCase();
                 
                 if(n[ext]){
                     if(!(n[ext] instanceof Array)) n[ext] = [n[ext]];
@@ -65,7 +65,7 @@ window.$PreviewHandler = (function(){
             
             $Utils.lm(".specificPreviewData").append(preview.element);
             preview.element.show();
-            preview.__htmlInitialisation();
+            preview.__initHtml();
             preview.element.hide();
             
             if(preview.default)
@@ -77,17 +77,15 @@ window.$PreviewHandler = (function(){
     
     ph.__setOpenedPreview = function(preview){
         if(openedPreview!=preview){
-            if(openedPreview){
-                if(!openedPreview.close())
-                    return false;
-            }
+            if(openedPreview && !openedPreview.close())
+                return false;
             openedPreview = preview;
             return true;
         }
         return false;
     };
     ph.getPreviewFromExtension = function(extension){
-        var n = previewByExtension[extension];
+        var n = previewByExtension[extension.toLowerCase()];
         if(!n) return defaultPreview;
         return (n instanceof Array)?n[0]:n;
     };

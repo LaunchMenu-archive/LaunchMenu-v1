@@ -15,7 +15,7 @@ window.FileMenu = class FileMenu extends Menu{
         shortcut: "ctrl+s"              (optional,  a shortcut for the action)
     }
     you can not both define children and func*/
-	
+    
     constructor(actions){
         if(actions){
             super(actions);
@@ -25,18 +25,18 @@ window.FileMenu = class FileMenu extends Menu{
         }
     }    
     __initVars(){
-    	super.__initVars();
+        super.__initVars();
 
-    	//vars that could be overriden to change behaviour
-    	this.headerTemplate = {
+        //vars that could be overriden to change behaviour
+        this.headerTemplate = {
             html:`  <div class='bd3 bg1 actionHeader'>
                         <div class=actionIcon>
                             <img class=actionImage src='../resources/images/icons/actions icon.png'>
                         </div>
                         <div class='actionTitle'>
-        					<div class='f0 actionTitleInner'>Actions</div>
-        				</div>
-        				<br style=clear:both>
+                            <div class='f0 actionTitleInner'>Actions</div>
+                        </div>
+                        <br style=clear:both>
                     </div>`,
             style:  `.actionHeader{
                         height:60px;
@@ -68,15 +68,15 @@ window.FileMenu = class FileMenu extends Menu{
                         width: 100%;
                     }`
         }
-    	this.closeable = true;  //menu can be closed by using the shortcut
-    	this.extensions = [];	//the file extensions this menu is associated with
+        this.closeable = true;  //menu can be closed by using the shortcut
+        this.extensions = [];    //the file extensions this menu is associated with
     }
     
     //events that can be tapped into
-    __onExecuteFile(file){} 			//do something when a file of your extension types gets executed
+    __onExecuteFile(file){}             //do something when a file of your extension types gets executed
 
     //open file menus
-    openFileItem(fileItem){   		 	  //open the menu of this file
+    openFileItem(fileItem){                  //open the menu of this file
         if($EventHandler.trigger("openFileItem:pre", this, {fileItem: fileItem})){
             this.setExecuteObject(fileItem);
             if(!this.open())
@@ -87,20 +87,20 @@ window.FileMenu = class FileMenu extends Menu{
         }
         return false;
     }
-    initContextMenu(fileItem){			  //initialise context menu without opening it in order to use its shorcuts
-    	if(this.contextMenu){
-    		if($EventHandler.trigger("initContextMenu:pre", this, {
+    initContextMenu(fileItem){              //initialise context menu without opening it in order to use its shorcuts
+        if(this.contextMenu){
+            if($EventHandler.trigger("initContextMenu:pre", this, {
                 fileItem: fileItem
             })){
-    			this.contextMenu.setExecuteObject(fileItem);
-    			$ContextMenuHandler.setSelectedContextMenu(this.contextMenu)
+                this.contextMenu.setExecuteObject(fileItem);
+                $ContextMenuHandler.setSelectedContextMenu(this.contextMenu)
                     
                 if($EventHandler.trigger("initContextMenu:post", this, {
                     fileItem: fileItem
                 })); 
                 return true;
             }
-    	}
+        }
     }
     openContextMenu(fileItem, offset){    //open a context menu of the file(when rightclicking)
         if(this.contextMenu){

@@ -13,6 +13,7 @@ const {Menu,Tray} = require('electron')
 //Module for enabling global/local shortcuts
 const {globalShortcut} = require('electron')
 
+
 //npm install --save electron-localshortcut
 //const localShortcut = require('electron-localshortcut');
 
@@ -61,6 +62,7 @@ function createWindow () {
 	windows.push(mainWindow);
 }
 
+
 //Determine if application is already running
 //If it is, then restore the current instance and quit this one.
 //Else do nothing.
@@ -75,7 +77,6 @@ var appAlreadyRunning = app.makeSingleInstance(function(commandLine, workingDire
 
 if (appAlreadyRunning) {
   app.quit();
-  return;
 }
 
 // This method will be called when Electron has finished
@@ -125,9 +126,10 @@ app.on('ready', function(){
 	])
 	tray.setContextMenu(contextMenu);
 
-	globalShortcut.register('control+f12', function(){
-		mainWindow.webContents.openDevTools();
-	})
+//	globalShortcut.register('control+f12', function(){
+//		mainWindow.webContents.openDevTools();
+//	})
+	mainWindow.webContents.openDevTools();
 })
 
 //This may not be required for SearchMenu
@@ -143,15 +145,127 @@ app.on('activate', function () {
 //http://stackoverflow.com/questions/32780726/how-to-access-dom-elements-in-electron
 var ipc = require('electron').ipcMain;
 
- 
-var listeners = {};
-ipc.on("invokeSettingsChange", function(event,data){
-	var n = listeners[data.name];
-	if(n) n.sender.send(n.uid,data.setting);
+//script loading
+var fs = require('fs');
+ipc.on("loadScripts", function(event, data){
+	var root = data.rootFromNode;
+	var inpPath = data.inpPath;
+	var fPath = data.path;
+	var loadSubChildren = data.loadSubChildren;
+	var dirName = fPath.split("/").pop();
+	
+	var found = false;
+	if(fs.existsSync(root+fPath)){
+		fPath = root+fPath
+		found = true;
+	}else if(dirName.split(".")[0]==inpPath.split(".")[0]){
+		var search = function(dir){
+			var files = fs.readdirSync(dir);
+			var match;
+			files.forEach(function(file){
+				if(!match){
+					var p = path.join(dir, file);
+					if(fs.statSync(p).isDirectory()){
+						if(file.split(".")[0]==inpPath.split(".")[0]){
+							match = p;
+						}else{							
+							match = search(p);
+						}
+					}				
+				}
+			})
+			return match;
+		}
+		var match = search(root);
+		if(match){
+			fPath = match;
+			found = true;
+		}
+	}
+	
+	if(found){
+		var outpFiles = [];
+		var getFiles = function(dir){
+			var files = fs.readdirSync(fPath);
+			files.forEach(function(file){
+				var p = path.join(dir, file);
+				if(fs.statSync(p).isDirectory()){
+					if(loadSubChildren)
+						getFiles(p);
+				}else{
+					outpFiles.push({
+						absolutePath: p.replace(/\\/g,"/"),
+						code: fs.readFileSync(p)+`\n//# sourceURL=${file}` 
+					});
+				}
+			})
+		}
+		getFiles(fPath);
+		event.returnValue = outpFiles;
+	}else{
+		event.returnValue = {
+			error: true,
+			message: "Directory could not be found" 
+		}
+	}
 });
-ipc.on("addSettingsListeners", function(event,data){
-	listeners[data.name] = {uid:data.uid, sender:event.sender};
+ipc.on("loadScript", function(event, data){
+	var root = data.rootFromNode;
+	var inpPath = data.inpPath;
+	var fPath = data.path;
+	var fileName = fPath.split("/").pop();
+	var found = false;
+	if(fs.existsSync(root+fPath)){
+		fPath = root+fPath
+		found = true;
+	}else if(fileName.split(".")[0]==inpPath.split(".")[0]){
+		var search = function(dir){
+			var files = fs.readdirSync(dir);
+			var match;
+			files.forEach(function(file){
+				if(!match){
+					var p = path.join(dir, file);
+					if(fs.statSync(p).isDirectory()){
+						match = search(p);
+					}else{
+						if(file.split(".")[0]==inpPath.split(".")[0]){
+							match = p;
+						}
+					}					
+				}
+			})
+			return match;
+		}
+		var match = search(root);
+		if(match){
+			fPath = match;
+			found = true;
+		}
+	}
+	
+	if(found){
+		event.returnValue = {
+			absolutePath: fPath.replace(/\\/g,"/"),
+			code: fs.readFileSync(fPath)+`\n//# sourceURL=${fileName}` 
+		};
+	}else{
+		event.returnValue = {
+			error: true,
+			message: "File could not be found" 
+		}
+	}
 });
+
+
+
+//var listeners = {};
+//ipc.on("invokeSettingsChange", function(event,data){
+//	var n = listeners[data.name];
+//	if(n) n.sender.send(n.uid,data.setting);
+//});
+//ipc.on("addSettingsListeners", function(event,data){
+//	listeners[data.name] = {uid:data.uid, sender:event.sender};
+//});
 
 
 /*

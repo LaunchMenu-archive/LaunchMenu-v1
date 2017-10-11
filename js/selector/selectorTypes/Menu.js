@@ -2,8 +2,22 @@
 loadOnce("../Selector");
 loadOnce("/$Utils");
 loadOnce("/$EventHandler");
+
+//set up keyboard shortcuts
+$Settings.navigation.leaveMenu = {
+    settingDisplayName: "Close menu",
+    settingIndex: 5,
+    defaultValue: new Shortcut("shift+tab")
+};
+$Settings.navigation.enterMenu = {
+    settingSpacing: true,
+    settingDisplayName: "Open menu",
+    settingIndex: 4,
+    defaultValue: new Shortcut("tab")
+};
+
 window.Menu = class Menu extends Selector{
-	/*buttons as an array with objects with the following data:
+    /*buttons as an array with objects with the following data:
     {
         icon: "imgUrl",
         text: "action name",
@@ -20,135 +34,138 @@ window.Menu = class Menu extends Selector{
         }
     }
     __initVars(){
-    	super.__initVars();
-    	
-    	//vars that could be overriden to change behaviour
-    	this.template = { //template for the main structure of the selector
-	        html:  `<div class='bg0 wrapper'>
-	                    <div class=header>_HEADER_</div>
-	                    <div class=list>_LIST_</div>
-	                    <div class=footer>_FOOTER_</div>
-	                    <div class=messageOuter style=display:none>
-	                        <div class=message>
-	    						<span class='noActionsMessage' style=display:none>
-									No actions could be found Mother Fucker.
-	    						</span>
-	    						<span class='regexErrorMessage' style=display:none>
-	    							No actions could be found Mother Fucker.
-									<span class='fontError regexError'>
-										
-									</span>
-	    						</span>
-	                        </div>
-	                    </div>
-	                </div>`,
-	        style:` .wrapper,
-	                .list{
-	                    width: 100%;
-	                    height:100%;
-	                }
-	                .wrapper{
-	                    float: right;
-	                    position: relative;
-	                }
-	                .messageOuter{
-	                    position: absolute;
-	                    top: 0%;
-	                    height: 100%;
-	                    width: 100%;
-	                }
-	                .message{
-	                    padding: 10px;
-	                    text-align: center;
-	                    position: relative;
-	                    top: 50%;
-	                    left: 50%;
-	                    transform: translate(-50%, -50%);
-	                }`
-	    }
-    	this.closeable = false 				//boolean that tells if menu is closable using shift+tab
-        this.leaveShortcut = "shift+tab" 	//the shortcut to close the menu
-        this.enterShortcut = "tab"			//the shortcut to enter a sub menu
+        super.__initVars();
+        
+        //vars that could be overriden to change behaviour
+        this.template = { //template for the main structure of the selector
+            html:  `<div class='bg0 wrapper'>
+                        <div class=header>_HEADER_</div>
+                        <div class=list>
+                            <c-scroll dontUpdateOnResize>
+                                _LIST_
+                            </c-scroll>
+                        </div>
+                        <div class=footer>_FOOTER_</div>
+                        <div class=messageOuter style=display:none>
+                            <div class=message>
+                                <span class='noActionsMessage' style=display:none>
+                                    No actions could be found Mother Fucker.
+                                </span>
+                                <span class='regexErrorMessage' style=display:none>
+                                    No actions could be found Mother Fucker.
+                                    <div class='errorFont0 regexError'>
+                                        
+                                    </div>
+                                </span>
+                            </div>
+                        </div>
+                    </div>`,
+            style:` .wrapper,
+                    .list{
+                        width: 100%;
+                        height:100%;
+                    }
+                    .wrapper{
+                        float: right;
+                        position: relative;
+                    }
+                    .messageOuter{
+                        position: absolute;
+                        top: 0%;
+                        height: 100%;
+                        width: 100%;
+                    }
+                    .message{
+                        padding: 10px;
+                        text-align: center;
+                        position: relative;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                    }`
+        }
+        this.closeable = false                 //boolean that tells if menu is closable using shift+tab
+        this.leaveKey = $Settings.navigation.leaveMenu     //the shortcut to close the menu
+        this.enterKey = $Settings.navigation.enterMenu     //the shortcut to enter a sub menu
     }
     
     //events that can be tapped into and altered
-    __onOpen(){			  //fires when the menu opens and clears the search and selects the first item
+    __onOpen(){              //fires when the menu opens and clears the search and selects the first item
         $Searchbar.clear(true);
         this.__searchbarChange("");
         if(this.selectorItems.length>0)
             this.selectorItems[0].select();
     }
-    __onClose(){} 		  //fires on close and doesn't destroy the menu like Selector does by default
+    __onClose(){}           //fires on close and doesn't destroy the menu like Selector does by default
     __createButton(data){ //fires to create a button item
-    	return new MenuButton(data);
+        return new MenuButton(data);
     }
     __keyboardEvent(event){
-    	var shortcut = $Utils.keyboardEventToShortcut(event);
-    	if(shortcut==this.enterShortcut){
-    		if(this.selectedItem && this.selectedItem.subMenu){
-    			this.selectedItem.execute();
-    			return true;
-    		}
-    	}
-    	if(shortcut==this.leaveShortcut || shortcut==this.enterShortcut){
-    		if(this.parentMenu){
-    			this.parentMenu.open();
-    		}else if(this.closeable){
-    			this.close();
-    		}
-    		return true;
-    	}
-    	return super.__keyboardEvent(event);
+        if(this.enterKey.test(event)){
+            if(this.selectedItem && this.selectedItem.subMenu){
+                this.selectedItem.execute();
+                return true;
+            }
+        }
+        if(this.leaveKey.test(event) || this.enterKey.test(event)){
+            if(this.parentMenu){
+                this.parentMenu.open();
+            }else if(this.closeable){
+                this.close();
+            }
+            return true;
+        }
+        return super.__keyboardEvent(event);
     }
     __searchbarChange(value){
-    	if($EventHandler.trigger("search:pre", this, {text:value})){
-    		for(var i=0; i<this.selectorItems.length; i++){
-    			this.selectorItems[i].element.hide();
-    		}
-    		
-    		//query for matches
-    		var matches;
-    		var regexSearch = false;
-    		if(/\/(.+)\/(\w*)/.test(value)){
-    			matches = $Querier.regexQueryList(value, this.selectorItems, function(){
-    				return this.text;
-    			});
-    			regexSearch = true;
-    		}else{
-    			matches = $Querier.queryList(value, this.selectorItems, function(){
-    				return this.text;
-    			}, 1);
-    		}
-    		
-    		if(!(matches instanceof Array) || matches.length==0){
-    			this.$(".messageOuter").show();
-    			if(!(matches instanceof Array)){
-    				this.$(".noActionsMessage").hide();
-    				this.$(".regexErrorMessage").show();
-    				this.$(".regexError").text(matches.message);
-    			}else{
-    				this.$(".noActionsMessage").show();
-    				this.$(".regexErrorMessage").hide();
-    			}
-    		}else{
-    			this.$(".messageOuter").hide();
-    			
-    			//show matches
-    			$Querier.prepare(value);
-    			for(var i=0; i<matches.length; i++){
-    				var menuItem = matches[i].item;
-    				menuItem.highlight(matches[i].match.type);
-    				menuItem.element.show();
-    			}
-    			if(!this.selectedItem.element.is(":visible") && matches.length>0)
-    				matches[0].item.select();
-    			this.$(".list").scrollbar("reset");
-    		}
-    		
-    		$EventHandler.trigger("search:post", this, {text:value});
-    		return true;
-    	}
-    	return false;
+        if($EventHandler.trigger("search:pre", this, {text:value})){
+            for(var i=0; i<this.selectorItems.length; i++){
+                this.selectorItems[i].element.hide();
+            }
+            
+            //query for matches
+            var matches;
+            var regexSearch = false;
+            if(/\/(.+)\/(\w*)/.test(value)){
+                matches = $Querier.regexQueryList(value, this.selectorItems, function(){
+                    return this.text;
+                });
+                regexSearch = true;
+            }else{
+                matches = $Querier.queryList(value, this.selectorItems, function(){
+                    return this.text;
+                }, 1);
+            }
+            
+            if(!(matches instanceof Array) || matches.length==0){
+                this.$(".messageOuter").show();
+                if(!(matches instanceof Array)){
+                    this.$(".noActionsMessage").hide();
+                    this.$(".regexErrorMessage").show();
+                    this.$(".regexError").text(matches.message);
+                }else{
+                    this.$(".noActionsMessage").show();
+                    this.$(".regexErrorMessage").hide();
+                }
+            }else{
+                this.$(".messageOuter").hide();
+                
+                //show matches
+                $Querier.prepare(value);
+                for(var i=0; i<matches.length; i++){
+                    var menuItem = matches[i].item;
+                    menuItem.highlight(matches[i].match.type);
+                    menuItem.element.show();
+                }
+                if(!this.selectedItem.element.is(":visible") && matches.length>0)
+                    matches[0].item.select();
+                this.$("c-scroll")[0].updateSize();
+            }
+            
+            $EventHandler.trigger("search:post", this, {text:value});
+            return true;
+        }
+        return false;
     }
     
     //button code
@@ -183,10 +200,10 @@ window.Menu = class Menu extends Selector{
         return false;
     }
     addButton(button){
-    	this.addItem(button);
+        this.addItem(button);
     }
     addDivider(){
-    	this.insertItemElement(`
+        this.insertItemElement(`
             <div class='bd3 bg1 divider _MenuDivider_' style='width:100%; height:20px; border-bottom-width:1px'>
             </div>
         `);
@@ -228,7 +245,7 @@ window.MenuButton = class MenuButton extends SelectorItem{
         
         if(children){
             this.subMenu = new Menu(children);
-            this.$(".childrenIcon").show();
+            this.$(".childrenIcon").css("display","block");
         }else{
             this.func = func;
             this.dontCloseAfter = dontCloseAfter;
@@ -246,9 +263,9 @@ window.MenuButton = class MenuButton extends SelectorItem{
             this.$("img").attr("src", icon);
     }
     __initVars(){
-    	super.__initVars();
-    	
-    	this.template = {
+        super.__initVars();
+        
+        this.template = {
             html:   `<div class=actionIcon>
                         <img src=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAA1JREFUGFdj+P//PwMACPwC/ohfBuAAAAAASUVORK5CYII=>
                     </div>
@@ -323,7 +340,7 @@ window.MenuButton = class MenuButton extends SelectorItem{
     highlight(type){ //highlight text based on a search, argument must be an object with a highlight function
         if($EventHandler.trigger("highlight:pre", this, {matchType: type})){
             if(type){
-                this.$(".textInner").html(type.highlight(this.text, this.htmlClassName+" backgroundHighlight0"));
+                this.$(".textInner").html(type.highlight(this.text, this.htmlClassName+" highlightBackground0"));
             }else{
                 this.$(".textInner").text(this.text);
             }

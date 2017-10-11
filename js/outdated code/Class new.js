@@ -66,28 +66,28 @@ var Inherit = (function(){
         /*transfer the class name to the constructor (unfortunately through a function eval)*/
         var constructor = Function("func", "return function "+name+"(){return func.apply(this, arguments);}")(function(){
             this.crap=3; 
-        	var data = enterClass(this); 
-        	/*var stackSoFar = new Error().stack;
-        	try{
-        	    console.log(name);
-    	        innerConstructor.apply(this, arguments);
-        	}catch(e){
-        	   // console.log(e.stack.match(/((\w+)(([.])const((.+)\n)))((.+)\n){2}/g));
-        	    var regex = new RegExp("((\\w+)(([.])"+constructorN+"(.+))\\n)(((?!(.+)(([.]"+constructorN+")|(new))(.+)[(](.+)[)])(.+)[)]|(.+)[(]eval(.+))\\n?)+");
-        	    e.stack = e.stack.replace(regex,name+"$3\r\n");
-        	    console.log(stackSoFar);
-        	    throw e;
-        	}finally{
-        	    console.log(name);
-        	    leaveClass(this,data);
-        	}*/
+            var data = enterClass(this); 
+            /*var stackSoFar = new Error().stack;
+            try{
+                console.log(name);
+                innerConstructor.apply(this, arguments);
+            }catch(e){
+               // console.log(e.stack.match(/((\w+)(([.])const((.+)\n)))((.+)\n){2}/g));
+                var regex = new RegExp("((\\w+)(([.])"+constructorN+"(.+))\\n)(((?!(.+)(([.]"+constructorN+")|(new))(.+)[(](.+)[)])(.+)[)]|(.+)[(]eval(.+))\\n?)+");
+                e.stack = e.stack.replace(regex,name+"$3\r\n");
+                console.log(stackSoFar);
+                throw e;
+            }finally{
+                console.log(name);
+                leaveClass(this,data);
+            }*/
             innerConstructor.apply(this, arguments);
             leaveClass(this,data); 
         });
         /*without name and eval to test the speed impact eval has*/
         // var constructor = function(){
         //     this.crap=3; 
-        // 	var data = enterClass(this); 
+        //     var data = enterClass(this); 
         //     innerConstructor.apply(this, arguments);
         //     leaveClass(this,data);
         // };

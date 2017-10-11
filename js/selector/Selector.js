@@ -3,12 +3,31 @@ loadOnce("$SelectorHandler");
 loadOnce("SelectorItem");
 loadOnce("/$Utils");
 loadOnce("/$EventHandler");
-loadOnce("/libraries/scrollbar.js");
+//loadOnce("/libraries/scrollbar.js");
+loadOnce("/GUIelements/scrollElement");
+loadOnce("/Shortcut");
+//set up keyboard shortcuts
+$Settings.navigation.executeItem = {
+    settingDisplayName: "Execute item",
+    settingIndex: 1,
+    defaultValue: new Shortcut("enter")
+};
+$Settings.navigation.selectItemUp = {
+    settingDisplayName: "Select previous item",
+    settingIndex: 2,
+    defaultValue: new Shortcut("arrowup")
+};
+$Settings.navigation.selectItemDown = {
+    settingDisplayName: "Select next item",
+    settingIndex: 3,
+    defaultValue: new Shortcut("arrowdown")
+};
+
 window.Selector = class Selector{
-	constructor(){
-		this.__initVars();
-		
-		//insert all seperate templates into the main template
+    constructor(){
+        this.__initVars();
+        
+        //insert all seperate templates into the main template
         this.template = $Utils.copy(this.template); //make a local copy
         this.template.html = this.template.html.replace("_HEADER_", this.headerTemplate.html);
         this.template.html = this.template.html.replace("_FOOTER_", this.footerTemplate.html);
@@ -17,8 +36,8 @@ window.Selector = class Selector{
         
         
         //create element out of template
-        var UID = Math.floor(Math.random()*Math.pow(10,7)); //add UID to element because there could be many instances of this class(as a menu for example)
-        var n = $Utils.createTemplateElement(this.constructor.name, this.template, UID);
+//        var UID = Math.floor(Math.random()*Math.pow(10,7)); //add UID to element because there could be many instances of this class(as a menu for example)
+        var n = $Utils.createTemplateElement(this.constructor.name, this.template);//, UID);
         
         this.element = n.element;
         this.element.css({width:"calc(100% + 1px)",height:"100%",position:"absolute", overflow:"hidden", "border-right-width":"1px"});
@@ -29,81 +48,63 @@ window.Selector = class Selector{
         this.element.selector = this;   //asociate this object with the element
         
         $SelectorHandler.registerSelector(this); //add this selector to the page
-        this.__htmlInitialisation();            //initialize the html elements
-        this.element.width(0);                  //make sure the selector is hidden
-	}
-	__initVars(){
+        this.__initHtml();              //initialize the html elements
+//        this.element.width(0);          //make sure the selector is hidden by default
+    }
+    __initVars(){
         this.selectorItems = [];        //the selectorItems on the page
         this.selectedItem = null;       //the currently selected selectorItem
         
         this.scrolling = false;         //a boolean that indicates if the list is bing scrolled through, is used to disable item selection by mouse
         this.scrollingTimeout = null;   //the timeout id for the function that resets scrolling
         
-    	this.disableSelect = false;     //disables the select temporarely so you don't move through it too quickly and create lag spikes
+        this.disableSelect = false;     //disables the select temporarely so you don't move through it too quickly and create lag spikes
         
-    	//vars that could be overriden to change behaviour
-		this.headerTemplate = { //the template for the data above the list of items
-			html: ``,
-			style:``
-		};
-		this.footerTemplate = { //the template for the data below the list of items
-			html: ``,
-			style:``
-		};
-		this.listTemplate = { //the template for the list of items
-			html: ``,
-			style:``
-		};
-		this.template = { //template for the main structure of the selector
-			html:  `<div class='bg0 wrapper'>
-                		<div class=header>_HEADER_</div>
-                		<div class=list>_LIST_</div>
-                		<div class=footer>_FOOTER_</div>
-					</div>`,
-			style:` .wrapper,
-					.list{
-                		width: 100%;
-                		height:100%;
-					}
-					.wrapper{
-                		float: right;
-					}`
-		}
-		
-		this.animationDuration = 200; //how long the opening/closing animation is in milliseconds
-	}
-    
-	//events that can easily be tapped into and altered
-    __onHide(end){ 				  //fires when menu got hidden behind another menu
-        if(end) //if end is true, the menu is fully hidden
-            this.close();
+        //vars that could be overriden to change behaviour
+        this.headerTemplate = { //the template for the data above the list of items
+            html: ``,
+            style:``
+        };
+        this.footerTemplate = { //the template for the data below the list of items
+            html: ``,
+            style:``
+        };
+        this.listTemplate = { //the template for the list of items
+            html: ``,
+            style:``
+        };
+        this.template = { //template for the main structure of the selector
+            html:  `<div class='bg0 wrapper'>
+                        <div class=header>_HEADER_</div>
+                        <div class=list>
+                            <c-scroll dontUpdateOnResize>
+                                _LIST_
+                            </c-scroll>
+                        </div>
+                        <div class=footer>_FOOTER_</div>
+                    </div>`,
+            style:` .wrapper,
+                    .list{
+                        width: 100%;
+                        height:100%;
+                    }
+                    .wrapper{
+                        float: right;
+                    }
+                    c-scroll{
+                        width:100%;
+                        height:100%;
+                    }`
+        }
+        
+        this.animationDuration = 200; //how long the opening/closing animation is in milliseconds
+        
+        //keys
+        this.selectDownKey = $Settings.navigation.selectItemDown;
+        this.selectUpKey = $Settings.navigation.selectItemUp;
+        this.executeKey = $Settings.navigation.executeItem;
     }
-    __onShow(){}   				  //fires when selector gets opened because an selector above it gets closed
-    __onOpen(){}   				  //fires when selector gets opened
-    __onClose(){   				  //fires when the selector gets closed
-        this.destroy();
-    }
-    __insertItemElement(element){ //fires to insert the item's element into this selector's element
-        this.$("[scrollContent]").append(element);
-    }
-    __searchbarChange(value){}	  //fires when the searchbar value changed
-    __keyboardEvent(event){ 	  //fires on keyboard events and passes the keyboard event to the currently selected item
-    	if(event.key=="ArrowUp"){
-    		this.selectUp();
-    		return true;
-    	}else if(event.key=="ArrowDown"){
-    		this.selectDown();
-    		return true;
-    	}else if(event.key=="Enter"){
-    		this.executeItem();
-    		return true;
-    	}
-    	
-    	if(this.selectedItem){
-    		return this.selectedItem.__keyboardEvent(event);
-    	}
-    }
-    __htmlInitialisation(){		  //fires when the element is added to the page, and you can initialize the element
+    __initHtml(){          //fires when the element is added to the page, and you can initialize the element
         this.__refreshListSize();
         
         var wrapper = this.element.children(".wrapper");
@@ -112,24 +113,52 @@ window.Selector = class Selector{
         this.element.width(0);
         
         var t = this;
-        this.$(".list").scrollbar({
-    		clickScrollDuration: 0,
-    		scrollListener: function(offset){
-	            //indicate that the list is being scrolled through, used by the selector items to block item selection while scrolling
-	            t.scrolling = true;
-	            clearTimeout(t.scrollingTimeout);
-	            t.scrollingTimeout = setTimeout(function(){
-	                t.scrolling = false;
-	            },200);
-	        }
+        this.$("c-scroll")[0].setScrollListener(function(hOffset, vOffset){
+            //indicate that the list is being scrolled through, used by the selector items to block item selection while scrolling
+            t.scrolling = true;
+            clearTimeout(t.scrollingTimeout);
+            t.scrollingTimeout = setTimeout(function(){
+                t.scrolling = false;
+            },200);
         });
+    }
+    
+    //events that can easily be tapped into and altered
+    __onHide(end){                   //fires when menu got hidden behind another menu
+        if(end) //if end is true, the menu is fully hidden
+            this.close();
+    }
+    __onShow(){}                     //fires when selector gets opened because an selector above it gets closed
+    __onOpen(){}                     //fires when selector gets opened
+    __onClose(){                     //fires when the selector gets closed
+        this.destroy();
+    }
+    __insertItemElement(element){    //fires to insert the item's element into this selector's element
+        this.$("c-scroll&.scrollContent").append(element);
+    }
+    __searchbarChange(value){}       //fires when the searchbar value changed
+    __keyboardEvent(event){          //fires on keyboard events and passes the keyboard event to the currently selected item
+        if(this.selectUpKey.test(event)){
+            this.selectUp();
+            return true;
+        }else if(this.selectDownKey.test(event)){
+            this.selectDown();
+            return true;
+        }else if(this.executeKey.test(event)){
+            this.executeItem();
+            return true;
+        }
+        
+        if(this.selectedItem){
+            return this.selectedItem.__keyboardEvent(event);
+        }
     }
     isOpen(){
         return $SelectorHandler.topSelector == this;
     }
     
     //html element methods
-	__refreshListSize(){ //call this function to update the height of the list, if the height of the header or footer changed
+    __refreshListSize(){ //call this function to update the height of the list, if the height of the header or footer changed
         var header = this.$(".header").first();
         var footer = this.$(".footer").first();
         this.$(".list").height(`calc(100% - ${header.height()+footer.height()}px)`);
@@ -215,7 +244,7 @@ window.Selector = class Selector{
         if($EventHandler.trigger("addItem:pre", this, {item:selectorItem})){
             //add the element to the page and register this as its Selector
             this.__insertItemElement(selectorItem.element);
-            selectorItem.__htmlInitialisation();
+            selectorItem.__initHtml();
             selectorItem.__setSelector(this);
             
             //add the item to the item set and select it if it is the first item
@@ -224,7 +253,7 @@ window.Selector = class Selector{
                 selectorItem.select();
                 
             //refresh the scrollbar to register the height change
-            this.$(".list").first().scrollbar("refresh");
+            this.$("c-scroll")[0].updateSize();
             
             $EventHandler.trigger("addItem:post", this, {item:selectorItem});
         }
@@ -250,10 +279,10 @@ window.Selector = class Selector{
         }
         return false;
     }
-    focusOnSelectedItem(){ //scroll to the position of the selected SelectorItem
+    focusOnSelectedItem(duration){ //scroll to the position of the selected SelectorItem
         if(this.selectedItem){
             if($EventHandler.trigger("focusOnSelectedItem:pre", this, {currentSelected:this.selectedItem})){
-                this.$(".list")[0].focus(this.selectedItem.element, 100);
+                this.$("c-scroll")[0].focus(this.selectedItem.element, duration!=null?duration:100);
                 $EventHandler.trigger("focusOnSelectedItem:post", this, {currentSelected:this.selectedItem});
             }
         }

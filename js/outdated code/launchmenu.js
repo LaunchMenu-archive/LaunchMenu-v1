@@ -23,11 +23,11 @@ $(function(){
     $(window).keydown(function(e){
         if(e.key=="Escape"){
             if($(".input").val()==""){
-				invokeAction("WindowHide");
-			}else{
-				$(".input").val("");
-				$(".placeHolder").show();
-			}
+                invokeAction("WindowHide");
+            }else{
+                $(".input").val("");
+                $(".placeHolder").show();
+            }
         }
         var arrowFunc = null;
         if(e.key=="ArrowUp"){
