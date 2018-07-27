@@ -5,6 +5,9 @@
 
 ## Description:
 
+**This project is now deprecated by http://www.github.com/LaunchMenu/LaunchMenu**
+
+
 LaunchMenu is an open source utility application similar to LaunchBar and SpotlightSearch for Mac.
 
 Features will be listed at a later date.
